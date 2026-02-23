@@ -10,6 +10,8 @@ import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import WellnessLobby from "./pages/WellnessLobby";
 import ExercisePlayer from "./pages/ExercisePlayer";
+import HRDashboard from "./pages/HRDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -95,6 +97,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/hr" element={<HRDashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -5,9 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import ExerciseAvatar from "@/components/ExerciseAvatar";
+import ConfettiEffect from "@/components/ConfettiEffect";
 import {
-  ArrowLeft, Play, Pause, SkipForward, RotateCcw,
-  Trophy, Zap, ChevronLeft, ChevronRight, Check,
+  ArrowLeft, Play, Pause, SkipForward,
+  Trophy, Zap, ChevronLeft, ChevronRight, Check, Flame,
 } from "lucide-react";
 
 interface Exercise {
@@ -27,6 +29,17 @@ interface ProgramInfo {
   exercise_count: number;
 }
 
+const MOTIVATIONAL_MESSAGES = [
+  "You're crushing it! 💪",
+  "Keep going, warrior! 🔥",
+  "Almost there! 🎯",
+  "Feel that stretch! 🧘",
+  "Your body thanks you! ✨",
+  "Breathe deep... 🌊",
+  "Stay present 🧠",
+  "Great form! 👏",
+];
+
 const ExercisePlayer = () => {
   const { programId } = useParams();
   const navigate = useNavigate();
@@ -40,10 +53,12 @@ const ExercisePlayer = () => {
   const [side, setSide] = useState<"left" | "right" | null>(null);
   const [completed, setCompleted] = useState(false);
   const [totalPoints, setTotalPoints] = useState(0);
+  const [showMotivation, setShowMotivation] = useState("");
+  const [exerciseXP, setExerciseXP] = useState(0);
 
   useEffect(() => {
     if (!programId) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       const [progRes, exRes] = await Promise.all([
         supabase.from("programs").select("*").eq("id", programId).single(),
         supabase.from("exercises").select("*").eq("program_id", programId).order("sequence_order"),
@@ -56,15 +71,25 @@ const ExercisePlayer = () => {
         setSide(first.is_bilateral ? "left" : null);
       }
     };
-    fetch();
+    fetchData();
   }, [programId]);
 
   const currentExercise = exercises[currentIndex];
 
+  // Show random motivation every 30 seconds
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      const msg = MOTIVATIONAL_MESSAGES[Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)];
+      setShowMotivation(msg);
+      setTimeout(() => setShowMotivation(""), 2500);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
   const moveToNext = useCallback(() => {
     if (!currentExercise) return;
 
-    // Handle bilateral - switch sides
     if (currentExercise.is_bilateral && side === "left") {
       setSide("right");
       setTimeLeft(Math.floor(currentExercise.duration_seconds / 2));
@@ -73,6 +98,8 @@ const ExercisePlayer = () => {
 
     const pointsForExercise = 5;
     setTotalPoints(p => p + pointsForExercise);
+    setExerciseXP(pointsForExercise);
+    setTimeout(() => setExerciseXP(0), 1500);
 
     if (currentIndex < exercises.length - 1) {
       const next = exercises[currentIndex + 1];
@@ -80,7 +107,6 @@ const ExercisePlayer = () => {
       setTimeLeft(next.is_bilateral ? Math.floor(next.duration_seconds / 2) : next.duration_seconds);
       setSide(next.is_bilateral ? "left" : null);
     } else {
-      // Program complete!
       setIsPlaying(false);
       setCompleted(true);
       saveProgress();
@@ -103,7 +129,7 @@ const ExercisePlayer = () => {
 
   const saveProgress = async () => {
     if (!user || !programId) return;
-    const bonusPoints = totalPoints + 10; // completion bonus
+    const bonusPoints = totalPoints + 10;
     try {
       await supabase.from("user_progress").insert({
         user_id: user.id,
@@ -112,12 +138,8 @@ const ExercisePlayer = () => {
         points_earned: bonusPoints,
       });
 
-      // Update welly points
       const { data: current } = await supabase
-        .from("welly_points")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+        .from("welly_points").select("*").eq("user_id", user.id).single();
 
       if (current) {
         const today = new Date().toISOString().split("T")[0];
@@ -132,7 +154,6 @@ const ExercisePlayer = () => {
           last_activity_date: today,
         }).eq("user_id", user.id);
       }
-
       setTotalPoints(bonusPoints);
     } catch (err) {
       console.error("Error saving progress:", err);
@@ -141,50 +162,78 @@ const ExercisePlayer = () => {
 
   if (completed) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", delay: 0.2 }}
-          className="w-24 h-24 rounded-full gradient-gold flex items-center justify-center mb-6"
-        >
-          <Trophy className="w-12 h-12 text-primary-foreground" />
-        </motion.div>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="font-display text-3xl font-bold text-foreground mb-2"
-        >
-          Great Job! 🎉
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-muted-foreground mb-8"
-        >
-          You completed {program?.name}
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="glass rounded-2xl p-6 w-full max-w-xs text-center mb-8"
-        >
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Zap className="w-6 h-6 text-wellness-gold" />
-            <span className="font-display text-3xl font-bold text-gradient-gold">+{totalPoints}</span>
-          </div>
-          <p className="text-muted-foreground text-sm">WellyPoints Earned</p>
-        </motion.div>
-        <Button
-          onClick={() => navigate("/")}
-          className="gradient-primary text-primary-foreground font-display w-full max-w-xs h-12"
-        >
-          Return to Lobby
-        </Button>
-      </div>
+      <>
+        <ConfettiEffect trigger={true} />
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", delay: 0.2 }}
+            className="w-28 h-28 rounded-full gradient-gold flex items-center justify-center mb-6 glow-primary"
+          >
+            <Trophy className="w-14 h-14 text-primary-foreground" />
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="font-display text-3xl font-bold text-foreground mb-2"
+          >
+            Incredible Work! 🎉
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="text-muted-foreground mb-2"
+          >
+            You completed {program?.name}
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="flex items-center gap-2 text-wellness-coral text-sm font-medium mb-8"
+          >
+            <Flame className="w-4 h-4" /> Streak maintained!
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="glass rounded-2xl p-6 w-full max-w-xs text-center mb-4"
+          >
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Zap className="w-6 h-6 text-wellness-gold" />
+              <motion.span
+                className="font-display text-4xl font-bold text-gradient-gold"
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 1.3, 1] }}
+                transition={{ delay: 1, duration: 0.5 }}
+              >
+                +{totalPoints}
+              </motion.span>
+            </div>
+            <p className="text-muted-foreground text-sm">WellyPoints Earned</p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+            className="glass rounded-2xl p-4 w-full max-w-xs text-center mb-8"
+          >
+            <p className="text-sm text-muted-foreground">
+              {exercises.length} exercises completed · {program?.duration_minutes} min
+            </p>
+          </motion.div>
+          <Button
+            onClick={() => navigate("/")}
+            className="gradient-primary text-primary-foreground font-display w-full max-w-xs h-12 glow-primary"
+          >
+            Return to Lobby
+          </Button>
+        </div>
+      </>
     );
   }
 
@@ -199,12 +248,43 @@ const ExercisePlayer = () => {
     );
   }
 
-  const progressPercent = ((currentIndex + 1) / exercises.length) * 100;
+  const progressPercent = ((currentIndex + (side === "right" ? 0.5 : 0)) / exercises.length) * 100;
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
+  const totalDuration = currentExercise?.is_bilateral ? currentExercise.duration_seconds / 2 : currentExercise?.duration_seconds || 1;
+  const timerProgress = 1 - timeLeft / totalDuration;
+  const isLowTime = timeLeft <= 5 && timeLeft > 0;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* XP Popup */}
+      <AnimatePresence>
+        {exerciseXP > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.5 }}
+            animate={{ opacity: 1, y: -20, scale: 1 }}
+            exit={{ opacity: 0, y: -60 }}
+            className="fixed top-16 right-6 z-50 flex items-center gap-1 px-3 py-1.5 rounded-full gradient-gold text-primary-foreground font-display font-bold text-sm"
+          >
+            <Zap className="w-3 h-3" /> +{exerciseXP} XP
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Motivation Toast */}
+      <AnimatePresence>
+        {showMotivation && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full glass text-sm font-medium text-foreground"
+          >
+            {showMotivation}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="px-5 pt-5 pb-3 flex items-center gap-3">
         <button onClick={() => navigate("/")} className="text-muted-foreground">
@@ -219,6 +299,10 @@ const ExercisePlayer = () => {
             />
           </div>
         </div>
+        <div className="flex items-center gap-1.5">
+          <Zap className="w-3 h-3 text-wellness-gold" />
+          <span className="text-xs text-wellness-gold font-mono font-bold">{totalPoints}</span>
+        </div>
         <span className="text-xs text-muted-foreground font-mono">
           {currentIndex + 1}/{exercises.length}
         </span>
@@ -229,28 +313,23 @@ const ExercisePlayer = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={`${currentIndex}-${side}`}
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.9 }}
             className="text-center w-full"
           >
-            {/* Exercise visualization placeholder */}
-            <div className="w-48 h-48 rounded-full bg-secondary/50 border-2 border-primary/20 flex items-center justify-center mx-auto mb-8 relative">
-              <div className="absolute inset-0 rounded-full animate-pulse-glow border border-primary/10" />
-              <span className="text-5xl">
-                {currentExercise ? "🧘" : ""}
-              </span>
-            </div>
+            {/* Avatar */}
+            <ExerciseAvatar
+              exerciseName={currentExercise?.name || ""}
+              side={side}
+              isPlaying={isPlaying}
+              className="w-44 h-44 mx-auto mb-6"
+            />
 
             {/* Exercise name */}
             <h2 className="font-display text-xl font-bold text-foreground mb-1">
               {currentExercise?.name}
             </h2>
-            {side && (
-              <p className="text-primary text-sm font-medium mb-2">
-                {side === "left" ? "Left Side" : "Right Side"}
-              </p>
-            )}
             {currentExercise?.instruction_text && (
               <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
                 {currentExercise.instruction_text}
@@ -258,24 +337,28 @@ const ExercisePlayer = () => {
             )}
 
             {/* Timer */}
-            <div className="relative w-40 h-40 mx-auto mb-8">
+            <div className="relative w-36 h-36 mx-auto mb-6">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--secondary))" strokeWidth="4" />
-                <circle
+                <motion.circle
                   cx="50" cy="50" r="45"
                   fill="none"
-                  stroke="hsl(var(--primary))"
+                  stroke={isLowTime ? "hsl(var(--wellness-coral))" : "hsl(var(--primary))"}
                   strokeWidth="4"
                   strokeLinecap="round"
                   strokeDasharray={`${2 * Math.PI * 45}`}
-                  strokeDashoffset={`${2 * Math.PI * 45 * (1 - timeLeft / (currentExercise?.is_bilateral ? currentExercise.duration_seconds / 2 : currentExercise?.duration_seconds || 1))}`}
+                  strokeDashoffset={`${2 * Math.PI * 45 * (1 - timerProgress)}`}
                   className="transition-all duration-1000"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-display text-4xl font-bold text-foreground">
+                <motion.span
+                  className={`font-display text-3xl font-bold ${isLowTime ? "text-wellness-coral" : "text-foreground"}`}
+                  animate={isLowTime ? { scale: [1, 1.1, 1] } : {}}
+                  transition={{ duration: 0.5, repeat: isLowTime ? Infinity : 0 }}
+                >
                   {minutes}:{seconds.toString().padStart(2, "0")}
-                </span>
+                </motion.span>
               </div>
             </div>
           </motion.div>
@@ -301,16 +384,17 @@ const ExercisePlayer = () => {
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          <button
+          <motion.button
             onClick={() => setIsPlaying(!isPlaying)}
             className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center glow-primary"
+            whileTap={{ scale: 0.9 }}
           >
             {isPlaying ? (
               <Pause className="w-6 h-6 text-primary-foreground" />
             ) : (
               <Play className="w-6 h-6 text-primary-foreground ml-0.5" />
             )}
-          </button>
+          </motion.button>
 
           <button
             onClick={moveToNext}

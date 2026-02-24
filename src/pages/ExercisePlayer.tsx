@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import ExerciseAvatar from "@/components/ExerciseAvatar";
+import BreathingVisualizer from "@/components/BreathingVisualizer";
 import ConfettiEffect from "@/components/ConfettiEffect";
 import {
   ArrowLeft, Play, Pause, SkipForward,
@@ -27,6 +28,7 @@ interface ProgramInfo {
   target_area: string;
   duration_minutes: number;
   exercise_count: number;
+  category: string;
 }
 
 const MOTIVATIONAL_MESSAGES = [
@@ -318,13 +320,20 @@ const ExercisePlayer = () => {
             exit={{ opacity: 0, scale: 0.9 }}
             className="text-center w-full"
           >
-            {/* Avatar */}
-            <ExerciseAvatar
-              exerciseName={currentExercise?.name || ""}
-              side={side}
-              isPlaying={isPlaying}
-              className="w-44 h-44 mx-auto mb-6"
-            />
+            {/* Avatar or Breathing Visualizer */}
+            {program?.target_area === "Relax" ? (
+              <BreathingVisualizer
+                exerciseName={currentExercise?.name || ""}
+                isPlaying={isPlaying}
+              />
+            ) : (
+              <ExerciseAvatar
+                exerciseName={currentExercise?.name || ""}
+                side={side}
+                isPlaying={isPlaying}
+                className="w-44 h-44 mx-auto mb-6"
+              />
+            )}
 
             {/* Exercise name */}
             <h2 className="font-display text-xl font-bold text-foreground mb-1">

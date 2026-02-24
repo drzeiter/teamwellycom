@@ -1,0 +1,9 @@
+{
+  "appId": "app.lovable.97862c1b7b2b4f3498be5b53edc24c6b",
+  "appName": "teamwellycom",
+  "webDir": "dist",
+  "server": {
+    "url": "https://97862c1b-7b2b-4f34-98be-5b53edc24c6b.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}

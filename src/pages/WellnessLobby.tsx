@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Activity, Flame, Trophy, Zap, ChevronRight, Play, LogOut, TrendingUp, Calendar, Star } from "lucide-react";
+import { Activity, Flame, Trophy, Zap, ChevronRight, Play, LogOut, TrendingUp, Star, Footprints, Wind } from "lucide-react";
+import WellnessTips from "@/components/WellnessTips";
+import StepTracker from "@/components/StepTracker";
 
 interface WellyPointsData {
   total_points: number;
@@ -33,10 +35,10 @@ interface ProgressEntry {
 const AREA_ICONS: Record<string, string> = {
   "Low Back": "🔻", "Hips": "🦴", "Shoulders": "💪", "Neck": "🦒",
   "Foot/Ankle": "🦶", "Knee": "🦵", "Thoracic Spine": "🔄", "Hamstrings": "🦿",
-  "Glutes": "🍑", "Desk": "🖥️", "Full Body": "🧘", "Warm-Up": "🔥",
+  "Glutes": "🍑", "Desk": "🖥️", "Full Body": "🧘", "Warm-Up": "🔥", "Relax": "🫁",
 };
 
-type Tab = "home" | "programs" | "progress" | "points";
+type Tab = "home" | "programs" | "progress" | "steps";
 
 const WellnessLobby = () => {
   const { user, signOut } = useAuth();
@@ -48,6 +50,10 @@ const WellnessLobby = () => {
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [progressHistory, setProgressHistory] = useState<ProgressEntry[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
+
+  // Mock step data (will be replaced by HealthKit integration)
+  const [dailySteps] = useState(() => Math.floor(Math.random() * 8000) + 3000);
+  const [weeklySteps] = useState(() => Array.from({ length: 7 }, () => Math.floor(Math.random() * 10000) + 2000));
 
   useEffect(() => {
     if (!user) return;
@@ -74,8 +80,6 @@ const WellnessLobby = () => {
   const quickResets = filtered.filter(p => p.category_type === "quick_reset");
   const performancePrograms = filtered.filter(p => p.category_type === "performance");
   const firstName = displayName?.split(" ")[0] || "there";
-
-  // Level system
   const level = Math.floor(points.total_points / 100) + 1;
   const xpInLevel = points.total_points % 100;
 
@@ -83,61 +87,38 @@ const WellnessLobby = () => {
     switch (activeTab) {
       case "home":
         return <HomeTab
-          firstName={firstName}
-          points={points}
-          programs={programs}
-          quickResets={quickResets}
-          performancePrograms={performancePrograms}
-          categories={categories}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          navigate={navigate}
-          level={level}
-          xpInLevel={xpInLevel}
-          completedCount={completedCount}
-          signOut={signOut}
+          firstName={firstName} points={points} programs={programs}
+          quickResets={quickResets} performancePrograms={performancePrograms}
+          categories={categories} selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory} navigate={navigate}
+          level={level} xpInLevel={xpInLevel} completedCount={completedCount}
+          signOut={signOut} dailySteps={dailySteps}
         />;
       case "programs":
-        return <ProgramsTab
-          programs={programs}
-          categories={categories}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          navigate={navigate}
-        />;
+        return <ProgramsTab programs={programs} categories={categories}
+          selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}
+          navigate={navigate} />;
       case "progress":
-        return <ProgressTab
-          progressHistory={progressHistory}
-          programs={programs}
-          points={points}
-          completedCount={completedCount}
-        />;
-      case "points":
-        return <PointsTab points={points} level={level} xpInLevel={xpInLevel} completedCount={completedCount} />;
+        return <ProgressTab progressHistory={progressHistory} programs={programs}
+          points={points} completedCount={completedCount} />;
+      case "steps":
+        return <StepsTab dailySteps={dailySteps} weeklySteps={weeklySteps} points={points} />;
     }
   };
 
   return (
     <div className="min-h-screen bg-background pb-24">
       <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
+        <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
           {renderContent()}
         </motion.div>
       </AnimatePresence>
-
-      {/* Bottom Nav */}
       <div className="fixed bottom-0 left-0 right-0 glass-strong safe-bottom z-40">
         <div className="flex items-center justify-around py-3 max-w-md mx-auto">
           <NavItem icon={<Activity className="w-5 h-5" />} label="Home" active={activeTab === "home"} onClick={() => setActiveTab("home")} />
           <NavItem icon={<Play className="w-5 h-5" />} label="Programs" active={activeTab === "programs"} onClick={() => setActiveTab("programs")} />
           <NavItem icon={<Trophy className="w-5 h-5" />} label="Progress" active={activeTab === "progress"} onClick={() => setActiveTab("progress")} />
-          <NavItem icon={<Zap className="w-5 h-5" />} label="Points" active={activeTab === "points"} onClick={() => setActiveTab("points")} />
+          <NavItem icon={<Footprints className="w-5 h-5" />} label="Steps" active={activeTab === "steps"} onClick={() => setActiveTab("steps")} />
         </div>
       </div>
     </div>
@@ -145,7 +126,7 @@ const WellnessLobby = () => {
 };
 
 // HOME TAB
-const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut }: any) => (
+const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps }: any) => (
   <>
     <div className="px-5 pt-6 pb-4">
       <div className="flex items-center justify-between mb-6">
@@ -154,9 +135,7 @@ const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms
           <h1 className="font-display text-2xl font-bold text-foreground">Hey, {firstName} 👋</h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1 rounded-full gradient-primary text-primary-foreground text-xs font-bold">
-            Lv.{level}
-          </div>
+          <div className="px-3 py-1 rounded-full gradient-primary text-primary-foreground text-xs font-bold">Lv.{level}</div>
           <button onClick={signOut} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
             <LogOut className="w-4 h-4 text-muted-foreground" />
           </button>
@@ -168,7 +147,7 @@ const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms
         <div className="w-px h-8 bg-border" />
         <StatItem icon={<Flame className="w-4 h-4 text-wellness-coral" />} value={points.current_streak} label="Day Streak" />
         <div className="w-px h-8 bg-border" />
-        <StatItem icon={<Trophy className="w-4 h-4 text-primary" />} value={completedCount} label="Sessions" />
+        <StatItem icon={<Footprints className="w-4 h-4 text-primary" />} value={dailySteps.toLocaleString()} label="Steps" />
       </motion.div>
     </div>
 
@@ -185,8 +164,13 @@ const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms
       </div>
     </div>
 
+    {/* Wellness Tip */}
+    <div className="px-5 mb-4">
+      <WellnessTips />
+    </div>
+
     {/* Daily Suggestion */}
-    <div className="px-5 mb-6">
+    <div className="px-5 mb-4">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="gradient-primary rounded-2xl p-5 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-foreground/5 -translate-y-8 translate-x-8" />
         <p className="text-primary-foreground/70 text-xs font-medium uppercase tracking-wider mb-1">Today's Suggestion</p>
@@ -204,17 +188,33 @@ const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms
       </motion.div>
     </div>
 
+    {/* Quick Breathwork CTA */}
+    <div className="px-5 mb-4">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass rounded-2xl p-4 flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl gradient-accent flex items-center justify-center text-xl shrink-0">🫁</div>
+        <div className="flex-1">
+          <h4 className="font-display font-semibold text-foreground text-sm">Feeling Stressed?</h4>
+          <p className="text-xs text-muted-foreground">Try a 5-min breathing exercise</p>
+        </div>
+        <button
+          onClick={() => {
+            const breathe = programs.find((p: Program) => p.target_area === "Relax" && p.duration_minutes === 5);
+            if (breathe) navigate(`/player/${breathe.id}`);
+          }}
+          className="px-3 py-1.5 rounded-lg gradient-accent text-accent-foreground text-xs font-medium"
+        >
+          <Wind className="w-3 h-3 inline mr-1" />Breathe
+        </button>
+      </motion.div>
+    </div>
+
     {/* Category Filter */}
     <div className="px-5 mb-4">
       <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
         {categories.map((cat: string) => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
+          <button key={cat} onClick={() => setSelectedCategory(cat)}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
-          >
-            {cat === "all" ? "All" : cat}
-          </button>
+          >{cat === "all" ? "All" : cat}</button>
         ))}
       </div>
     </div>
@@ -227,7 +227,8 @@ const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms
 // PROGRAMS TAB
 const ProgramsTab = ({ programs, categories, selectedCategory, setSelectedCategory, navigate }: any) => {
   const filtered = selectedCategory === "all" ? programs : programs.filter((p: Program) => p.target_area === selectedCategory);
-  const quickResets = filtered.filter((p: Program) => p.category_type === "quick_reset");
+  const quickResets = filtered.filter((p: Program) => p.category_type === "quick_reset" && p.target_area !== "Relax");
+  const relaxPrograms = filtered.filter((p: Program) => p.target_area === "Relax");
   const performance = filtered.filter((p: Program) => p.category_type === "performance");
 
   return (
@@ -245,6 +246,7 @@ const ProgramsTab = ({ programs, categories, selectedCategory, setSelectedCatego
           ))}
         </div>
       </div>
+      {relaxPrograms.length > 0 && <ProgramSection title="🫁 Relax" subtitle="Breathwork & meditation" programs={relaxPrograms} onSelect={(id: string) => navigate(`/player/${id}`)} />}
       {quickResets.length > 0 && <ProgramSection title="⚡ Quick Resets" subtitle="" programs={quickResets} onSelect={(id: string) => navigate(`/player/${id}`)} />}
       {performance.length > 0 && <ProgramSection title="🏆 Performance" subtitle="" programs={performance} onSelect={(id: string) => navigate(`/player/${id}`)} />}
     </div>
@@ -306,51 +308,46 @@ const ProgressTab = ({ progressHistory, programs, points, completedCount }: any)
   </div>
 );
 
-// POINTS TAB
-const PointsTab = ({ points, level, xpInLevel, completedCount }: any) => (
+// STEPS TAB
+const StepsTab = ({ dailySteps, weeklySteps, points }: any) => (
   <div className="pt-6 px-5">
-    <h1 className="font-display text-2xl font-bold text-foreground mb-6">WellyPoints</h1>
-    
-    <div className="glass rounded-2xl p-6 text-center mb-6">
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        className="w-20 h-20 rounded-full gradient-gold flex items-center justify-center mx-auto mb-4"
-      >
-        <Zap className="w-10 h-10 text-primary-foreground" />
-      </motion.div>
-      <p className="font-display text-4xl font-bold text-gradient-gold mb-1">{points.total_points}</p>
-      <p className="text-muted-foreground text-sm">Total WellyPoints</p>
+    <h1 className="font-display text-2xl font-bold text-foreground mb-2">Step Tracking</h1>
+    <p className="text-muted-foreground text-sm mb-4">Connect your wearable for real data</p>
+
+    <StepTracker dailySteps={dailySteps} dailyGoal={10000} weeklySteps={weeklySteps} />
+
+    <div className="mt-4 glass rounded-xl p-4">
+      <h3 className="font-display font-semibold text-foreground text-sm mb-2">🏅 Step Rewards</h3>
+      <div className="space-y-2">
+        {[
+          { steps: 5000, emoji: "🥉", label: "Bronze Walker", pts: "+10 XP" },
+          { steps: 7500, emoji: "🥈", label: "Silver Strider", pts: "+20 XP" },
+          { steps: 10000, emoji: "🥇", label: "Gold Mover", pts: "+30 XP" },
+          { steps: 15000, emoji: "💎", label: "Diamond Athlete", pts: "+50 XP" },
+        ].map((m) => (
+          <div key={m.steps} className={`flex items-center gap-3 p-2 rounded-lg ${dailySteps >= m.steps ? "bg-primary/10" : "bg-secondary/50"}`}>
+            <span className="text-lg">{m.emoji}</span>
+            <div className="flex-1">
+              <p className={`text-sm font-medium ${dailySteps >= m.steps ? "text-primary" : "text-muted-foreground"}`}>{m.label}</p>
+              <p className="text-xs text-muted-foreground">{m.steps.toLocaleString()} steps</p>
+            </div>
+            <span className={`text-xs font-mono ${dailySteps >= m.steps ? "text-wellness-gold" : "text-muted-foreground"}`}>{m.pts}</span>
+          </div>
+        ))}
+      </div>
     </div>
 
-    <div className="glass rounded-xl p-4 mb-4">
-      <div className="flex justify-between mb-2">
-        <span className="text-sm text-foreground font-medium">Level {level}</span>
-        <span className="text-sm text-primary font-mono">{xpInLevel}/100 XP to Level {level + 1}</span>
-      </div>
-      <div className="h-3 bg-secondary rounded-full overflow-hidden">
-        <motion.div className="h-full gradient-primary rounded-full" animate={{ width: `${xpInLevel}%` }} />
-      </div>
-    </div>
-
-    <h2 className="font-display text-lg font-semibold text-foreground mb-3">How to Earn Points</h2>
-    <div className="space-y-2">
-      {[
-        { emoji: "✅", text: "Complete an exercise", pts: "+5" },
-        { emoji: "🏆", text: "Finish a full program", pts: "+10 bonus" },
-        { emoji: "🔥", text: "Maintain daily streak", pts: "Streak multiplier" },
-      ].map((item, i) => (
-        <div key={i} className="glass rounded-xl p-3 flex items-center gap-3">
-          <span className="text-xl">{item.emoji}</span>
-          <span className="flex-1 text-sm text-foreground">{item.text}</span>
-          <span className="text-xs font-mono text-wellness-gold">{item.pts}</span>
-        </div>
-      ))}
+    <div className="mt-4 glass rounded-xl p-4 text-center">
+      <p className="text-sm text-muted-foreground mb-2">Connect your device for real step data</p>
+      <button className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium">
+        <Footprints className="w-4 h-4 inline mr-1" /> Connect Wearable
+      </button>
+      <p className="text-[10px] text-muted-foreground mt-2">Apple Health · Garmin · Fitbit · Samsung Health</p>
     </div>
   </div>
 );
 
-const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) => (
+const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: number | string; label: string }) => (
   <div className="flex items-center gap-2">
     {icon}
     <div>

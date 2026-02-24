@@ -53,7 +53,26 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const OnboardingRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  if (loading) {
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setCheckingOnboarding(false);
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        setOnboardingCompleted(data?.onboarding_completed ?? false);
+        setCheckingOnboarding(false);
+      });
+  }, [user]);
+
+  if (loading || checkingOnboarding) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -61,6 +80,7 @@ const OnboardingRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
+  if (onboardingCompleted) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 

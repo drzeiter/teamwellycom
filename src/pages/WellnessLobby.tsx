@@ -3,9 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Activity, Flame, Trophy, Zap, ChevronRight, Play, LogOut, TrendingUp, Star, Footprints, Wind } from "lucide-react";
+import {
+  Activity, Flame, Trophy, Zap, ChevronRight, Play, LogOut,
+  TrendingUp, Star, Footprints, Wind, Calendar, Lightbulb, Quote,
+} from "lucide-react";
 import WellnessTips from "@/components/WellnessTips";
+import WellnessQuotes from "@/components/WellnessQuotes";
 import StepTracker from "@/components/StepTracker";
+import CalendarSync from "@/components/CalendarSync";
 
 interface WellyPointsData {
   total_points: number;
@@ -38,7 +43,7 @@ const AREA_ICONS: Record<string, string> = {
   "Glutes": "🍑", "Desk": "🖥️", "Full Body": "🧘", "Warm-Up": "🔥", "Relax": "🫁",
 };
 
-type Tab = "home" | "programs" | "progress" | "steps";
+type Tab = "home" | "programs" | "progress" | "steps" | "more";
 
 const WellnessLobby = () => {
   const { user, signOut } = useAuth();
@@ -50,8 +55,8 @@ const WellnessLobby = () => {
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [progressHistory, setProgressHistory] = useState<ProgressEntry[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
+  const [tipsMode, setTipsMode] = useState<"tips" | "quotes">("tips");
 
-  // Mock step data (will be replaced by HealthKit integration)
   const [dailySteps] = useState(() => Math.floor(Math.random() * 8000) + 3000);
   const [weeklySteps] = useState(() => Array.from({ length: 7 }, () => Math.floor(Math.random() * 10000) + 2000));
 
@@ -93,6 +98,7 @@ const WellnessLobby = () => {
           setSelectedCategory={setSelectedCategory} navigate={navigate}
           level={level} xpInLevel={xpInLevel} completedCount={completedCount}
           signOut={signOut} dailySteps={dailySteps}
+          tipsMode={tipsMode} setTipsMode={setTipsMode}
         />;
       case "programs":
         return <ProgramsTab programs={programs} categories={categories}
@@ -103,6 +109,8 @@ const WellnessLobby = () => {
           points={points} completedCount={completedCount} />;
       case "steps":
         return <StepsTab dailySteps={dailySteps} weeklySteps={weeklySteps} points={points} />;
+      case "more":
+        return <MoreTab />;
     }
   };
 
@@ -117,8 +125,9 @@ const WellnessLobby = () => {
         <div className="flex items-center justify-around py-3 max-w-md mx-auto">
           <NavItem icon={<Activity className="w-5 h-5" />} label="Home" active={activeTab === "home"} onClick={() => setActiveTab("home")} />
           <NavItem icon={<Play className="w-5 h-5" />} label="Programs" active={activeTab === "programs"} onClick={() => setActiveTab("programs")} />
-          <NavItem icon={<Trophy className="w-5 h-5" />} label="Progress" active={activeTab === "progress"} onClick={() => setActiveTab("progress")} />
           <NavItem icon={<Footprints className="w-5 h-5" />} label="Steps" active={activeTab === "steps"} onClick={() => setActiveTab("steps")} />
+          <NavItem icon={<Trophy className="w-5 h-5" />} label="Progress" active={activeTab === "progress"} onClick={() => setActiveTab("progress")} />
+          <NavItem icon={<Calendar className="w-5 h-5" />} label="More" active={activeTab === "more"} onClick={() => setActiveTab("more")} />
         </div>
       </div>
     </div>
@@ -126,7 +135,7 @@ const WellnessLobby = () => {
 };
 
 // HOME TAB
-const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps }: any) => (
+const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps, tipsMode, setTipsMode }: any) => (
   <>
     <div className="px-5 pt-6 pb-4">
       <div className="flex items-center justify-between mb-6">
@@ -164,9 +173,31 @@ const HomeTab = ({ firstName, points, programs, quickResets, performancePrograms
       </div>
     </div>
 
-    {/* Wellness Tip */}
+    {/* Tips / Quotes Toggle */}
     <div className="px-5 mb-4">
-      <WellnessTips />
+      <div className="flex items-center gap-2 mb-2">
+        <button
+          onClick={() => setTipsMode("tips")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            tipsMode === "tips" ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          <Lightbulb className="w-3 h-3" /> Posture Tips
+        </button>
+        <button
+          onClick={() => setTipsMode("quotes")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            tipsMode === "quotes" ? "gradient-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          <Quote className="w-3 h-3" /> Inspiration
+        </button>
+      </div>
+      <AnimatePresence mode="wait">
+        <motion.div key={tipsMode} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
+          {tipsMode === "tips" ? <WellnessTips /> : <WellnessQuotes />}
+        </motion.div>
+      </AnimatePresence>
     </div>
 
     {/* Daily Suggestion */}
@@ -346,6 +377,23 @@ const StepsTab = ({ dailySteps, weeklySteps, points }: any) => (
     </div>
   </div>
 );
+
+// MORE TAB (Calendar & Settings)
+const MoreTab = () => {
+  const { signOut } = useAuth();
+  return (
+    <div className="pt-6 px-5">
+      <h1 className="font-display text-2xl font-bold text-foreground mb-4">Calendar & Reminders</h1>
+      <CalendarSync />
+      <div className="mt-6">
+        <button onClick={signOut} className="w-full glass rounded-xl p-4 flex items-center gap-3 text-destructive">
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium text-sm">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: number | string; label: string }) => (
   <div className="flex items-center gap-2">

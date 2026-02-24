@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 import {
   Activity, Flame, Trophy, Zap, ChevronRight, Play, LogOut,
   TrendingUp, Star, Footprints, Wind, Calendar, Lightbulb, Quote,
@@ -340,43 +341,114 @@ const ProgressTab = ({ progressHistory, programs, points, completedCount }: any)
 );
 
 // STEPS TAB
-const StepsTab = ({ dailySteps, weeklySteps, points }: any) => (
-  <div className="pt-6 px-5">
-    <h1 className="font-display text-2xl font-bold text-foreground mb-2">Step Tracking</h1>
-    <p className="text-muted-foreground text-sm mb-4">Connect your wearable for real data</p>
+const StepsTab = ({ dailySteps, weeklySteps, points }: any) => {
+  const [showWearableModal, setShowWearableModal] = useState(false);
 
-    <StepTracker dailySteps={dailySteps} dailyGoal={10000} weeklySteps={weeklySteps} />
+  const WEARABLES = [
+    { name: "Apple Health", emoji: "🍎", desc: "Sync via HealthKit (iOS)" },
+    { name: "Garmin Connect", emoji: "⌚", desc: "Sync Garmin watch data" },
+    { name: "Fitbit", emoji: "💚", desc: "Sync Fitbit activity" },
+    { name: "Samsung Health", emoji: "📱", desc: "Sync Galaxy Watch data" },
+    { name: "Google Fit", emoji: "🏃", desc: "Sync Android health data" },
+  ];
 
-    <div className="mt-4 glass rounded-xl p-4">
-      <h3 className="font-display font-semibold text-foreground text-sm mb-2">🏅 Step Rewards</h3>
-      <div className="space-y-2">
-        {[
-          { steps: 5000, emoji: "🥉", label: "Bronze Walker", pts: "+10 XP" },
-          { steps: 7500, emoji: "🥈", label: "Silver Strider", pts: "+20 XP" },
-          { steps: 10000, emoji: "🥇", label: "Gold Mover", pts: "+30 XP" },
-          { steps: 15000, emoji: "💎", label: "Diamond Athlete", pts: "+50 XP" },
-        ].map((m) => (
-          <div key={m.steps} className={`flex items-center gap-3 p-2 rounded-lg ${dailySteps >= m.steps ? "bg-primary/10" : "bg-secondary/50"}`}>
-            <span className="text-lg">{m.emoji}</span>
-            <div className="flex-1">
-              <p className={`text-sm font-medium ${dailySteps >= m.steps ? "text-primary" : "text-muted-foreground"}`}>{m.label}</p>
-              <p className="text-xs text-muted-foreground">{m.steps.toLocaleString()} steps</p>
+  const handleConnect = (name: string) => {
+    toast({
+      title: `${name} selected`,
+      description: "Wearable sync requires the native app. Export to GitHub and build with Capacitor to enable.",
+    });
+    setShowWearableModal(false);
+  };
+
+  return (
+    <div className="pt-6 px-5">
+      <h1 className="font-display text-2xl font-bold text-foreground mb-2">Step Tracking</h1>
+      <p className="text-muted-foreground text-sm mb-4">Connect your wearable for real data</p>
+
+      <StepTracker dailySteps={dailySteps} dailyGoal={10000} weeklySteps={weeklySteps} />
+
+      <div className="mt-4 glass rounded-xl p-4">
+        <h3 className="font-display font-semibold text-foreground text-sm mb-2">🏅 Step Rewards</h3>
+        <div className="space-y-2">
+          {[
+            { steps: 5000, emoji: "🥉", label: "Bronze Walker", pts: "+10 XP" },
+            { steps: 7500, emoji: "🥈", label: "Silver Strider", pts: "+20 XP" },
+            { steps: 10000, emoji: "🥇", label: "Gold Mover", pts: "+30 XP" },
+            { steps: 15000, emoji: "💎", label: "Diamond Athlete", pts: "+50 XP" },
+          ].map((m) => (
+            <div key={m.steps} className={`flex items-center gap-3 p-2 rounded-lg ${dailySteps >= m.steps ? "bg-primary/10" : "bg-secondary/50"}`}>
+              <span className="text-lg">{m.emoji}</span>
+              <div className="flex-1">
+                <p className={`text-sm font-medium ${dailySteps >= m.steps ? "text-primary" : "text-muted-foreground"}`}>{m.label}</p>
+                <p className="text-xs text-muted-foreground">{m.steps.toLocaleString()} steps</p>
+              </div>
+              <span className={`text-xs font-mono ${dailySteps >= m.steps ? "text-wellness-gold" : "text-muted-foreground"}`}>{m.pts}</span>
             </div>
-            <span className={`text-xs font-mono ${dailySteps >= m.steps ? "text-wellness-gold" : "text-muted-foreground"}`}>{m.pts}</span>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
 
-    <div className="mt-4 glass rounded-xl p-4 text-center">
-      <p className="text-sm text-muted-foreground mb-2">Connect your device for real step data</p>
-      <button className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium">
-        <Footprints className="w-4 h-4 inline mr-1" /> Connect Wearable
-      </button>
-      <p className="text-[10px] text-muted-foreground mt-2">Apple Health · Garmin · Fitbit · Samsung Health</p>
+      <div className="mt-4 glass rounded-xl p-4 text-center">
+        <p className="text-sm text-muted-foreground mb-2">Connect your device for real step data</p>
+        <button
+          onClick={() => setShowWearableModal(true)}
+          className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium active:scale-95 transition-transform"
+        >
+          <Footprints className="w-4 h-4 inline mr-1" /> Connect Wearable
+        </button>
+        <p className="text-[10px] text-muted-foreground mt-2">Apple Health · Garmin · Fitbit · Samsung Health</p>
+      </div>
+
+      {/* Wearable Selection Modal */}
+      <AnimatePresence>
+        {showWearableModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end justify-center"
+            onClick={() => setShowWearableModal(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-md glass-strong rounded-t-2xl p-5 safe-bottom"
+            >
+              <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
+              <h3 className="font-display text-lg font-bold text-foreground mb-1">Connect Wearable</h3>
+              <p className="text-xs text-muted-foreground mb-4">Choose your device to sync step data</p>
+              <div className="space-y-2">
+                {WEARABLES.map(w => (
+                  <button
+                    key={w.name}
+                    onClick={() => handleConnect(w.name)}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary/80 transition-all active:scale-[0.98]"
+                  >
+                    <span className="text-2xl">{w.emoji}</span>
+                    <div className="text-left flex-1">
+                      <p className="text-sm font-medium text-foreground">{w.name}</p>
+                      <p className="text-xs text-muted-foreground">{w.desc}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowWearableModal(false)}
+                className="w-full mt-4 py-3 rounded-xl bg-secondary text-muted-foreground text-sm font-medium"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  </div>
-);
+  );
+};
 
 // MORE TAB (Calendar & Settings)
 const MoreTab = () => {

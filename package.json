@@ -17,6 +17,7 @@
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@capacitor/ios": "^8.1.0",
+    "@capgo/capacitor-health": "^8.2.16",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.10",
     "@hookform/resolvers": "^3.10.0",

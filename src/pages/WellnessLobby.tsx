@@ -12,6 +12,7 @@ import WellnessTips from "@/components/WellnessTips";
 import WellnessQuotes from "@/components/WellnessQuotes";
 import StepTracker from "@/components/StepTracker";
 import CalendarSync from "@/components/CalendarSync";
+import { useHealthData } from "@/hooks/useHealthData";
 
 interface WellyPointsData {
   total_points: number;
@@ -58,8 +59,7 @@ const WellnessLobby = () => {
   const [completedCount, setCompletedCount] = useState(0);
   const [tipsMode, setTipsMode] = useState<"tips" | "quotes">("tips");
 
-  const [dailySteps] = useState(() => Math.floor(Math.random() * 8000) + 3000);
-  const [weeklySteps] = useState(() => Array.from({ length: 7 }, () => Math.floor(Math.random() * 10000) + 2000));
+  const health = useHealthData();
 
   useEffect(() => {
     if (!user) return;
@@ -98,7 +98,7 @@ const WellnessLobby = () => {
           categories={categories} selectedCategory={selectedCategory}
           setSelectedCategory={setSelectedCategory} navigate={navigate}
           level={level} xpInLevel={xpInLevel} completedCount={completedCount}
-          signOut={signOut} dailySteps={dailySteps}
+          signOut={signOut} dailySteps={health.dailySteps}
           tipsMode={tipsMode} setTipsMode={setTipsMode}
         />;
       case "programs":
@@ -109,7 +109,8 @@ const WellnessLobby = () => {
         return <ProgressTab progressHistory={progressHistory} programs={programs}
           points={points} completedCount={completedCount} />;
       case "steps":
-        return <StepsTab dailySteps={dailySteps} weeklySteps={weeklySteps} points={points} />;
+        return <StepsTab dailySteps={health.dailySteps} weeklySteps={health.weeklySteps} points={points}
+          health={health} />;
       case "more":
         return <MoreTab />;
     }
@@ -341,29 +342,60 @@ const ProgressTab = ({ progressHistory, programs, points, completedCount }: any)
 );
 
 // STEPS TAB
-const StepsTab = ({ dailySteps, weeklySteps, points }: any) => {
+const StepsTab = ({ dailySteps, weeklySteps, points, health }: any) => {
   const [showWearableModal, setShowWearableModal] = useState(false);
 
   const WEARABLES = [
-    { name: "Apple Health", emoji: "🍎", desc: "Sync via HealthKit (iOS)" },
-    { name: "Garmin Connect", emoji: "⌚", desc: "Sync Garmin watch data" },
-    { name: "Fitbit", emoji: "💚", desc: "Sync Fitbit activity" },
-    { name: "Samsung Health", emoji: "📱", desc: "Sync Galaxy Watch data" },
-    { name: "Google Fit", emoji: "🏃", desc: "Sync Android health data" },
+    { name: "Apple Health", emoji: "🍎", desc: "Sync via HealthKit (iOS)", native: true },
+    { name: "Google Fit", emoji: "🏃", desc: "Sync via Health Connect (Android)", native: true },
+    { name: "Garmin Connect", emoji: "⌚", desc: "Syncs through Apple Health / Health Connect", native: false },
+    { name: "Fitbit", emoji: "💚", desc: "Syncs through Apple Health / Health Connect", native: false },
+    { name: "Samsung Health", emoji: "📱", desc: "Syncs through Health Connect", native: false },
   ];
 
-  const handleConnect = (name: string) => {
-    toast({
-      title: `${name} selected`,
-      description: "Wearable sync requires the native app. Export to GitHub and build with Capacitor to enable.",
-    });
+  const handleConnect = async (wearable: typeof WEARABLES[0]) => {
+    if (health.isNative) {
+      // On native: actually connect via HealthKit/Health Connect
+      const success = await health.connect();
+      if (success) {
+        toast({ title: "Connected! 🎉", description: `Now syncing health data from ${wearable.name}.` });
+      } else {
+        toast({ title: "Connection failed", description: "Please enable health permissions in your device settings.", variant: "destructive" });
+      }
+    } else {
+      // On web: explain native requirement
+      toast({
+        title: `${wearable.name}`,
+        description: "Wearable sync requires the native app. Build with Capacitor for iOS/Android to enable real health data.",
+      });
+    }
     setShowWearableModal(false);
   };
 
   return (
     <div className="pt-6 px-5">
       <h1 className="font-display text-2xl font-bold text-foreground mb-2">Step Tracking</h1>
-      <p className="text-muted-foreground text-sm mb-4">Connect your wearable for real data</p>
+      <p className="text-muted-foreground text-sm mb-4">
+        {health.isConnected ? "✅ Syncing live health data" : health.isNative ? "Connect your wearable below" : "Showing simulated data (connect wearable in native app)"}
+      </p>
+
+      {/* Extra health metrics when connected */}
+      {health.isConnected && (health.heartRate || health.calories > 0) && (
+        <div className="glass rounded-xl p-4 mb-4 flex items-center justify-around">
+          {health.heartRate && (
+            <div className="text-center">
+              <p className="font-display text-xl font-bold text-wellness-coral">{health.heartRate}</p>
+              <p className="text-[10px] text-muted-foreground">❤️ BPM</p>
+            </div>
+          )}
+          {health.calories > 0 && (
+            <div className="text-center">
+              <p className="font-display text-xl font-bold text-wellness-gold">{health.calories}</p>
+              <p className="text-[10px] text-muted-foreground">🔥 kcal</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <StepTracker dailySteps={dailySteps} dailyGoal={10000} weeklySteps={weeklySteps} />
 
@@ -389,14 +421,28 @@ const StepsTab = ({ dailySteps, weeklySteps, points }: any) => {
       </div>
 
       <div className="mt-4 glass rounded-xl p-4 text-center">
-        <p className="text-sm text-muted-foreground mb-2">Connect your device for real step data</p>
-        <button
-          onClick={() => setShowWearableModal(true)}
-          className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium active:scale-95 transition-transform"
-        >
-          <Footprints className="w-4 h-4 inline mr-1" /> Connect Wearable
-        </button>
-        <p className="text-[10px] text-muted-foreground mt-2">Apple Health · Garmin · Fitbit · Samsung Health</p>
+        {health.isConnected ? (
+          <>
+            <p className="text-sm text-foreground mb-2">✅ Wearable connected</p>
+            <button
+              onClick={() => health.refresh()}
+              className="px-4 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium active:scale-95 transition-transform"
+            >
+              🔄 Refresh Data
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground mb-2">Connect your device for real step data</p>
+            <button
+              onClick={() => setShowWearableModal(true)}
+              className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium active:scale-95 transition-transform"
+            >
+              <Footprints className="w-4 h-4 inline mr-1" /> Connect Wearable
+            </button>
+            <p className="text-[10px] text-muted-foreground mt-2">Apple Health · Garmin · Fitbit · Samsung Health</p>
+          </>
+        )}
       </div>
 
       {/* Wearable Selection Modal */}
@@ -419,12 +465,16 @@ const StepsTab = ({ dailySteps, weeklySteps, points }: any) => {
             >
               <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
               <h3 className="font-display text-lg font-bold text-foreground mb-1">Connect Wearable</h3>
-              <p className="text-xs text-muted-foreground mb-4">Choose your device to sync step data</p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {health.isNative
+                  ? "Select your health data source"
+                  : "Choose your device — real sync available in the native app"}
+              </p>
               <div className="space-y-2">
                 {WEARABLES.map(w => (
                   <button
                     key={w.name}
-                    onClick={() => handleConnect(w.name)}
+                    onClick={() => handleConnect(w)}
                     className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary/80 transition-all active:scale-[0.98]"
                   >
                     <span className="text-2xl">{w.emoji}</span>

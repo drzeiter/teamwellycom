@@ -5,8 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import wellnessHero from "@/assets/wellness-hero.jpg";
-import { Activity, Mail, Lock, User, ArrowRight } from "lucide-react";
+import logoWhite from "@/assets/logo-white.png";
+import { Mail, Lock, User, ArrowRight } from "lucide-react";
 
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -41,10 +41,10 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* Background */}
+      {/* Gradient background */}
       <div className="absolute inset-0">
-        <img src={wellnessHero} alt="" className="w-full h-full object-cover opacity-30" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/5" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl" />
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col justify-between px-6 py-12 max-w-md mx-auto w-full">
@@ -52,12 +52,10 @@ const AuthPage = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3 justify-center"
+          className="flex flex-col items-center gap-4"
         >
-          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-            <Activity className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold text-foreground">TeamWelly</span>
+          <img src={logoWhite} alt="Team Welly" className="h-16 w-auto" />
+          <p className="text-muted-foreground text-sm">Custom Wellness</p>
         </motion.div>
 
         {/* Form */}

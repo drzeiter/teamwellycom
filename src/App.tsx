@@ -10,11 +10,21 @@ import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import WellnessLobby from "./pages/WellnessLobby";
 import ExercisePlayer from "./pages/ExercisePlayer";
+import ProgramOverview from "./pages/ProgramOverview";
+import ExerciseDetail from "./pages/ExerciseDetail";
 import HRDashboard from "./pages/HRDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import logoSubmark from "@/assets/logo-submark.png";
 
 const queryClient = new QueryClient();
+
+const LoadingScreen = () => (
+  <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+    <img src={logoSubmark} alt="Team Welly" className="w-16 h-16 animate-pulse" />
+    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -37,17 +47,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       });
   }, [user]);
 
-  if (loading || checkingOnboarding) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
+  if (loading || checkingOnboarding) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
   if (!onboardingCompleted) return <Navigate to="/onboarding" replace />;
-
   return <>{children}</>;
 };
 
@@ -72,13 +74,7 @@ const OnboardingRoute = ({ children }: { children: React.ReactNode }) => {
       });
   }, [user]);
 
-  if (loading || checkingOnboarding) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading || checkingOnboarding) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
   if (onboardingCompleted) return <Navigate to="/" replace />;
   return <>{children}</>;
@@ -93,30 +89,11 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
-            <Route
-              path="/onboarding"
-              element={
-                <OnboardingRoute>
-                  <OnboardingPage />
-                </OnboardingRoute>
-              }
-            />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <WellnessLobby />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/player/:programId"
-              element={
-                <ProtectedRoute>
-                  <ExercisePlayer />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/onboarding" element={<OnboardingRoute><OnboardingPage /></OnboardingRoute>} />
+            <Route path="/" element={<ProtectedRoute><WellnessLobby /></ProtectedRoute>} />
+            <Route path="/program/:programId" element={<ProtectedRoute><ProgramOverview /></ProtectedRoute>} />
+            <Route path="/player/:programId" element={<ProtectedRoute><ExercisePlayer /></ProtectedRoute>} />
+            <Route path="/exercise/:exerciseId" element={<ProtectedRoute><ExerciseDetail /></ProtectedRoute>} />
             <Route path="/hr" element={<HRDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />

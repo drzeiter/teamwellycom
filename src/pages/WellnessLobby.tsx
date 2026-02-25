@@ -176,7 +176,7 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
     <div className="px-5 mb-4">
       <div className="flex items-center gap-2 mb-2">
         <button onClick={() => setTipsMode("tips")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${tipsMode === "tips" ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
-          <Lightbulb className="w-3 h-3" /> Posture Tips
+          <Lightbulb className="w-3 h-3" /> Science & Tips
         </button>
         <button onClick={() => setTipsMode("quotes")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${tipsMode === "quotes" ? "gradient-accent text-accent-foreground" : "bg-secondary text-muted-foreground"}`}>
           <Quote className="w-3 h-3" /> Inspiration

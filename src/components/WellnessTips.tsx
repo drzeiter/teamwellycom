@@ -1,66 +1,108 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lightbulb, Heart, Brain, Flame } from "lucide-react";
+import {
+  Wind, Brain, Flame, Lightbulb, Heart, Sparkles, Activity,
+  BarChart3, BookOpen, Zap, Target,
+} from "lucide-react";
+import {
+  getSessionTips, CATEGORY_META, ALL_TIPS,
+  type TipCategory, type WellnessTip,
+} from "@/data/wellnessContent";
 
-const TIPS = [
-  { icon: <Lightbulb className="w-4 h-4" />, category: "Posture", text: "Every 30 minutes, stand up and do a 30-second shoulder roll. Your spine will thank you.", color: "text-wellness-gold" },
-  { icon: <Heart className="w-4 h-4" />, category: "Health", text: "Drinking water before meals helps digestion and can reduce calorie intake by 13%.", color: "text-wellness-coral" },
-  { icon: <Brain className="w-4 h-4" />, category: "Mindset", text: "\"The body achieves what the mind believes.\" — Napoleon Hill", color: "text-primary" },
-  { icon: <Lightbulb className="w-4 h-4" />, category: "Posture", text: "Keep your screen at eye level. Looking down at your phone creates 60 lbs of pressure on your neck.", color: "text-wellness-gold" },
-  { icon: <Heart className="w-4 h-4" />, category: "Health", text: "Just 5 minutes of stretching a day can improve flexibility by 30% in 4 weeks.", color: "text-wellness-coral" },
-  { icon: <Brain className="w-4 h-4" />, category: "Mindset", text: "\"Take care of your body. It's the only place you have to live.\" — Jim Rohn", color: "text-primary" },
-  { icon: <Flame className="w-4 h-4" />, category: "Move", text: "Sitting for more than 8 hours a day increases health risks. Break it up with micro-movements.", color: "text-wellness-purple" },
-  { icon: <Heart className="w-4 h-4" />, category: "Health", text: "Deep breathing for 2 minutes can lower cortisol levels by 23%.", color: "text-wellness-coral" },
-  { icon: <Lightbulb className="w-4 h-4" />, category: "Posture", text: "The ideal sitting posture: feet flat, knees at 90°, back supported, shoulders relaxed.", color: "text-wellness-gold" },
-  { icon: <Brain className="w-4 h-4" />, category: "Mindset", text: "\"Movement is a medicine for creating change in a person's physical, emotional, and mental states.\" — Carol Welch", color: "text-primary" },
-  { icon: <Flame className="w-4 h-4" />, category: "Move", text: "Walking 10,000 steps daily reduces risk of cardiovascular disease by 35%.", color: "text-wellness-purple" },
-  { icon: <Heart className="w-4 h-4" />, category: "Health", text: "Your hip flexors shorten when you sit. A 60-second hip stretch every hour makes a big difference.", color: "text-wellness-coral" },
+const ICON_MAP: Record<string, React.ElementType> = {
+  Wind, Brain, Flame, Lightbulb, Heart, Sparkles, Activity, BarChart3, BookOpen, Zap, Target,
+};
+
+const FILTER_CATEGORIES: (TipCategory | "all")[] = [
+  "all", "breath", "nervous", "performance", "desk", "action", "hrv", "education", "premium", "mindset", "integration",
 ];
 
 const WellnessTips = () => {
-  const [tipIndex, setTipIndex] = useState(() => {
-    const day = new Date().getDate();
-    return day % TIPS.length;
-  });
+  const [filter, setFilter] = useState<TipCategory | "all">("all");
+  const [tipIndex, setTipIndex] = useState(0);
 
-  // Rotate every 15 seconds
+  const tips = useMemo(
+    () => getSessionTips(12, filter === "all" ? undefined : filter),
+    [filter]
+  );
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setTipIndex(prev => (prev + 1) % TIPS.length);
-    }, 15000);
+      setTipIndex(prev => (prev + 1) % tips.length);
+    }, 12000);
     return () => clearInterval(interval);
-  }, []);
+  }, [tips.length]);
 
-  const tip = TIPS[tipIndex];
+  useEffect(() => setTipIndex(0), [filter]);
+
+  const tip = tips[tipIndex];
+  if (!tip) return null;
+
+  const meta = CATEGORY_META[tip.category];
+  const IconComp = ICON_MAP[meta.iconName] || Sparkles;
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={tipIndex}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        transition={{ duration: 0.3 }}
-        className="glass rounded-xl p-4"
-      >
-        <div className="flex items-start gap-3">
-          <div className={`mt-0.5 ${tip.color}`}>{tip.icon}</div>
-          <div className="flex-1">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{tip.category}</p>
-            <p className="text-sm text-foreground leading-relaxed">{tip.text}</p>
-          </div>
-        </div>
-        <div className="flex justify-center gap-1 mt-3">
-          {TIPS.map((_, i) => (
+    <div>
+      {/* Category pills */}
+      <div className="flex gap-1.5 overflow-x-auto pb-2 no-scrollbar mb-2">
+        {FILTER_CATEGORIES.map(cat => {
+          const active = filter === cat;
+          const label = cat === "all" ? "All" : CATEGORY_META[cat].label;
+          return (
             <button
-              key={i}
-              onClick={() => setTipIndex(i)}
-              className={`w-1.5 h-1.5 rounded-full transition-all ${i === tipIndex ? "bg-primary w-4" : "bg-muted-foreground/30"}`}
-            />
-          ))}
-        </div>
-      </motion.div>
-    </AnimatePresence>
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={`px-2.5 py-1 rounded-full text-[10px] font-medium whitespace-nowrap transition-all ${
+                active
+                  ? "gradient-primary text-primary-foreground"
+                  : "bg-secondary text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tip card */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tip.id}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.25 }}
+          className={`glass rounded-xl p-4 ${tip.isAction ? "border-primary/30" : ""}`}
+        >
+          <div className="flex items-start gap-3">
+            <div className={`mt-0.5 ${meta.color}`}>
+              <IconComp className="w-4 h-4" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                {tip.isAction ? "⚡ Do This Now" : meta.label}
+              </p>
+              <p className={`text-sm leading-relaxed ${tip.isAction ? "text-primary font-medium" : "text-foreground"}`}>
+                {tip.text}
+              </p>
+            </div>
+          </div>
+
+          {/* Dots */}
+          <div className="flex justify-center gap-1 mt-3">
+            {tips.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setTipIndex(i)}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  i === tipIndex ? "bg-primary w-4" : "bg-muted-foreground/30"
+                }`}
+              />
+            ))}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 };
 

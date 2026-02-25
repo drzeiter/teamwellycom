@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      canonical_exercises: {
+        Row: {
+          category: string
+          common_mistakes: Json | null
+          created_at: string
+          cues: Json | null
+          description: string | null
+          id: string
+          is_bilateral: boolean | null
+          media_spec: Json | null
+          name: string
+          progressions: string | null
+          regressions: string | null
+          tags: string[] | null
+        }
+        Insert: {
+          category?: string
+          common_mistakes?: Json | null
+          created_at?: string
+          cues?: Json | null
+          description?: string | null
+          id?: string
+          is_bilateral?: boolean | null
+          media_spec?: Json | null
+          name: string
+          progressions?: string | null
+          regressions?: string | null
+          tags?: string[] | null
+        }
+        Update: {
+          category?: string
+          common_mistakes?: Json | null
+          created_at?: string
+          cues?: Json | null
+          description?: string | null
+          id?: string
+          is_bilateral?: boolean | null
+          media_spec?: Json | null
+          name?: string
+          progressions?: string | null
+          regressions?: string | null
+          tags?: string[] | null
+        }
+        Relationships: []
+      }
       exercises: {
         Row: {
           created_at: string
@@ -51,6 +96,60 @@ export type Database = {
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_exercises: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          frequency: string | null
+          hold_duration: string | null
+          id: string
+          module_id: string
+          notes: string | null
+          reps: string | null
+          sequence_label: string
+          sets: string | null
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          frequency?: string | null
+          hold_duration?: string | null
+          id?: string
+          module_id: string
+          notes?: string | null
+          reps?: string | null
+          sequence_label?: string
+          sets?: string | null
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          frequency?: string | null
+          hold_duration?: string | null
+          id?: string
+          module_id?: string
+          notes?: string | null
+          reps?: string | null
+          sequence_label?: string
+          sets?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_exercises_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_modules"
             referencedColumns: ["id"]
           },
         ]
@@ -123,10 +222,13 @@ export type Database = {
           description: string | null
           difficulty: string
           duration_minutes: number
+          duration_weeks: number | null
+          equipment_needed: string[] | null
           exercise_count: number
           icon: string | null
           id: string
           name: string
+          region: string | null
           sort_order: number | null
           target_area: string
         }
@@ -137,10 +239,13 @@ export type Database = {
           description?: string | null
           difficulty?: string
           duration_minutes: number
+          duration_weeks?: number | null
+          equipment_needed?: string[] | null
           exercise_count?: number
           icon?: string | null
           id?: string
           name: string
+          region?: string | null
           sort_order?: number | null
           target_area: string
         }
@@ -151,10 +256,13 @@ export type Database = {
           description?: string | null
           difficulty?: string
           duration_minutes?: number
+          duration_weeks?: number | null
+          equipment_needed?: string[] | null
           exercise_count?: number
           icon?: string | null
           id?: string
           name?: string
+          region?: string | null
           sort_order?: number | null
           target_area?: string
         }
@@ -228,6 +336,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      weekly_modules: {
+        Row: {
+          created_at: string
+          focus_text: string | null
+          id: string
+          program_id: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          focus_text?: string | null
+          id?: string
+          program_id: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          focus_text?: string | null
+          id?: string
+          program_id?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_modules_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       welly_points: {
         Row: {

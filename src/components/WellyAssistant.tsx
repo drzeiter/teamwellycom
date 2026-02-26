@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageCircle, X, Send, Bookmark, Phone, Sparkles } from "lucide-react";
+import { X, Send, Bookmark, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import logoSubmark from "@/assets/logo-submark.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
@@ -198,7 +199,7 @@ export default function WellyAssistant() {
         {messages.length === 0 && (
           <div className="text-center py-8 space-y-4">
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <Sparkles className="w-7 h-7 text-primary" />
+              <img src={logoSubmark} alt="Welly" className="w-8 h-8 object-contain" />
             </div>
             <div>
               <p className="font-semibold text-foreground">Hey! I'm Welly AI</p>
@@ -316,9 +317,9 @@ export default function WellyAssistant() {
   );
 
   const headerContent = (
-    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-        <Sparkles className="w-4 h-4 text-primary" />
+        <img src={logoSubmark} alt="Welly" className="w-5 h-5 object-contain" />
       </div>
       <span>Ask Welly AI</span>
     </div>
@@ -333,14 +334,14 @@ export default function WellyAssistant() {
           className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
           aria-label="Open Welly AI Assistant"
         >
-          <MessageCircle className="w-6 h-6" />
+          <img src={logoSubmark} alt="Welly" className="w-7 h-7 object-contain brightness-0 invert" />
         </button>
       )}
 
       {/* Desktop: Sheet / Mobile: Drawer */}
       {isMobile ? (
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="h-[85vh]">
+          <DrawerContent className="h-[80vh] max-h-[80vh]">
             <DrawerHeader className="pb-2">
               <DrawerTitle>{headerContent}</DrawerTitle>
             </DrawerHeader>

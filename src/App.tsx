@@ -15,6 +15,7 @@ import ExerciseDetail from "./pages/ExerciseDetail";
 import HRDashboard from "./pages/HRDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
+import WellyAssistant from "./components/WellyAssistant";
 import logoSubmark from "@/assets/logo-submark.png";
 
 const queryClient = new QueryClient();
@@ -98,6 +99,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <WellyAssistant />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

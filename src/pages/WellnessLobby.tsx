@@ -584,6 +584,25 @@ const MoreTab = () => {
         <h2 className="font-display text-base font-semibold text-foreground mb-3">📅 Calendar & Reminders</h2>
         <CalendarSync />
       </div>
+
+      {/* Book Coaching Call */}
+      <div className="mb-6">
+        <h2 className="font-display text-base font-semibold text-foreground mb-3">🤝 Need to Talk to a Professional?</h2>
+        <a
+          href="https://calendly.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full glass rounded-xl p-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98] block"
+        >
+          <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center text-lg shrink-0">📞</div>
+          <div className="flex-1">
+            <h4 className="font-display font-semibold text-foreground text-sm">Book a Coaching Call</h4>
+            <p className="text-xs text-muted-foreground">1-on-1 guidance from a wellness professional</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+        </a>
+      </div>
+
       <button onClick={signOut} className="w-full glass rounded-xl p-4 flex items-center gap-3 text-destructive">
         <LogOut className="w-5 h-5" />
         <span className="font-medium text-sm">Sign Out</span>

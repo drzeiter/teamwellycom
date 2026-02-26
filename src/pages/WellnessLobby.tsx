@@ -217,40 +217,31 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
       </AnimatePresence>
     </div>
 
-    {/* 12-Week Programs Section */}
-    {twelveWeekPrograms.length > 0 && (
+    {/* Quick Resets Grid */}
+    {quickResets.length > 0 && (
       <div className="px-5 mb-6">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="font-display text-base font-bold text-foreground">🎯 Pain → Performance</h2>
-            <p className="text-muted-foreground text-xs">12-week progressive programs</p>
+            <h2 className="font-display text-base font-bold text-foreground">⚡ Quick Resets</h2>
+            <p className="text-muted-foreground text-xs">Targeted relief in 5-10 minutes</p>
           </div>
+          <button onClick={() => setActiveTab("programs")} className="text-primary text-xs font-medium">View all →</button>
         </div>
-        <div className="space-y-2">
-          {twelveWeekPrograms.slice(0, 3).map((program: Program, i: number) => (
+        <div className="grid grid-cols-2 gap-2">
+          {quickResets.slice(0, 6).map((program: Program, i: number) => (
             <motion.button
               key={program.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              onClick={() => navigate(`/program/${program.id}`)}
-              className="w-full glass rounded-xl p-4 flex items-center gap-4 text-left hover:border-primary/30 transition-all active:scale-[0.98]"
+              transition={{ delay: i * 0.04 }}
+              onClick={() => navigate(`/player/${program.id}`)}
+              className="glass rounded-xl p-3 text-left hover:border-primary/30 transition-all active:scale-[0.98]"
             >
-              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-xl shrink-0">
-                {AREA_ICONS[program.target_area] || "🏋️"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-display font-semibold text-foreground text-sm truncate">{program.name}</h4>
-                <p className="text-muted-foreground text-xs">12 weeks · {program.target_area} · Progressive</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              <div className="text-xl mb-1">{AREA_ICONS[program.target_area] || "🏋️"}</div>
+              <h4 className="font-display font-semibold text-foreground text-xs leading-tight truncate">{program.name}</h4>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{program.duration_minutes} min</p>
             </motion.button>
           ))}
-          {twelveWeekPrograms.length > 3 && (
-            <button onClick={() => setActiveTab("programs")} className="w-full text-center text-primary text-xs font-medium py-2">
-              View all {twelveWeekPrograms.length} programs →
-            </button>
-          )}
         </div>
       </div>
     )}
@@ -294,31 +285,40 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
       </motion.div>
     </div>
 
-    {/* Quick Resets Grid */}
-    {quickResets.length > 0 && (
+    {/* 12-Week Programs Section */}
+    {twelveWeekPrograms.length > 0 && (
       <div className="px-5 mb-6">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="font-display text-base font-bold text-foreground">⚡ Quick Resets</h2>
-            <p className="text-muted-foreground text-xs">Targeted relief in 5-10 minutes</p>
+            <h2 className="font-display text-base font-bold text-foreground">🎯 Pain → Performance</h2>
+            <p className="text-muted-foreground text-xs">12-week progressive programs</p>
           </div>
-          <button onClick={() => setActiveTab("programs")} className="text-primary text-xs font-medium">View all →</button>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          {quickResets.slice(0, 6).map((program: Program, i: number) => (
+        <div className="space-y-2">
+          {twelveWeekPrograms.slice(0, 3).map((program: Program, i: number) => (
             <motion.button
               key={program.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              onClick={() => navigate(`/player/${program.id}`)}
-              className="glass rounded-xl p-3 text-left hover:border-primary/30 transition-all active:scale-[0.98]"
+              transition={{ delay: i * 0.05 }}
+              onClick={() => navigate(`/program/${program.id}`)}
+              className="w-full glass rounded-xl p-4 flex items-center gap-4 text-left hover:border-primary/30 transition-all active:scale-[0.98]"
             >
-              <div className="text-xl mb-1">{AREA_ICONS[program.target_area] || "🏋️"}</div>
-              <h4 className="font-display font-semibold text-foreground text-xs leading-tight truncate">{program.name}</h4>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{program.duration_minutes} min</p>
+              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-xl shrink-0">
+                {AREA_ICONS[program.target_area] || "🏋️"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-display font-semibold text-foreground text-sm truncate">{program.name}</h4>
+                <p className="text-muted-foreground text-xs">12 weeks · {program.target_area} · Progressive</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
             </motion.button>
           ))}
+          {twelveWeekPrograms.length > 3 && (
+            <button onClick={() => setActiveTab("programs")} className="w-full text-center text-primary text-xs font-medium py-2">
+              View all {twelveWeekPrograms.length} programs →
+            </button>
+          )}
         </div>
       </div>
     )}

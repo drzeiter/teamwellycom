@@ -11,9 +11,10 @@ interface ExerciseAvatarProps {
   className?: string;
   showMuscles?: boolean;
   showJointMarkers?: boolean;
+  onCueChange?: (cue: string | null) => void;
 }
 
-const ExerciseAvatar = ({ exerciseName, side, isPlaying, className = "", showMuscles, showJointMarkers }: ExerciseAvatarProps) => {
+const ExerciseAvatar = ({ exerciseName, side, isPlaying, className = "", showMuscles, showJointMarkers, onCueChange }: ExerciseAvatarProps) => {
   const n = exerciseName.toLowerCase();
   
   // Check if this is a breathwork / meditation exercise
@@ -46,6 +47,7 @@ const ExerciseAvatar = ({ exerciseName, side, isPlaying, className = "", showMus
         showMuscles={showMuscles ?? true}
         showJointMarkers={showJointMarkers ?? false}
         showBreathIndicator={true}
+        onCueChange={onCueChange}
       />
     );
   }

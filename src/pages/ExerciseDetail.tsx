@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Check, Target, Repeat, AlertTriangle, Tag, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ExerciseAvatar from "@/components/ExerciseAvatar";
+import logoWhite from "@/assets/logo-white.png";
 
 interface CanonicalExercise {
   id: string;
@@ -38,6 +39,11 @@ const ExerciseDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [currentCue, setCurrentCue] = useState<string | null>(null);
+
+  const handleCueChange = useCallback((cue: string | null) => {
+    setCurrentCue(cue);
+  }, []);
 
   const moduleExercise = location.state?.moduleExercise;
   const weekNumber = location.state?.weekNumber;
@@ -102,6 +108,7 @@ const ExerciseDetail = () => {
           <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
+          <img src={logoWhite} alt="Team Welly" className="h-6 w-auto" />
           <div className="flex-1 min-w-0">
             <h1 className="font-display text-base font-bold text-foreground truncate">{exercise.name}</h1>
             {weekNumber && <p className="text-xs text-muted-foreground">Week {weekNumber}</p>}
@@ -117,13 +124,14 @@ const ExerciseDetail = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="glass rounded-2xl p-6 flex flex-col items-center"
+          className="glass rounded-2xl p-6 flex flex-col items-center gap-4"
         >
           <ExerciseAvatar
             exerciseName={exercise.name}
             isPlaying={isPlaying}
             side={exercise.is_bilateral ? "left" : null}
-            className="w-48 h-48 mb-8"
+            className="w-48 h-48"
+            onCueChange={handleCueChange}
           />
           <button
             onClick={() => setIsPlaying(!isPlaying)}
@@ -134,6 +142,22 @@ const ExerciseDetail = () => {
             <Play className="w-4 h-4" />
             {isPlaying ? "Pause Demo" : "Play Demo"}
           </button>
+          {/* Cue text - visible below the button */}
+          <AnimatePresence mode="wait">
+            {currentCue && (
+              <motion.div
+                key={currentCue}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="w-full text-center"
+              >
+                <p className="text-xs font-medium text-primary bg-primary/10 rounded-lg px-4 py-2">
+                  {currentCue}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Description */}

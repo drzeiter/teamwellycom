@@ -12,6 +12,7 @@ import {
   ArrowLeft, Play, Pause, SkipForward,
   Trophy, Zap, ChevronLeft, ChevronRight, Check, Flame,
 } from "lucide-react";
+import logoWhite from "@/assets/logo-white.png";
 
 interface Exercise {
   id: string;
@@ -292,6 +293,7 @@ const ExercisePlayer = () => {
         <button onClick={() => navigate("/")} className="text-muted-foreground">
           <ArrowLeft className="w-5 h-5" />
         </button>
+        <img src={logoWhite} alt="Team Welly" className="h-5 w-auto" />
         <div className="flex-1">
           <p className="text-xs text-muted-foreground">{program.name}</p>
           <div className="h-1.5 bg-secondary rounded-full mt-1 overflow-hidden">

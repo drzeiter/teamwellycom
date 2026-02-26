@@ -14,7 +14,7 @@ import WellnessQuotes from "@/components/WellnessQuotes";
 import StepTracker from "@/components/StepTracker";
 import CalendarSync from "@/components/CalendarSync";
 import { useHealthData } from "@/hooks/useHealthData";
-import logoSubmark from "@/assets/logo-submark.png";
+import logoWhite from "@/assets/logo-white.png";
 
 interface WellyPointsData {
   total_points: number;
@@ -135,9 +135,9 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
     <div className="px-5 pt-6 pb-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <img src={logoSubmark} alt="Team Welly" className="w-9 h-9" />
+          <img src={logoWhite} alt="Team Welly" className="h-8 w-auto" />
           <div>
-            <p className="text-muted-foreground text-xs">Welcome back</p>
+            <p className="text-muted-foreground text-[10px] uppercase tracking-wider">Custom Wellness</p>
             <h1 className="font-display text-xl font-bold text-foreground">Hey, {firstName} 👋</h1>
           </div>
         </div>
@@ -306,7 +306,7 @@ const ProgramsTab = ({ programs, twelveWeekPrograms, categories, selectedCategor
   return (
     <div className="pt-6">
       <div className="px-5 mb-4 flex items-center gap-3">
-        <img src={logoSubmark} alt="" className="w-8 h-8" />
+        <img src={logoWhite} alt="" className="h-7 w-auto" />
         <div>
           <h1 className="font-display text-xl font-bold text-foreground">Programs</h1>
           <p className="text-muted-foreground text-xs">{programs.length + twelveWeekPrograms.length} programs available</p>
@@ -365,7 +365,7 @@ const ProgramsTab = ({ programs, twelveWeekPrograms, categories, selectedCategor
 const ProgressTab = ({ progressHistory, programs, points, completedCount }: any) => (
   <div className="pt-6 px-5">
     <div className="flex items-center gap-3 mb-4">
-      <img src={logoSubmark} alt="" className="w-8 h-8" />
+      <img src={logoWhite} alt="" className="h-7 w-auto" />
       <h1 className="font-display text-xl font-bold text-foreground">Your Progress</h1>
     </div>
     <div className="grid grid-cols-2 gap-3 mb-6">
@@ -448,7 +448,7 @@ const StepsTab = ({ dailySteps, weeklySteps, points, health }: any) => {
   return (
     <div className="pt-6 px-5">
       <div className="flex items-center gap-3 mb-4">
-        <img src={logoSubmark} alt="" className="w-8 h-8" />
+        <img src={logoWhite} alt="" className="h-7 w-auto" />
         <div>
           <h1 className="font-display text-xl font-bold text-foreground">Activity Tracking</h1>
           <p className="text-muted-foreground text-xs">
@@ -549,7 +549,7 @@ const MoreTab = () => {
   return (
     <div className="pt-6 px-5">
       <div className="flex items-center gap-3 mb-4">
-        <img src={logoSubmark} alt="" className="w-8 h-8" />
+        <img src={logoWhite} alt="" className="h-7 w-auto" />
         <h1 className="font-display text-xl font-bold text-foreground">Settings</h1>
       </div>
       <div className="mb-6">

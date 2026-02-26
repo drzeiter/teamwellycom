@@ -58,6 +58,8 @@ interface AnatomicalAvatarProps {
   showBreathIndicator?: boolean;
   side?: "left" | "right" | null;
   className?: string;
+  /** Expose current cue text for parent to render outside the avatar */
+  onCueChange?: (cue: string | null) => void;
 }
 
 const AnatomicalAvatar = ({
@@ -68,10 +70,16 @@ const AnatomicalAvatar = ({
   showBreathIndicator = true,
   side,
   className = "",
+  onCueChange,
 }: AnatomicalAvatarProps) => {
   const [phaseIdx, setPhaseIdx] = useState(0);
   const phases = spec.phases;
   const currentPhase = phases[phaseIdx] || phases[0];
+
+  // Notify parent of cue changes
+  useEffect(() => {
+    onCueChange?.(isPlaying && currentPhase.cue ? currentPhase.cue : null);
+  }, [isPlaying, currentPhase.cue, onCueChange]);
 
   // Phase cycling with correct tempo
   useEffect(() => {
@@ -306,20 +314,7 @@ const AnatomicalAvatar = ({
         )}
       </svg>
 
-      {/* ─── PHASE CUE TEXT ─── */}
-      {isPlaying && currentPhase.cue && (
-        <motion.div
-          key={phaseIdx}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          className="absolute -bottom-14 left-0 right-0 text-center"
-        >
-          <p className="text-[11px] font-medium text-muted-foreground leading-tight px-3 py-1 bg-background/80 rounded-lg mx-2 backdrop-blur-sm">
-            {currentPhase.cue}
-          </p>
-        </motion.div>
-      )}
+      {/* ─── PHASE CUE TEXT (rendered outside avatar, via prop callback) ─── */}
 
       {/* Breath phase indicator */}
       {isPlaying && showBreathIndicator && (

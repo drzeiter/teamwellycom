@@ -192,9 +192,9 @@ export default function WellyAssistant() {
   if (!user) return null;
 
   const chatContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-4 space-y-3">
         {messages.length === 0 && (
           <div className="text-center py-8 space-y-4">
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">

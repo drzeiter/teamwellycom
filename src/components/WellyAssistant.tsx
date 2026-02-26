@@ -295,7 +295,7 @@ export default function WellyAssistant() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !e.shiftKey && send(input)}
             placeholder="Describe what's bothering you..."
-            className="flex-1 rounded-full border border-input bg-background px-4 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="flex-1 rounded-full border border-input bg-background px-4 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             disabled={isLoading}
           />
           <Button

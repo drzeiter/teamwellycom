@@ -94,7 +94,7 @@ const AnatomicalAvatar = ({
     : currentPhase.easing === "easeOut" ? [0, 0, 0.2, 1] as [number, number, number, number]
     : [0.4, 0, 0.2, 1] as [number, number, number, number];
 
-  const transition = { duration: Math.min(dur, 3), ease: easing };
+  const transition = { duration: Math.min(dur, 4), ease: easing, type: "tween" as const };
 
   // Active muscles for this phase
   const activeMusclesToShow = useMemo(() => {
@@ -313,9 +313,9 @@ const AnatomicalAvatar = ({
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          className="absolute -bottom-8 left-0 right-0 text-center"
+          className="absolute -bottom-14 left-0 right-0 text-center"
         >
-          <p className="text-[10px] font-medium text-muted-foreground leading-tight px-2">
+          <p className="text-[11px] font-medium text-muted-foreground leading-tight px-3 py-1 bg-background/80 rounded-lg mx-2 backdrop-blur-sm">
             {currentPhase.cue}
           </p>
         </motion.div>

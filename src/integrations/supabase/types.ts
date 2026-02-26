@@ -16,13 +16,22 @@ export type Database = {
     Tables: {
       canonical_exercises: {
         Row: {
+          animation_asset_id: string | null
+          animation_spec: Json | null
+          animation_status: string | null
+          animation_version: number | null
+          archetype: string | null
+          biomechanical_confidence_score: number | null
           category: string
           common_mistakes: Json | null
           created_at: string
           cues: Json | null
           description: string | null
+          error_log: string | null
+          force_regen: boolean | null
           id: string
           is_bilateral: boolean | null
+          last_generated_at: string | null
           media_spec: Json | null
           name: string
           progressions: string | null
@@ -30,13 +39,22 @@ export type Database = {
           tags: string[] | null
         }
         Insert: {
+          animation_asset_id?: string | null
+          animation_spec?: Json | null
+          animation_status?: string | null
+          animation_version?: number | null
+          archetype?: string | null
+          biomechanical_confidence_score?: number | null
           category?: string
           common_mistakes?: Json | null
           created_at?: string
           cues?: Json | null
           description?: string | null
+          error_log?: string | null
+          force_regen?: boolean | null
           id?: string
           is_bilateral?: boolean | null
+          last_generated_at?: string | null
           media_spec?: Json | null
           name: string
           progressions?: string | null
@@ -44,13 +62,22 @@ export type Database = {
           tags?: string[] | null
         }
         Update: {
+          animation_asset_id?: string | null
+          animation_spec?: Json | null
+          animation_status?: string | null
+          animation_version?: number | null
+          archetype?: string | null
+          biomechanical_confidence_score?: number | null
           category?: string
           common_mistakes?: Json | null
           created_at?: string
           cues?: Json | null
           description?: string | null
+          error_log?: string | null
+          force_regen?: boolean | null
           id?: string
           is_bilateral?: boolean | null
+          last_generated_at?: string | null
           media_spec?: Json | null
           name?: string
           progressions?: string | null
@@ -58,6 +85,41 @@ export type Database = {
           tags?: string[] | null
         }
         Relationships: []
+      }
+      exercise_aliases: {
+        Row: {
+          alias_name: string
+          canonical_exercise_id: string
+          created_at: string
+          id: string
+          is_manual_override: boolean | null
+          normalized_name: string
+        }
+        Insert: {
+          alias_name: string
+          canonical_exercise_id: string
+          created_at?: string
+          id?: string
+          is_manual_override?: boolean | null
+          normalized_name: string
+        }
+        Update: {
+          alias_name?: string
+          canonical_exercise_id?: string
+          created_at?: string
+          id?: string
+          is_manual_override?: boolean | null
+          normalized_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_aliases_canonical_exercise_id_fkey"
+            columns: ["canonical_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "canonical_exercises"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exercises: {
         Row: {

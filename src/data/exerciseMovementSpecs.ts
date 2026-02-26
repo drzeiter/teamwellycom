@@ -2303,6 +2303,561 @@ export const EXERCISE_SPECS: ExerciseMovementSpec[] = [
       { name: "Stand", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Stand up" },
     ], form_checks: ["Glutes engaged", "Ribs stacked over pelvis"], highlight_muscles: ["gluteus_maximus", "rectus_abdominis"] },
 
+  // ═══════════════════════════════════════════════════════════════
+  // MISSING SPECS — PT-GRADE BIOMECHANICAL ACCURACY
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── PRESS UPS (side view, prone spinal extension) ─────
+  { exercise_id: "back_200", exercise_name: "Press Ups", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "prone", view_angle_default: "side", goal: "mobility", primary_outcome: "Lumbar extension, disc centralization", movement_type: "extension", primary_joints: ["lumbar_spine"], locked_segments: ["pelvis_on_floor"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [22, 44], hand_r: [22, 56], elbow_l: [22, 40], elbow_r: [22, 60] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Lie face down, hands under shoulders" },
+      { name: "Press Up", pose: poseFrom(NEUTRAL_PRONE, { skull: [10, 50], c_spine: [14, 50], t_spine: [22, 52], l_spine: [36, 52], sternum: [18, 50], shoulder_l: [16, 42], shoulder_r: [16, 58], elbow_l: [20, 38], elbow_r: [20, 62], wrist_l: [24, 36], wrist_r: [24, 64], hand_l: [26, 36], hand_r: [26, 64], pelvis: [50, 54], sacrum: [52, 54], hip_l: [52, 48], hip_r: [52, 56] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Press chest up — hips stay on floor", muscles: ["erector_spinae", "multifidus"] },
+      { name: "Hold Top", pose: poseFrom(NEUTRAL_PRONE, { skull: [10, 50], c_spine: [14, 50], t_spine: [22, 52], l_spine: [36, 52], pelvis: [50, 54] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — feel lumbar extension" },
+      { name: "Lower", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [22, 44], hand_r: [22, 56] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Lower slowly — control the descent" },
+    ], form_checks: ["Hips STAY on floor", "No shoulder shrug", "Extension from lumbar, not thoracic"], highlight_muscles: ["erector_spinae", "multifidus"] },
+
+  // ─── PRESS UPS W EXHALE ─────
+  { exercise_id: "back_201", exercise_name: "Press Ups w Exhale", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "prone", view_angle_default: "side", goal: "mobility", primary_outcome: "Lumbar extension with exhale to reduce tone", movement_type: "extension", primary_joints: ["lumbar_spine"], locked_segments: ["pelvis_on_floor"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [22, 44], hand_r: [22, 56] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Prone, hands under shoulders" },
+      { name: "Press Up", pose: poseFrom(NEUTRAL_PRONE, { skull: [10, 50], c_spine: [14, 50], t_spine: [22, 52], l_spine: [36, 52], pelvis: [50, 54], shoulder_l: [16, 42], shoulder_r: [16, 58], elbow_l: [20, 38], elbow_r: [20, 62] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Press up — inhale on the way up", muscles: ["erector_spinae"] },
+      { name: "Exhale at Top", pose: poseFrom(NEUTRAL_PRONE, { skull: [10, 50], t_spine: [22, 52], l_spine: [36, 52], pelvis: [50, 54], rib_l: [24, 46], rib_r: [24, 54] }), duration: 4, breath: "exhale", easing: "linear", cue: "EXHALE fully at top — reduce muscle tone", muscles: ["diaphragm", "erector_spinae"] },
+      { name: "Lower", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [22, 44], hand_r: [22, 56] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Lower with control" },
+    ], form_checks: ["Full exhale at top position", "Hips stay grounded"], highlight_muscles: ["erector_spinae", "diaphragm"] },
+
+  // ─── OPEN BOOK (side lying T-spine rotation) ─────
+  { exercise_id: "back_202", exercise_name: "Open Book", program_tag: "Low Back P2P", difficulty: 1, equipment: "none", position: "side_lying", view_angle_default: "front", goal: "mobility", primary_outcome: "Thoracic rotation, stacked pelvis", movement_type: "rotation", primary_joints: ["thoracic_spine"], locked_segments: ["pelvis_stacked", "lumbar_minimal"], planes: ["transverse"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], c_spine: [24, 44], t_spine: [34, 46], l_spine: [44, 48], pelvis: [50, 50], knee_l: [58, 40], knee_r: [58, 56], hand_l: [30, 36], hand_r: [30, 56], elbow_l: [28, 38], elbow_r: [28, 54] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Side lying, knees stacked, arms together" },
+      { name: "Open", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], t_spine: [34, 48], shoulder_r: [28, 68], elbow_r: [26, 72], wrist_r: [24, 76], hand_r: [22, 78], sternum: [30, 52], rib_l: [32, 42], rib_r: [32, 58], knee_l: [58, 40], knee_r: [58, 56], pelvis: [50, 50] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Open top arm — rotate through T-spine only", muscles: ["obliques", "rhomboids", "intercostals"] },
+      { name: "Hold Open", pose: poseFrom(NEUTRAL_SUPINE, { shoulder_r: [28, 70], elbow_r: [26, 74], hand_r: [22, 78], pelvis: [50, 50], knee_l: [58, 40], knee_r: [58, 56] }), duration: 3, breath: "hold", easing: "linear", cue: "Hold — breathe into open side, pelvis stays stacked" },
+      { name: "Close", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], hand_l: [30, 36], hand_r: [30, 56], pelvis: [50, 50], knee_l: [58, 40], knee_r: [58, 56] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Close slowly — pelvis doesn't move" },
+    ], form_checks: ["Pelvis stays STACKED — no rolling", "Rotation from T-spine, not lumbar", "Knees stay together"], highlight_muscles: ["obliques", "rhomboids", "intercostals"] },
+
+  // ─── KNEELING THORACIC HINGE ─────
+  { exercise_id: "back_203", exercise_name: "Kneeling Thoracic Hinge", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "kneeling", view_angle_default: "side", goal: "mobility", primary_outcome: "Thoracic extension from kneeling", movement_type: "hinge", primary_joints: ["thoracic_spine", "hip"], locked_segments: ["lumbar_neutral"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 68], knee_r: [56, 68], ankle_l: [44, 80], ankle_r: [56, 80], pelvis: [50, 56], l_spine: [50, 44], t_spine: [50, 32], c_spine: [50, 24], skull: [50, 18], hand_l: [46, 18], hand_r: [54, 18] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Tall kneel, hands behind head" },
+      { name: "Hinge Back", pose: poseFrom(NEUTRAL_STANDING, { skull: [56, 26], c_spine: [56, 32], t_spine: [54, 40], l_spine: [52, 48], pelvis: [50, 58], knee_l: [44, 70], knee_r: [56, 70], ankle_l: [44, 82], ankle_r: [56, 82], hand_l: [52, 22], hand_r: [58, 22], sternum: [54, 36], hip_l: [46, 56], hip_r: [54, 56] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Lean back from knees — spine stays long, ribs down", muscles: ["erector_spinae", "rectus_abdominis", "quadriceps"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { skull: [56, 26], t_spine: [54, 40], pelvis: [50, 58], knee_l: [44, 70], knee_r: [56, 70] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — feel thoracic opening, lumbar stays neutral" },
+      { name: "Return", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 68], knee_r: [56, 68], pelvis: [50, 56], skull: [50, 18], hand_l: [46, 18], hand_r: [54, 18] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Return to tall kneel with control" },
+    ], form_checks: ["Lumbar stays NEUTRAL — no excessive arch", "Hinge from knees, not lumbar", "Ribs stay down"], highlight_muscles: ["erector_spinae", "rectus_abdominis", "quadriceps"] },
+
+  // ─── TRI PLANAR CALF STRETCH ─────
+  { exercise_id: "fa_204", exercise_name: "Tri Planar Calf Stretch", program_tag: "Foot/Ankle", difficulty: 1, equipment: "wall", position: "standing", view_angle_default: "side", goal: "mobility", primary_outcome: "Calf stretch in sagittal, medial, and lateral planes", movement_type: "stretch_hold", primary_joints: ["ankle", "knee"], locked_segments: ["pelvis_square"], planes: ["sagittal", "frontal", "transverse"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 24], hand_r: [62, 24], knee_l: [42, 60], ankle_r: [64, 82], heel_r: [66, 84], forefoot_r: [68, 82], knee_r: [60, 72] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Lunge facing wall, back heel DOWN" },
+      { name: "Sagittal Stretch", pose: poseFrom(NEUTRAL_STANDING, { skull: [48, 16], t_spine: [48, 30], knee_l: [40, 58], ankle_l: [40, 76], ankle_r: [64, 82], heel_r: [66, 84], knee_r: [58, 72], pelvis: [50, 48] }), duration: 4, breath: "inhale", easing: [0.4, 0, 0.2, 1], cue: "Plane 1: Knee forward over 2nd toe — heel stays planted", muscles: ["gastrocnemius", "soleus"] },
+      { name: "Hold Sagittal", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [40, 58], ankle_r: [64, 82], heel_r: [66, 84] }), duration: 15, breath: "natural", easing: "linear", cue: "Hold 15 sec — breathe" },
+      { name: "Medial Bias", pose: poseFrom(NEUTRAL_STANDING, { skull: [46, 16], knee_l: [38, 58], ankle_r: [62, 82], heel_r: [64, 84], forefoot_r: [66, 80], pelvis: [48, 48] }), duration: 3, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Plane 2: Angle knee inward — medial calf bias", muscles: ["gastrocnemius", "soleus"] },
+      { name: "Hold Medial", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [38, 58], ankle_r: [62, 82] }), duration: 15, breath: "natural", easing: "linear", cue: "Hold 15 sec — feel medial calf stretch" },
+      { name: "Lateral Bias", pose: poseFrom(NEUTRAL_STANDING, { skull: [52, 16], knee_l: [44, 58], ankle_r: [66, 82], heel_r: [68, 84], forefoot_r: [70, 82], pelvis: [52, 48] }), duration: 3, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Plane 3: Angle knee outward — lateral calf bias", muscles: ["gastrocnemius", "soleus", "peroneals"] },
+      { name: "Hold Lateral", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 58], ankle_r: [66, 82] }), duration: 15, breath: "natural", easing: "linear", cue: "Hold 15 sec — feel lateral stretch" },
+      { name: "Release", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Step back — release" },
+    ], form_checks: ["Heel MUST stay on floor all 3 planes", "Knee tracks over toes, not inward", "Pelvis stays square"], highlight_muscles: ["gastrocnemius", "soleus", "peroneals"] },
+
+  // ─── SCIATIC NERVE FLOSS ─────
+  { exercise_id: "back_205", exercise_name: "Sciatic Nerve Floss", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "seated", view_angle_default: "side", goal: "mobility", primary_outcome: "Neural mobilization of sciatic nerve", movement_type: "nerve_glide", primary_joints: ["hip", "knee", "cervical_spine"], locked_segments: ["lumbar_neutral"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_SEATED, duration: 1, breath: "natural", easing: "easeInOut", cue: "Sit tall on chair edge" },
+      { name: "Extend & Look Up", pose: poseFrom(NEUTRAL_SEATED, { skull: [52, 12], c_spine: [52, 18], knee_r: [64, 56], ankle_r: [74, 58], forefoot_r: [76, 56] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Straighten leg + look up — gentle glide", muscles: ["hamstrings"] },
+      { name: "Flex & Look Down", pose: poseFrom(NEUTRAL_SEATED, { skull: [48, 16], c_spine: [48, 22], knee_r: [64, 64], ankle_r: [70, 74], forefoot_r: [72, 76] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Bend knee + look down — smooth glide" },
+      { name: "Return", pose: NEUTRAL_SEATED, duration: 2, breath: "natural", easing: "easeInOut", cue: "Return to neutral" },
+    ], form_checks: ["SMOOTH oscillation — no jerking", "Pain-free only", "Gentle neural glide, NOT aggressive stretch"], highlight_muscles: ["hamstrings"] },
+
+  // ─── LOW BACK CAT COW (isolated lumbar) ─────
+  { exercise_id: "back_206", exercise_name: "Low Back Cat Cow", program_tag: "Low Back P2P", difficulty: 1, equipment: "none", position: "quadruped", view_angle_default: "side", goal: "mobility", primary_outcome: "Isolated lumbar segmental motion", movement_type: "flexion_extension", primary_joints: ["lumbar_spine", "pelvis"], locked_segments: ["thoracic_spine", "cervical_spine"], planes: ["sagittal"],
+    phases: [
+      { name: "Neutral", pose: NEUTRAL_QUADRUPED, duration: 1, breath: "natural", easing: "easeInOut", cue: "All fours — lock T-spine and neck still" },
+      { name: "Lumbar Flex", pose: poseFrom(NEUTRAL_QUADRUPED, { l_spine: [46, 38], pelvis: [54, 40], sacrum: [56, 40] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Tuck pelvis ONLY — round low back only", muscles: ["rectus_abdominis", "multifidus"] },
+      { name: "Lumbar Ext", pose: poseFrom(NEUTRAL_QUADRUPED, { l_spine: [46, 48], pelvis: [54, 48], sacrum: [56, 48] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Tip pelvis forward — arch low back only", muscles: ["erector_spinae", "multifidus"] },
+      { name: "Return", pose: NEUTRAL_QUADRUPED, duration: 1, breath: "natural", easing: "easeInOut", cue: "Return to neutral" },
+    ], form_checks: ["ONLY lumbar moves — T-spine and head stay still", "Pelvis initiates all motion"], highlight_muscles: ["multifidus", "erector_spinae"] },
+
+  // ─── WINDSHIELD WIPER ─────
+  { exercise_id: "back_207", exercise_name: "Windshield Wiper", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "supine", view_angle_default: "front", goal: "mobility", primary_outcome: "Hip rotation with controlled trunk", movement_type: "rotation", primary_joints: ["hip"], locked_segments: ["shoulders_flat"], planes: ["transverse"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 38], knee_r: [56, 62], ankle_l: [68, 38], ankle_r: [68, 62] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Supine, knees bent, arms out" },
+      { name: "Drop Left", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 34], knee_r: [56, 46], ankle_l: [68, 32], ankle_r: [68, 44] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Lower both knees to left — slow control", muscles: ["obliques", "hip_internal_rotators"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 34], knee_r: [56, 46] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — both shoulders stay flat" },
+      { name: "Center", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 38], knee_r: [56, 62] }), duration: 2, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Return to center" },
+      { name: "Drop Right", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 54], knee_r: [56, 66], ankle_l: [68, 56], ankle_r: [68, 68] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Lower both knees to right", muscles: ["obliques"] },
+      { name: "Return", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 38], knee_r: [56, 62] }), duration: 2, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Return to center" },
+    ], form_checks: ["Shoulders stay flat on floor", "Slow controlled drops", "No fast whipping"], highlight_muscles: ["obliques", "hip_internal_rotators"] },
+
+  // ─── BRETZL ─────
+  { exercise_id: "back_208", exercise_name: "Bretzl", program_tag: "Low Back P2P", difficulty: 3, equipment: "none", position: "side_lying", view_angle_default: "front", goal: "mobility", primary_outcome: "Combined hip flexor, quad, T-spine rotation stretch", movement_type: "stretch", primary_joints: ["thoracic_spine", "hip", "knee"], locked_segments: [], planes: ["transverse", "sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], knee_l: [56, 38], knee_r: [58, 56], hand_l: [30, 36] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Side lying, top knee hugged forward" },
+      { name: "Grab Foot", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], knee_r: [58, 62], ankle_r: [52, 66], hand_r: [50, 68], hip_r: [50, 58] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Reach back — grab bottom foot", muscles: ["quadriceps", "iliopsoas"] },
+      { name: "Rotate", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], shoulder_r: [24, 68], elbow_r: [22, 72], t_spine: [34, 52], knee_r: [58, 62] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Rotate chest open — T-spine rotation", muscles: ["obliques", "rhomboids"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SUPINE, { shoulder_r: [24, 68], t_spine: [34, 52] }), duration: 15, breath: "natural", easing: "linear", cue: "Hold & breathe — feel everything opening" },
+      { name: "Release", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], hand_l: [30, 36] }), duration: 3, breath: "exhale", easing: "easeInOut", cue: "Release slowly" },
+    ], form_checks: ["Sequence matters: grab foot THEN rotate", "T-spine rotation, not lumbar crank"], highlight_muscles: ["quadriceps", "iliopsoas", "obliques", "rhomboids"] },
+
+  // ─── BRACING LEG LIFT ─────
+  { exercise_id: "back_209", exercise_name: "Bracing Leg Lift", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "supine", view_angle_default: "side", goal: "stability", primary_outcome: "360° abdominal bracing during leg movement", movement_type: "brace", primary_joints: ["hip"], locked_segments: ["lumbar_neutral"], planes: ["sagittal"],
+    phases: [
+      { name: "Brace", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 38], knee_r: [56, 62], rib_l: [28, 46], rib_r: [28, 54] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Brace 360° — feel belly expand all directions", muscles: ["transverse_abdominis", "diaphragm"] },
+      { name: "Lift Leg", pose: poseFrom(NEUTRAL_SUPINE, { knee_r: [48, 56], ankle_r: [40, 58], hip_r: [50, 54] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Lift one leg — LOW BACK DOES NOT MOVE", muscles: ["transverse_abdominis", "rectus_abdominis"] },
+      { name: "Lower", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 38], knee_r: [56, 62] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Lower slowly — maintain brace" },
+    ], form_checks: ["If lumbar arches → reject — restart with lighter load", "360° belly pressure maintained"], highlight_muscles: ["transverse_abdominis", "rectus_abdominis", "diaphragm"] },
+
+  // ─── KNEE SIDE PLANK ─────
+  { exercise_id: "back_210", exercise_name: "Knee Side Plank", program_tag: "Low Back P2P", difficulty: 1, equipment: "none", position: "side_lying", view_angle_default: "front", goal: "stability", primary_outcome: "Lateral core stability (modified)", movement_type: "isometric", primary_joints: ["core"], locked_segments: ["pelvis_stacked"], planes: ["frontal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], elbow_l: [24, 40], knee_l: [56, 44], knee_r: [56, 56], ankle_l: [60, 44], ankle_r: [60, 56] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Side lying on elbow, knees bent" },
+      { name: "Lift", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 42], pelvis: [48, 44], hip_l: [50, 40], hip_r: [50, 48] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Lift hips — stack pelvis", muscles: ["obliques", "gluteus_medius"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SUPINE, { pelvis: [48, 44] }), duration: 15, breath: "natural", easing: "linear", cue: "Hold 15 sec — hips stacked, no sag" },
+      { name: "Lower", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], pelvis: [50, 50] }), duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower with control" },
+    ], form_checks: ["Hips don't sag", "Pelvis stays stacked"], highlight_muscles: ["obliques", "gluteus_medius"] },
+
+  // ─── QUADRUPED SCORPION ─────
+  { exercise_id: "back_211", exercise_name: "Quadruped Scorpion", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "quadruped", view_angle_default: "side", goal: "mobility", primary_outcome: "Controlled hip rotation from quadruped", movement_type: "rotation", primary_joints: ["hip"], locked_segments: ["spine_neutral"], planes: ["transverse"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_QUADRUPED, duration: 1, breath: "natural", easing: "easeInOut", cue: "All fours — spine neutral" },
+      { name: "Rotate Out", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_r: [64, 62], hip_r: [56, 50], ankle_r: [72, 66] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Lift knee out to side — controlled hip rotation", muscles: ["gluteus_medius", "hip_internal_rotators"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_r: [64, 62] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — spine doesn't move" },
+      { name: "Return", pose: NEUTRAL_QUADRUPED, duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Return slowly" },
+    ], form_checks: ["Spine stays neutral", "Controlled rotation, no lumbar whip"], highlight_muscles: ["gluteus_medius", "hip_internal_rotators"] },
+
+  // ─── BEAR (hover hold) ─────
+  { exercise_id: "back_212", exercise_name: "Bear", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "quadruped", view_angle_default: "side", goal: "stability", primary_outcome: "Anti-extension bear hover", movement_type: "isometric", primary_joints: ["core", "shoulder"], locked_segments: ["spine_neutral"], planes: ["sagittal"],
+    phases: [
+      { name: "Quadruped", pose: NEUTRAL_QUADRUPED, duration: 1, breath: "natural", easing: "easeInOut", cue: "All fours" },
+      { name: "Hover", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [66, 56], ankle_l: [74, 54], ankle_r: [74, 58] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Lift knees 1 inch — hover hold", muscles: ["transverse_abdominis", "serratus_anterior"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [66, 56] }), duration: 15, breath: "natural", easing: "linear", cue: "Hold — ribs DOWN, no sway" },
+      { name: "Lower", pose: NEUTRAL_QUADRUPED, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower knees slowly" },
+    ], form_checks: ["Ribs stay down — no arch", "Knees hover just 1 inch", "No bouncing"], highlight_muscles: ["transverse_abdominis", "serratus_anterior"] },
+
+  // ─── ANTI-EXTENSION DEADBUG ─────
+  { exercise_id: "back_213", exercise_name: "Anti-Extension Deadbug", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "supine", view_angle_default: "side", goal: "stability", primary_outcome: "Anti-extension focus dead bug", movement_type: "alternating_reach", primary_joints: ["shoulder", "hip"], locked_segments: ["lumbar_locked_flat"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 40], knee_r: [56, 60], wrist_l: [24, 34], wrist_r: [24, 66] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Press low back into floor HARD" },
+      { name: "Extend", pose: poseFrom(NEUTRAL_SUPINE, { wrist_r: [10, 68], hand_r: [8, 70], knee_l: [70, 42], ankle_l: [80, 42] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Extend opposite arm/leg — LOW BACK STAYS FLAT", muscles: ["transverse_abdominis", "rectus_abdominis"] },
+      { name: "Return", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [56, 40], knee_r: [56, 60], wrist_l: [24, 34], wrist_r: [24, 66] }), duration: 2, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Return — maintain flat back" },
+    ], form_checks: ["If lumbar lifts off floor → STOP, reduce range", "Ultra slow movement"], highlight_muscles: ["transverse_abdominis", "rectus_abdominis"] },
+
+  // ─── SINGLE LEG GLUTE BRIDGE ─────
+  { exercise_id: "back_214", exercise_name: "Single Leg Glute Bridge", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "supine", view_angle_default: "side", goal: "strength", primary_outcome: "Unilateral glute activation", movement_type: "bridge", primary_joints: ["hip"], locked_segments: ["rib_cage_flat"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [58, 38], ankle_l: [68, 42], knee_r: [50, 56], ankle_r: [42, 56] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "One foot on floor, other leg extended" },
+      { name: "Tilt & Lift", pose: poseFrom(NEUTRAL_SUPINE, { pelvis: [44, 42], l_spine: [36, 44], hip_l: [46, 38], knee_l: [58, 36], knee_r: [50, 48] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Posterior tilt then drive up on ONE leg", muscles: ["gluteus_maximus", "hamstrings"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SUPINE, { pelvis: [44, 42] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — squeeze glute hard" },
+      { name: "Lower", pose: poseFrom(NEUTRAL_SUPINE, { knee_l: [58, 38], ankle_l: [68, 42] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Lower slowly — maintain control" },
+    ], form_checks: ["No rib flare", "Hips stay LEVEL — don't rotate", "Posterior tilt first"], highlight_muscles: ["gluteus_maximus", "hamstrings"] },
+
+  // ─── BEAR CRAWLING ─────
+  { exercise_id: "back_215", exercise_name: "Bear Crawling", program_tag: "Low Back P2P", difficulty: 3, equipment: "none", position: "quadruped", view_angle_default: "front", goal: "stability", primary_outcome: "Contralateral locomotion pattern", movement_type: "locomotion", primary_joints: ["core", "hip", "shoulder"], locked_segments: ["spine_neutral"], planes: ["sagittal", "transverse"],
+    phases: [
+      { name: "Bear Hover", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [66, 56] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Bear hover position" },
+      { name: "Crawl R", pose: poseFrom(NEUTRAL_QUADRUPED, { hand_r: [16, 58], knee_l: [62, 48], hand_l: [20, 48], knee_r: [70, 60] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Right hand + left foot forward — SLOW", muscles: ["obliques", "serratus_anterior"] },
+      { name: "Crawl L", pose: poseFrom(NEUTRAL_QUADRUPED, { hand_l: [14, 50], knee_r: [62, 60], hand_r: [22, 64], knee_l: [70, 48] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Left hand + right foot forward", muscles: ["obliques", "serratus_anterior"] },
+      { name: "Return", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [66, 56] }), duration: 1, breath: "inhale", easing: "easeInOut", cue: "Return to hover" },
+    ], form_checks: ["No sway side to side", "Ribs stay down", "Slow contralateral pattern"], highlight_muscles: ["obliques", "serratus_anterior", "transverse_abdominis"] },
+
+  // ─── HINGING PATTERNS ─────
+  { exercise_id: "back_216", exercise_name: "Hinging Patterns", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "side", goal: "mobility", primary_outcome: "General hinge pattern practice", movement_type: "hinge", primary_joints: ["hip"], locked_segments: ["spine_neutral"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_STANDING, duration: 1, breath: "natural", easing: "easeInOut", cue: "Stand tall, hands on hips" },
+      { name: "Hinge", pose: poseFrom(NEUTRAL_STANDING, { skull: [42, 22], t_spine: [46, 34], l_spine: [48, 42], pelvis: [54, 50], sacrum: [56, 52], knee_l: [44, 66], knee_r: [58, 66] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Push hips back — spine stays long", muscles: ["hamstrings", "gluteus_maximus"] },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Drive hips forward — squeeze glutes" },
+    ], form_checks: ["No squat pattern", "Spine stays neutral", "Hinge, don't bend"], highlight_muscles: ["hamstrings", "gluteus_maximus"] },
+
+  // ─── DUMBBELL DEADLIFT ─────
+  { exercise_id: "back_217", exercise_name: "Dumbbell Deadlift", program_tag: "Low Back P2P", difficulty: 3, equipment: "dumbbell", position: "standing", view_angle_default: "side", goal: "strength", primary_outcome: "Loaded hip hinge pattern", movement_type: "hinge", primary_joints: ["hip"], locked_segments: ["spine_neutral"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 48], hand_r: [62, 48] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Weights at sides" },
+      { name: "Lower", pose: poseFrom(NEUTRAL_STANDING, { skull: [38, 28], t_spine: [42, 38], l_spine: [46, 44], pelvis: [56, 52], hand_l: [42, 60], hand_r: [58, 60], knee_l: [44, 66], knee_r: [58, 66] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Hinge down — weights slide along thighs", muscles: ["hamstrings", "erector_spinae", "gluteus_maximus"] },
+      { name: "Drive", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 48], hand_r: [62, 48] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Squeeze glutes — drive up", muscles: ["gluteus_maximus"] },
+    ], form_checks: ["Neutral spine entire time", "Weights stay close to body"], highlight_muscles: ["hamstrings", "gluteus_maximus", "erector_spinae"] },
+
+  // ─── CHIN RETRACTIONS (standing variant) ─────
+  { exercise_id: "neck_218", exercise_name: "Chin Retractions", program_tag: "Neck Relief", difficulty: 1, equipment: "none", position: "standing", view_angle_default: "side", goal: "stability", primary_outcome: "Posterior glide of skull over atlas", movement_type: "glide", primary_joints: ["C1_C7"], locked_segments: ["thoracic_spine", "scapula"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_STANDING, duration: 1, breath: "natural", easing: "easeInOut", cue: "Stand tall" },
+      { name: "Retract", pose: poseFrom(NEUTRAL_STANDING, { skull: [47, 12], c_spine: [48, 18] }), duration: 3, breath: "exhale", easing: [0.25, 0.1, 0.25, 1], cue: "Glide chin straight back — chin stays level", muscles: ["deep_neck_flexors", "longus_colli"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { skull: [47, 12], c_spine: [48, 18] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — no downward tilt" },
+      { name: "Release", pose: NEUTRAL_STANDING, duration: 3, breath: "inhale", easing: [0.25, 0.1, 0.25, 1], cue: "Release slowly" },
+    ], form_checks: ["Posterior translation ONLY — no head nod", "Max extension 5-8°", "No shoulder shrug"], highlight_muscles: ["deep_neck_flexors", "longus_colli"] },
+
+  // ─── CHIN RETRACTIONS W EXTENSION ─────
+  { exercise_id: "neck_219", exercise_name: "Chin Retractions w Extension", program_tag: "Neck Relief", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "side", goal: "mobility", primary_outcome: "Chin retraction + small cervical extension", movement_type: "glide_extend", primary_joints: ["C1_C7"], locked_segments: ["thoracic_spine"], planes: ["sagittal"],
+    phases: [
+      { name: "Retract", pose: poseFrom(NEUTRAL_STANDING, { skull: [47, 12], c_spine: [48, 18] }), duration: 3, breath: "exhale", easing: [0.25, 0.1, 0.25, 1], cue: "Glide chin back first", muscles: ["deep_neck_flexors"] },
+      { name: "Extend", pose: poseFrom(NEUTRAL_STANDING, { skull: [48, 10], c_spine: [49, 16] }), duration: 2, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Small look up — 5-8° extension only", muscles: ["deep_neck_flexors", "multifidus"] },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 3, breath: "exhale", easing: [0.25, 0.1, 0.25, 1], cue: "Return smoothly" },
+    ], form_checks: ["Retract FIRST, then extend", "Small controlled extension", "No crunching neck back"], highlight_muscles: ["deep_neck_flexors", "multifidus"] },
+
+  // ─── FOAM ROLLER SWIM ─────
+  { exercise_id: "neck_220", exercise_name: "Foam Roller Swim", program_tag: "Shoulder Relief", difficulty: 2, equipment: "foam_roller", position: "prone", view_angle_default: "front", goal: "mobility", primary_outcome: "Scapular control with shoulder movement", movement_type: "swim", primary_joints: ["scapula", "glenohumeral"], locked_segments: ["lumbar_neutral"], planes: ["sagittal", "frontal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [12, 44], hand_r: [12, 56] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Prone on floor, arms overhead" },
+      { name: "Swim Right", pose: poseFrom(NEUTRAL_PRONE, { hand_r: [40, 60], elbow_r: [30, 62], shoulder_r: [22, 60] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Sweep right arm back — scap control", muscles: ["lower_trapezius", "rhomboids"] },
+      { name: "Swim Left", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [40, 40], elbow_l: [30, 38], shoulder_l: [22, 40] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Sweep left arm back", muscles: ["lower_trapezius", "rhomboids"] },
+      { name: "Return", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [12, 44], hand_r: [12, 56] }), duration: 2, breath: "inhale", easing: "easeInOut", cue: "Arms back overhead" },
+    ], form_checks: ["No lumbar hyperextension", "Scap control throughout"], highlight_muscles: ["lower_trapezius", "rhomboids"] },
+
+  // ─── SIDE LYING ROTATIONS ─────
+  { exercise_id: "neck_221", exercise_name: "Side Lying Rotations", program_tag: "Neck Relief", difficulty: 1, equipment: "none", position: "side_lying", view_angle_default: "front", goal: "mobility", primary_outcome: "Thoracic rotation from side lying", movement_type: "rotation", primary_joints: ["thoracic_spine"], locked_segments: ["pelvis_stacked"], planes: ["transverse"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], knee_l: [58, 40], knee_r: [58, 56], hand_l: [30, 36], hand_r: [30, 56] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Side lying, arms together" },
+      { name: "Rotate Open", pose: poseFrom(NEUTRAL_SUPINE, { shoulder_r: [28, 70], hand_r: [22, 76], t_spine: [34, 50], knee_l: [58, 40], knee_r: [58, 56] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Open top arm — rotate T-spine", muscles: ["obliques", "rhomboids"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SUPINE, { shoulder_r: [28, 70], hand_r: [22, 76] }), duration: 3, breath: "hold", easing: "linear", cue: "Hold — breathe into open side" },
+      { name: "Close", pose: poseFrom(NEUTRAL_SUPINE, { hand_l: [30, 36], hand_r: [30, 56] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Close slowly" },
+    ], form_checks: ["Pelvis stays stacked", "Rotate from T-spine not lumbar"], highlight_muscles: ["obliques", "rhomboids"] },
+
+  // ─── BRUEGGERS ─────
+  { exercise_id: "neck_222", exercise_name: "Brueggers", program_tag: "Neck Relief", difficulty: 1, equipment: "none", position: "seated", view_angle_default: "front", goal: "stability", primary_outcome: "Postural reset — scap retraction + ER", movement_type: "posture", primary_joints: ["scapula", "glenohumeral"], locked_segments: ["lumbar_neutral"], planes: ["frontal", "transverse"],
+    phases: [
+      { name: "Slouch", pose: poseFrom(NEUTRAL_SEATED, { skull: [50, 16], shoulder_l: [36, 28], shoulder_r: [64, 28], t_spine: [50, 32] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Start in relaxed posture" },
+      { name: "Retract & Rotate", pose: poseFrom(NEUTRAL_SEATED, { skull: [50, 12], shoulder_l: [40, 24], shoulder_r: [60, 24], scap_l: [42, 28], scap_r: [58, 28], hand_l: [30, 52], hand_r: [70, 52], wrist_l: [32, 50], wrist_r: [68, 50], sternum: [50, 24] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Squeeze blades, rotate palms out — chin neutral", muscles: ["lower_trapezius", "rhomboids", "infraspinatus"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SEATED, { scap_l: [42, 28], scap_r: [58, 28], hand_l: [30, 52], hand_r: [70, 52] }), duration: 5, breath: "natural", easing: "linear", cue: "Hold — feel lower trap engagement" },
+      { name: "Release", pose: NEUTRAL_SEATED, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Release slowly" },
+    ], form_checks: ["No lumbar arch", "No shrugging", "Chin stays neutral"], highlight_muscles: ["lower_trapezius", "rhomboids", "infraspinatus"] },
+
+  // ─── WALL PEC STRETCH ─────
+  { exercise_id: "neck_223", exercise_name: "Wall Pec Stretch", program_tag: "Shoulder Relief", difficulty: 1, equipment: "wall", position: "standing", view_angle_default: "front", goal: "mobility", primary_outcome: "Pec minor/major stretch at wall", movement_type: "stretch_hold", primary_joints: ["glenohumeral", "pectorals"], locked_segments: ["rib_cage_neutral"], planes: ["frontal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_r: [72, 20], elbow_r: [70, 26], shoulder_r: [64, 24] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Arm on wall at 90°" },
+      { name: "Turn Away", pose: poseFrom(NEUTRAL_STANDING, { skull: [44, 14], t_spine: [46, 28], sternum: [48, 24], shoulder_l: [34, 24], hand_r: [72, 20] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Turn body away from wall — feel pec stretch", muscles: ["pectoralis_major", "pectoralis_minor"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { skull: [44, 14], hand_r: [72, 20] }), duration: 20, breath: "natural", easing: "linear", cue: "Hold 20 sec — breathe normally" },
+      { name: "Release", pose: NEUTRAL_STANDING, duration: 2, breath: "exhale", easing: "easeInOut", cue: "Turn back — release" },
+    ], form_checks: ["Rib cage stays neutral", "No lumbar arch"], highlight_muscles: ["pectoralis_major", "pectoralis_minor"] },
+
+  // ─── WALL PUSHUP ─────
+  { exercise_id: "neck_224", exercise_name: "Wall Pushup", program_tag: "Shoulder Relief", difficulty: 1, equipment: "wall", position: "standing", view_angle_default: "side", goal: "strength", primary_outcome: "Push pattern with serratus activation", movement_type: "push", primary_joints: ["glenohumeral", "elbow"], locked_segments: ["core_braced"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 28], hand_r: [62, 28], elbow_l: [36, 32], elbow_r: [64, 32] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Hands on wall, slight lean" },
+      { name: "Lower", pose: poseFrom(NEUTRAL_STANDING, { skull: [48, 16], t_spine: [48, 30], elbow_l: [32, 34], elbow_r: [68, 34], scap_l: [42, 30], scap_r: [58, 30] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Lean in — bend elbows", muscles: ["pectoralis_major", "serratus_anterior"] },
+      { name: "Push", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 28], hand_r: [62, 28] }), duration: 2, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Push away — plus at the top (reach extra)", muscles: ["serratus_anterior"] },
+    ], form_checks: ["Core stays braced", "Serratus push-plus at top"], highlight_muscles: ["pectoralis_major", "serratus_anterior"] },
+
+  // ─── BANDED IYT ─────
+  { exercise_id: "neck_225", exercise_name: "Banded IYT", program_tag: "Shoulder Relief", difficulty: 2, equipment: "band", position: "standing", view_angle_default: "front", goal: "strength", primary_outcome: "Scapular stabilizer activation", movement_type: "lift", primary_joints: ["scapula", "glenohumeral"], locked_segments: ["core_braced"], planes: ["sagittal", "frontal"],
+    phases: [
+      { name: "I Raise", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [44, 6], hand_r: [56, 6], wrist_l: [44, 8], wrist_r: [56, 8] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Arms straight overhead — I position", muscles: ["lower_trapezius"] },
+      { name: "Lower", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower" },
+      { name: "Y Raise", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [32, 8], hand_r: [68, 8], wrist_l: [34, 10], wrist_r: [66, 10] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Arms in Y — scap retraction", muscles: ["lower_trapezius", "rhomboids"] },
+      { name: "Lower", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower" },
+      { name: "T Raise", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [22, 24], hand_r: [78, 24], wrist_l: [24, 24], wrist_r: [76, 24] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Arms in T — squeeze shoulder blades", muscles: ["rhomboids", "posterior_deltoid"] },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Return to rest" },
+    ], form_checks: ["No shrugging", "Scap control on each position", "Core stays braced"], highlight_muscles: ["lower_trapezius", "rhomboids", "posterior_deltoid"] },
+
+  // ─── JANDA WALL CRAWL ─────
+  { exercise_id: "neck_226", exercise_name: "Janda Wall Crawl", program_tag: "Shoulder Relief", difficulty: 2, equipment: "wall", position: "standing", view_angle_default: "side", goal: "mobility", primary_outcome: "Scapular upward rotation with wall slide", movement_type: "slide", primary_joints: ["scapula", "glenohumeral"], locked_segments: ["rib_cage_neutral"], planes: ["sagittal", "frontal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 28], hand_r: [62, 28] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Face wall, fingertips on wall" },
+      { name: "Crawl Up", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 10], hand_r: [62, 10], wrist_l: [38, 12], wrist_r: [62, 12], scap_l: [42, 22], scap_r: [58, 22] }), duration: 4, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Walk fingers up wall — scap rotates up", muscles: ["serratus_anterior", "lower_trapezius"] },
+      { name: "Hold Top", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 10], hand_r: [62, 10] }), duration: 3, breath: "hold", easing: "linear", cue: "Hold — feel serratus/lower trap" },
+      { name: "Crawl Down", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 28], hand_r: [62, 28] }), duration: 4, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Walk fingers down slowly" },
+    ], form_checks: ["No trap shrug", "Ribs stay flat on wall"], highlight_muscles: ["serratus_anterior", "lower_trapezius"] },
+
+  // ─── DORSIFLEXION ISOMETRICS ─────
+  { exercise_id: "fa_227", exercise_name: "Dorsiflexion Isometrics", program_tag: "Foot/Ankle", difficulty: 1, equipment: "none", position: "seated", view_angle_default: "side", goal: "strength", primary_outcome: "Anterior tibialis activation", movement_type: "isometric", primary_joints: ["ankle"], locked_segments: ["knee_stable"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_SEATED, duration: 1, breath: "natural", easing: "easeInOut", cue: "Seated, foot on floor" },
+      { name: "Dorsiflex", pose: poseFrom(NEUTRAL_SEATED, { forefoot_r: [72, 72], ankle_r: [70, 70] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Pull toes up hard — no toe clawing", muscles: ["tibialis_anterior"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SEATED, { forefoot_r: [72, 72] }), duration: 10, breath: "natural", easing: "linear", cue: "Hold 10 sec — max effort" },
+      { name: "Release", pose: NEUTRAL_SEATED, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Release" },
+    ], form_checks: ["No toe clawing", "Ankle only, knee stays still"], highlight_muscles: ["tibialis_anterior"] },
+
+  // ─── FOOT THREADING ─────
+  { exercise_id: "fa_228", exercise_name: "Foot Threading", program_tag: "Foot/Ankle", difficulty: 2, equipment: "none", position: "seated", view_angle_default: "front", goal: "mobility", primary_outcome: "Midfoot mobility and toe splay", movement_type: "mobilization", primary_joints: ["midfoot", "toes"], locked_segments: ["ankle_stable"], planes: ["frontal", "transverse"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SEATED, { knee_r: [64, 58], ankle_r: [70, 66] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Cross ankle over knee" },
+      { name: "Thread & Spread", pose: poseFrom(NEUTRAL_SEATED, { forefoot_r: [72, 68], hand_r: [72, 66] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Thread fingers between toes — spread wide" },
+      { name: "Rotate", pose: poseFrom(NEUTRAL_SEATED, { forefoot_r: [74, 70], ankle_r: [70, 68] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Circle foot gently — midfoot mobility" },
+      { name: "Release", pose: NEUTRAL_SEATED, duration: 2, breath: "exhale", easing: "easeInOut", cue: "Release" },
+    ], form_checks: ["Foot moves, not whole leg", "Gentle — no forcing"], highlight_muscles: [] },
+
+  // ─── COWBOY SIT ─────
+  { exercise_id: "fa_229", exercise_name: "Cowboy Sit", program_tag: "Foot/Ankle", difficulty: 2, equipment: "none", position: "kneeling", view_angle_default: "side", goal: "mobility", primary_outcome: "Plantar fascia stretch, ankle mobility", movement_type: "stretch", primary_joints: ["toes", "ankle"], locked_segments: [], planes: ["sagittal"],
+    phases: [
+      { name: "Tuck Toes", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 68], knee_r: [56, 68], ankle_l: [44, 78], ankle_r: [56, 78], pelvis: [50, 60], forefoot_l: [44, 82], forefoot_r: [56, 82] }), duration: 2, breath: "natural", easing: "easeInOut", cue: "Kneel with toes tucked under" },
+      { name: "Sit Back", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [50, 64], knee_l: [44, 70], knee_r: [56, 70], skull: [50, 22] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Sit back gradually onto heels — feel plantar fascia stretch", muscles: [] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [50, 64] }), duration: 20, breath: "natural", easing: "linear", cue: "Hold — intensity builds gradually" },
+      { name: "Release", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 68], knee_r: [56, 68] }), duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lift forward — release" },
+    ], form_checks: ["Heels stay aligned", "No knee valgus collapse"], highlight_muscles: [] },
+
+  // ─── DOWNWARD DOG ─────
+  { exercise_id: "fa_230", exercise_name: "Downward Dog", program_tag: "Foot/Ankle", difficulty: 1, equipment: "none", position: "quadruped", view_angle_default: "side", goal: "mobility", primary_outcome: "Posterior chain stretch, calf/hamstring", movement_type: "stretch", primary_joints: ["hip", "ankle", "shoulder"], locked_segments: ["spine_long"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_QUADRUPED, duration: 1, breath: "natural", easing: "easeInOut", cue: "Start on all fours" },
+      { name: "Push Up", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [28, 48], c_spine: [30, 48], t_spine: [36, 44], l_spine: [42, 40], pelvis: [52, 34], sacrum: [54, 34], hip_l: [52, 32], hip_r: [52, 36], knee_l: [62, 44], knee_r: [62, 48], ankle_l: [70, 56], ankle_r: [70, 60], heel_l: [72, 58], heel_r: [72, 62], hand_l: [18, 60], hand_r: [22, 64] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Push hips up & back — press heels toward floor", muscles: ["hamstrings", "gastrocnemius", "latissimus_dorsi"] },
+      { name: "Pedal", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [28, 48], pelvis: [52, 34], knee_l: [60, 42], knee_r: [64, 50], heel_l: [70, 56], heel_r: [74, 64] }), duration: 3, breath: "natural", easing: "easeInOut", cue: "Pedal feet — alternating heel reach", muscles: ["gastrocnemius", "soleus"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_QUADRUPED, { pelvis: [52, 34], heel_l: [72, 58], heel_r: [72, 62] }), duration: 10, breath: "natural", easing: "linear", cue: "Hold — long spine, press heels down" },
+      { name: "Return", pose: NEUTRAL_QUADRUPED, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Walk hands back — return" },
+    ], form_checks: ["Long spine — no rounding", "Hip hinge dominant", "Ribs don't flare"], highlight_muscles: ["hamstrings", "gastrocnemius", "latissimus_dorsi"] },
+
+  // ─── FROG STRETCH ─────
+  { exercise_id: "hip_231", exercise_name: "Frog Stretch", program_tag: "Hip Relief", difficulty: 2, equipment: "none", position: "quadruped", view_angle_default: "front", goal: "mobility", primary_outcome: "Hip abduction/external rotation stretch", movement_type: "stretch_hold", primary_joints: ["hip"], locked_segments: ["spine_neutral"], planes: ["frontal"],
+    phases: [
+      { name: "Wide Knees", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 44], knee_r: [66, 64], hip_l: [56, 36], hip_r: [56, 52], ankle_l: [76, 44], ankle_r: [76, 64] }), duration: 2, breath: "natural", easing: "easeInOut", cue: "Knees wide, ankles aligned behind" },
+      { name: "Rock Back", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [30, 48], pelvis: [60, 48], knee_l: [68, 44], knee_r: [68, 64], hip_l: [58, 36], hip_r: [58, 52] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Rock hips back — feel inner thigh stretch", muscles: ["adductors", "hip_internal_rotators"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_QUADRUPED, { pelvis: [60, 48] }), duration: 20, breath: "natural", easing: "linear", cue: "Hold — breathe deeply" },
+      { name: "Release", pose: NEUTRAL_QUADRUPED, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Rock forward — release" },
+    ], form_checks: ["Pelvis stays neutral — no arching", "Gradual depth increase"], highlight_muscles: ["adductors", "hip_internal_rotators"] },
+
+  // ─── TRI PLANAR HIP OPENER ─────
+  { exercise_id: "hip_232", exercise_name: "Tri Planar Hip Opener", program_tag: "Hip Relief", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "front", goal: "mobility", primary_outcome: "Hip mobility in 3 planes", movement_type: "dynamic", primary_joints: ["hip"], locked_segments: ["spine_tall", "pelvis_square"], planes: ["sagittal", "frontal", "transverse"],
+    phases: [
+      { name: "Forward", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [58, 52], hip_r: [56, 46] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Hip flexion — knee to chest", muscles: ["hip_flexors"] },
+      { name: "Diagonal", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [64, 50], hip_r: [58, 44] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Open diagonally — external rotation", muscles: ["gluteus_medius"] },
+      { name: "Lateral", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [70, 58], hip_r: [62, 48] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Abduct — open to side", muscles: ["gluteus_medius", "adductors"] },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Return to standing" },
+    ], form_checks: ["Pelvis stays square throughout", "Spine stays tall"], highlight_muscles: ["hip_flexors", "gluteus_medius", "adductors"] },
+
+  // ─── PRONE CERVICAL RETRACTION ─────
+  { exercise_id: "neck_233", exercise_name: "Prone Cervical Retraction", program_tag: "Neck Relief", difficulty: 1, equipment: "none", position: "prone", view_angle_default: "side", goal: "stability", primary_outcome: "Chin retraction from prone", movement_type: "glide", primary_joints: ["C1_C7"], locked_segments: ["thoracic_spine"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_PRONE, { skull: [14, 50], c_spine: [18, 50] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Face down, forehead on hands" },
+      { name: "Retract", pose: poseFrom(NEUTRAL_PRONE, { skull: [12, 50], c_spine: [16, 50] }), duration: 3, breath: "exhale", easing: [0.25, 0.1, 0.25, 1], cue: "Tuck chin — posterior glide", muscles: ["deep_neck_flexors"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_PRONE, { skull: [12, 50] }), duration: 5, breath: "hold", easing: "linear", cue: "Hold retraction" },
+      { name: "Release", pose: poseFrom(NEUTRAL_PRONE, { skull: [14, 50] }), duration: 2, breath: "inhale", easing: "easeInOut", cue: "Release" },
+    ], form_checks: ["Posterior glide, not flexion"], highlight_muscles: ["deep_neck_flexors"] },
+
+  // ─── PRONE HEAD LIFTS ─────
+  { exercise_id: "neck_234", exercise_name: "Prone Head Lifts", program_tag: "Neck Relief", difficulty: 1, equipment: "none", position: "prone", view_angle_default: "side", goal: "strength", primary_outcome: "Cervical extensor strengthening", movement_type: "lift", primary_joints: ["C1_C7"], locked_segments: ["thoracic_spine"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_PRONE, duration: 1, breath: "natural", easing: "easeInOut", cue: "Prone, chin tucked" },
+      { name: "Lift", pose: poseFrom(NEUTRAL_PRONE, { skull: [12, 50], c_spine: [16, 50] }), duration: 2, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Lift head — chin stays tucked", muscles: ["deep_neck_flexors", "multifidus"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_PRONE, { skull: [12, 50] }), duration: 5, breath: "natural", easing: "linear", cue: "Hold 5 sec" },
+      { name: "Lower", pose: NEUTRAL_PRONE, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower gently" },
+    ], form_checks: ["Chin stays tucked throughout", "Small controlled lift"], highlight_muscles: ["deep_neck_flexors", "multifidus"] },
+
+  // ─── SUPINE CERVICAL RETRACTION ─────
+  { exercise_id: "neck_235", exercise_name: "Supine Cervical Retraction", program_tag: "Neck Relief", difficulty: 1, equipment: "none", position: "supine", view_angle_default: "side", goal: "stability", primary_outcome: "Cervical retraction with gravity assist", movement_type: "glide", primary_joints: ["C1_C7"], locked_segments: ["thoracic_flat"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_SUPINE, duration: 1, breath: "natural", easing: "easeInOut", cue: "Lie on back, no pillow" },
+      { name: "Press Back", pose: poseFrom(NEUTRAL_SUPINE, { skull: [14, 50], c_spine: [18, 50] }), duration: 3, breath: "exhale", easing: [0.25, 0.1, 0.25, 1], cue: "Press back of head into floor — chin stays level", muscles: ["deep_neck_flexors"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SUPINE, { skull: [14, 50] }), duration: 5, breath: "hold", easing: "linear", cue: "Hold — feel deep flexors activate" },
+      { name: "Release", pose: NEUTRAL_SUPINE, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Release" },
+    ], form_checks: ["Chin doesn't tilt down", "Gentle posterior press"], highlight_muscles: ["deep_neck_flexors"] },
+
+  // ─── QUADRUPED CERVICAL RETRACTION ─────
+  { exercise_id: "neck_236", exercise_name: "Quadruped Cervical Retraction", program_tag: "Neck Relief", difficulty: 1, equipment: "none", position: "quadruped", view_angle_default: "side", goal: "stability", primary_outcome: "Chin retraction against gravity in quadruped", movement_type: "glide", primary_joints: ["C1_C7"], locked_segments: ["thoracic_spine"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_QUADRUPED, duration: 1, breath: "natural", easing: "easeInOut", cue: "All fours — head neutral" },
+      { name: "Retract", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [24, 40], c_spine: [28, 42] }), duration: 3, breath: "exhale", easing: [0.25, 0.1, 0.25, 1], cue: "Pull chin in — make double chin", muscles: ["deep_neck_flexors"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [24, 40] }), duration: 5, breath: "hold", easing: "linear", cue: "Hold — gravity adds resistance" },
+      { name: "Release", pose: NEUTRAL_QUADRUPED, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Release" },
+    ], form_checks: ["Retraction against gravity", "No head nod"], highlight_muscles: ["deep_neck_flexors"] },
+
+  // ─── PRONE SCORPION ─────
+  { exercise_id: "neck_237", exercise_name: "Prone Scorpion", program_tag: "Low Back P2P", difficulty: 2, equipment: "none", position: "prone", view_angle_default: "front", goal: "mobility", primary_outcome: "T-spine rotation + hip opener from prone", movement_type: "rotation", primary_joints: ["thoracic_spine", "hip"], locked_segments: ["shoulder_flat"], planes: ["transverse"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [14, 38], hand_r: [14, 62] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Prone, arms out to sides" },
+      { name: "Scorpion Right", pose: poseFrom(NEUTRAL_PRONE, { knee_r: [50, 64], hip_r: [48, 58], ankle_r: [42, 68], t_spine: [30, 52] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Reach right foot across to left — rotate through T-spine", muscles: ["obliques", "hip_flexors"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_PRONE, { knee_r: [50, 64] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — feel rotation opening" },
+      { name: "Return", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [14, 38], hand_r: [14, 62] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Return slowly" },
+    ], form_checks: ["Opposite shoulder stays flat", "Control the rotation"], highlight_muscles: ["obliques", "hip_flexors"] },
+
+  // ─── LATERAL WALL PLANK ─────
+  { exercise_id: "back_238", exercise_name: "Lateral Wall Plank", program_tag: "Low Back P2P", difficulty: 1, equipment: "wall", position: "standing", view_angle_default: "front", goal: "stability", primary_outcome: "Lateral core activation standing", movement_type: "isometric", primary_joints: ["core"], locked_segments: ["spine_neutral"], planes: ["frontal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [30, 34] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Stand sideways to wall, forearm on wall" },
+      { name: "Press", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [30, 34], shoulder_l: [34, 28] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Press into wall — activate obliques", muscles: ["obliques", "quadratus_lumborum"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [30, 34] }), duration: 15, breath: "natural", easing: "linear", cue: "Hold — isometric lateral brace" },
+      { name: "Release", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Release" },
+    ], form_checks: ["No leaning", "Core stays engaged"], highlight_muscles: ["obliques", "quadratus_lumborum"] },
+
+  // ─── SINGLE LEG BEAR ─────
+  { exercise_id: "back_239", exercise_name: "Single Leg Bear", program_tag: "Low Back P2P", difficulty: 3, equipment: "none", position: "quadruped", view_angle_default: "side", goal: "stability", primary_outcome: "Anti-rotation bear with leg extension", movement_type: "brace", primary_joints: ["core", "hip"], locked_segments: ["spine_neutral", "pelvis_level"], planes: ["sagittal"],
+    phases: [
+      { name: "Bear Hover", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [66, 56] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Bear hover — knees 1 inch off" },
+      { name: "Extend Leg", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [78, 56], ankle_r: [86, 56] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Extend one leg — pelvis stays level", muscles: ["gluteus_maximus", "transverse_abdominis"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_r: [78, 56] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — no pelvis rotation" },
+      { name: "Return", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [66, 56] }), duration: 2, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Return to hover" },
+    ], form_checks: ["No pelvis twist", "No lumbar arch", "No rib flare"], highlight_muscles: ["gluteus_maximus", "transverse_abdominis"] },
+
+  // ─── WORLD'S GREATEST STRETCH ─────
+  { exercise_id: "hip_240", exercise_name: "World's Greatest Stretch", program_tag: "Hip Relief", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "side", goal: "mobility", primary_outcome: "Combined hip, T-spine, hamstring mobility", movement_type: "flow", primary_joints: ["hip", "thoracic_spine", "ankle"], locked_segments: [], planes: ["sagittal", "transverse"],
+    phases: [
+      { name: "Lunge", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [42, 60], knee_r: [62, 72], ankle_r: [66, 82], hand_l: [40, 76], hand_r: [58, 76] }), duration: 2, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Step into deep lunge — hands on floor", muscles: ["iliopsoas", "quadriceps"] },
+      { name: "Elbow to Instep", pose: poseFrom(NEUTRAL_STANDING, { skull: [44, 44], elbow_l: [38, 68], knee_l: [40, 58] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Drive elbow to instep — feel hip open", muscles: ["adductors", "hip_flexors"] },
+      { name: "Rotate", pose: poseFrom(NEUTRAL_STANDING, { skull: [44, 24], hand_l: [36, 14], shoulder_l: [38, 20], t_spine: [46, 34] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Rotate — reach to sky", muscles: ["obliques", "rhomboids"] },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 2, breath: "exhale", easing: "easeInOut", cue: "Step back — stand tall" },
+    ], form_checks: ["Knee alignment", "T-spine rotation, not lumbar", "Control transitions"], highlight_muscles: ["iliopsoas", "obliques", "rhomboids"] },
+
+  // ─── PASSIVE NECK ROTATIONS ─────
+  { exercise_id: "neck_241", exercise_name: "Passive Neck Rotations", program_tag: "Neck Relief", difficulty: 1, equipment: "none", position: "seated", view_angle_default: "front", goal: "mobility", primary_outcome: "Gentle cervical rotation with fixed gaze", movement_type: "rotation", primary_joints: ["C1_C7"], locked_segments: ["thoracic_spine"], planes: ["transverse"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_SEATED, duration: 1, breath: "natural", easing: "easeInOut", cue: "Sit tall, eyes fixed on point" },
+      { name: "Rotate Left", pose: poseFrom(NEUTRAL_SEATED, { skull: [44, 14], c_spine: [46, 20] }), duration: 3, breath: "exhale", easing: [0.25, 0.1, 0.25, 1], cue: "Turn head left slowly — eyes lead", muscles: ["deep_neck_flexors"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SEATED, { skull: [44, 14] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold end range" },
+      { name: "Center", pose: NEUTRAL_SEATED, duration: 2, breath: "inhale", easing: [0.25, 0.1, 0.25, 1], cue: "Return to center" },
+      { name: "Rotate Right", pose: poseFrom(NEUTRAL_SEATED, { skull: [56, 14], c_spine: [54, 20] }), duration: 3, breath: "exhale", easing: [0.25, 0.1, 0.25, 1], cue: "Turn right slowly" },
+      { name: "Return", pose: NEUTRAL_SEATED, duration: 2, breath: "inhale", easing: [0.25, 0.1, 0.25, 1], cue: "Return to center" },
+    ], form_checks: ["Slow rotation — no jerky movement", "Minimal cervical shear", "Gaze stable"], highlight_muscles: ["deep_neck_flexors"] },
+
+  // ─── KNEELING ROW ─────
+  { exercise_id: "neck_242", exercise_name: "Kneeling Row", program_tag: "Shoulder Relief", difficulty: 2, equipment: "band", position: "kneeling", view_angle_default: "side", goal: "strength", primary_outcome: "Scapular retraction + depression", movement_type: "pull", primary_joints: ["scapula", "elbow"], locked_segments: ["core_braced"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 68], knee_r: [56, 68], hand_l: [34, 36], hand_r: [66, 36] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Tall kneel, band in front" },
+      { name: "Row", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 68], knee_r: [56, 68], elbow_l: [30, 40], elbow_r: [70, 40], scap_l: [42, 30], scap_r: [58, 30] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Pull elbows back — squeeze shoulder blades", muscles: ["rhomboids", "lower_trapezius"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [30, 40], elbow_r: [70, 40] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold squeeze — no shrugging" },
+      { name: "Release", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 68], knee_r: [56, 68], hand_l: [34, 36] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Extend forward slowly" },
+    ], form_checks: ["Scap retract + depress — NOT shrug", "Core stays engaged"], highlight_muscles: ["rhomboids", "lower_trapezius"] },
+
+  // ─── SERRATUS WALL SLIDES ─────
+  { exercise_id: "neck_243", exercise_name: "Serratus Wall Slides", program_tag: "Shoulder Relief", difficulty: 2, equipment: "wall", position: "standing", view_angle_default: "side", goal: "mobility", primary_outcome: "Serratus activation with wall slide", movement_type: "slide", primary_joints: ["scapula", "glenohumeral"], locked_segments: ["rib_cage_flat"], planes: ["sagittal", "frontal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 28], hand_r: [62, 28], scap_l: [42, 28], scap_r: [58, 28] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Forearms on wall" },
+      { name: "Slide Up + Protract", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 10], hand_r: [62, 10], scap_l: [38, 22], scap_r: [62, 22], shoulder_l: [36, 18], shoulder_r: [64, 18] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Slide up — push through with serratus", muscles: ["serratus_anterior", "lower_trapezius"] },
+      { name: "Slide Down", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 28], hand_r: [62, 28] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Slide down with control" },
+    ], form_checks: ["Serratus protraction at top", "No trap shrug", "Ribs stay flat"], highlight_muscles: ["serratus_anterior", "lower_trapezius"] },
+
+  // ─── PLANK SHOULDER TAPS ─────
+  { exercise_id: "core_244", exercise_name: "Plank Shoulder Taps", program_tag: "Performance", difficulty: 2, equipment: "none", position: "prone", view_angle_default: "front", goal: "stability", primary_outcome: "Anti-rotation in plank", movement_type: "tap", primary_joints: ["core", "shoulder"], locked_segments: ["spine_neutral"], planes: ["transverse"],
+    phases: [
+      { name: "Plank", pose: poseFrom(NEUTRAL_PRONE, { skull: [14, 50], elbow_l: [20, 40], elbow_r: [20, 60], pelvis: [50, 50] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "High plank — wide feet for stability" },
+      { name: "Tap Right", pose: poseFrom(NEUTRAL_PRONE, { hand_l: [18, 56], wrist_l: [18, 54] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Tap right shoulder — don't shift hips", muscles: ["obliques", "transverse_abdominis"] },
+      { name: "Center", pose: poseFrom(NEUTRAL_PRONE, { skull: [14, 50], pelvis: [50, 50] }), duration: 1, breath: "inhale", easing: "easeInOut", cue: "Back to plank" },
+      { name: "Tap Left", pose: poseFrom(NEUTRAL_PRONE, { hand_r: [18, 44], wrist_r: [18, 46] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Tap left shoulder — hips stay square", muscles: ["obliques"] },
+      { name: "Return", pose: poseFrom(NEUTRAL_PRONE, { skull: [14, 50] }), duration: 1, breath: "inhale", easing: "easeInOut", cue: "Return to plank" },
+    ], form_checks: ["No hip sway — widen stance if needed", "Trunk stays square"], highlight_muscles: ["obliques", "transverse_abdominis"] },
+
+  // ─── WAITER'S CARRY ─────
+  { exercise_id: "str_245", exercise_name: "Waiter's Carry", program_tag: "Shoulder Relief", difficulty: 2, equipment: "dumbbell", position: "standing", view_angle_default: "front", goal: "stability", primary_outcome: "Overhead carry stability", movement_type: "carry", primary_joints: ["glenohumeral", "core"], locked_segments: ["rib_cage_stacked"], planes: ["sagittal"],
+    phases: [
+      { name: "Press Up", pose: poseFrom(NEUTRAL_STANDING, { hand_r: [64, 6], wrist_r: [64, 8], elbow_r: [64, 16], scap_r: [60, 24] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Weight overhead — shoulder packed, ribs down", muscles: ["serratus_anterior", "obliques"] },
+      { name: "Walk 1", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [42, 60], hand_r: [64, 6] }), duration: 2, breath: "natural", easing: "easeInOut", cue: "Walk — no side bend, no rib flare" },
+      { name: "Walk 2", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [58, 60], hand_r: [64, 6] }), duration: 2, breath: "natural", easing: "easeInOut", cue: "Ribs stacked over pelvis" },
+    ], form_checks: ["No rib flare", "No side bend", "Shoulder stays packed"], highlight_muscles: ["serratus_anterior", "obliques"] },
+
+  // ─── LAT PIR ─────
+  { exercise_id: "neck_246", exercise_name: "Lat PIR", program_tag: "Shoulder Relief", difficulty: 2, equipment: "none", position: "kneeling", view_angle_default: "side", goal: "mobility", primary_outcome: "Lat release via post-isometric relaxation", movement_type: "contract_relax", primary_joints: ["glenohumeral", "thoracic_spine"], locked_segments: [], planes: ["sagittal"],
+    phases: [
+      { name: "Stretch Position", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [28, 52], hand_l: [10, 44], hand_r: [10, 56], pelvis: [58, 52] }), duration: 2, breath: "natural", easing: "easeInOut", cue: "Child's pose with arms extended" },
+      { name: "Contract", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [28, 52], hand_l: [10, 44], hand_r: [10, 56], pelvis: [58, 52] }), duration: 5, breath: "exhale", easing: "linear", cue: "Gently press hands into floor — 20% effort", muscles: ["latissimus_dorsi"] },
+      { name: "Relax & Sink", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [30, 52], pelvis: [60, 54], hand_l: [8, 42], hand_r: [8, 58] }), duration: 5, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Release — sink deeper into stretch" },
+    ], form_checks: ["Light contraction only — 20%", "Spine doesn't twist"], highlight_muscles: ["latissimus_dorsi"] },
+
+  // ─── SPANISH SQUAT ISOMETRIC ─────
+  { exercise_id: "knee_247", exercise_name: "Spanish Squat Isometric", program_tag: "Knee Relief", difficulty: 2, equipment: "band", position: "standing", view_angle_default: "side", goal: "strength", primary_outcome: "Quad isometric with vertical shin", movement_type: "isometric", primary_joints: ["knee"], locked_segments: ["torso_upright"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [42, 62], knee_r: [58, 62] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Band behind knees, lean back slightly" },
+      { name: "Sit Back", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [52, 52], knee_l: [40, 66], knee_r: [60, 66], hip_l: [46, 52], hip_r: [56, 52] }), duration: 3, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Sit back into band — shin stays vertical", muscles: ["quadriceps"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [52, 52], knee_l: [40, 66], knee_r: [60, 66] }), duration: 30, breath: "natural", easing: "linear", cue: "Hold 30 sec — vertical shin angle" },
+      { name: "Stand", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Stand up" },
+    ], form_checks: ["Shin vertical", "Torso upright", "Knees don't cave"], highlight_muscles: ["quadriceps"] },
+
+  // ─── SUITCASE CARRY ─────
+  { exercise_id: "str_248", exercise_name: "Suitcase Carry", program_tag: "Performance", difficulty: 2, equipment: "dumbbell", position: "standing", view_angle_default: "front", goal: "stability", primary_outcome: "Anti-lateral flexion carry", movement_type: "carry", primary_joints: ["core"], locked_segments: ["pelvis_level"], planes: ["frontal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_r: [70, 52] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Weight in one hand — stand tall" },
+      { name: "Walk", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [42, 60], hand_r: [70, 52] }), duration: 2, breath: "natural", easing: "easeInOut", cue: "Walk — resist lean toward weight", muscles: ["obliques", "quadratus_lumborum"] },
+      { name: "Walk 2", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [58, 60], hand_r: [70, 52] }), duration: 2, breath: "natural", easing: "easeInOut", cue: "Pelvis stays level" },
+    ], form_checks: ["NO lean into weight side", "Pelvis level"], highlight_muscles: ["obliques", "quadratus_lumborum"] },
+
+  // ─── KNEELING THORACIC ROTATION ─────
+  { exercise_id: "neck_249", exercise_name: "Kneeling Thoracic Rotation", program_tag: "Neck Relief", difficulty: 2, equipment: "none", position: "quadruped", view_angle_default: "front", goal: "mobility", primary_outcome: "T-spine rotation from quadruped", movement_type: "rotation", primary_joints: ["thoracic_spine"], locked_segments: ["pelvis_stable", "lumbar_neutral"], planes: ["transverse"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_QUADRUPED, { hand_l: [18, 44], hand_r: [50, 44] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "All fours, one hand behind head" },
+      { name: "Rotate Up", pose: poseFrom(NEUTRAL_QUADRUPED, { skull: [30, 36], shoulder_r: [34, 32], elbow_r: [32, 28], t_spine: [38, 40] }), duration: 3, breath: "inhale", easing: [0.3, 0, 0.15, 1], cue: "Rotate T-spine — elbow to ceiling", muscles: ["obliques", "multifidus"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_QUADRUPED, { shoulder_r: [34, 32], t_spine: [38, 40] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — feel thoracic rotation" },
+      { name: "Return", pose: NEUTRAL_QUADRUPED, duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Return slowly" },
+    ], form_checks: ["Pelvis stays stable", "Lumbar doesn't rotate", "T-spine drives rotation"], highlight_muscles: ["obliques", "multifidus"] },
+
+  // ─── STAR DRILL ─────
+  { exercise_id: "fa_250", exercise_name: "Star Drill", program_tag: "Foot/Ankle", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "front", goal: "stability", primary_outcome: "Single-leg balance with reach taps", movement_type: "balance", primary_joints: ["hip", "ankle"], locked_segments: ["pelvis_level"], planes: ["sagittal", "frontal"],
+    phases: [
+      { name: "Balance", pose: NEUTRAL_STANDING, duration: 1, breath: "natural", easing: "easeInOut", cue: "Stand on one leg" },
+      { name: "Reach Front", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [58, 56], forefoot_r: [62, 76] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Tap forward — pelvis level", muscles: ["gluteus_medius"] },
+      { name: "Reach Side", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [68, 62], forefoot_r: [74, 78] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Tap to side", muscles: ["gluteus_medius"] },
+      { name: "Reach Back", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [62, 68], forefoot_r: [66, 84] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Tap behind", muscles: ["gluteus_maximus"] },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 1, breath: "inhale", easing: "easeInOut", cue: "Return to balance" },
+    ], form_checks: ["Pelvis stays level throughout", "Knee tracks over toes", "Foot doesn't collapse"], highlight_muscles: ["gluteus_medius", "gluteus_maximus"] },
+
+  // ─── VALE LEAN ─────
+  { exercise_id: "fa_251", exercise_name: "Vale Lean", program_tag: "Foot/Ankle", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "side", goal: "stability", primary_outcome: "Short-foot activation with tibial progression", movement_type: "lean", primary_joints: ["ankle"], locked_segments: ["knee_stable"], planes: ["sagittal"],
+    phases: [
+      { name: "Tripod", pose: NEUTRAL_STANDING, duration: 1, breath: "natural", easing: "easeInOut", cue: "Establish foot tripod — heel, 1st & 5th met" },
+      { name: "Lean Forward", pose: poseFrom(NEUTRAL_STANDING, { skull: [48, 12], t_spine: [48, 28], ankle_l: [42, 76], ankle_r: [58, 76] }), duration: 3, breath: "exhale", easing: [0.35, 0, 0.15, 1], cue: "Lean tibia forward — heel stays GLUED, arch stays active", muscles: ["tibialis_anterior", "gastrocnemius"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { skull: [48, 12], ankle_l: [42, 76] }), duration: 5, breath: "natural", easing: "linear", cue: "Hold — feel arch working" },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Return upright" },
+    ], form_checks: ["Heel MUST stay on floor", "No pronation collapse", "Arch stays active"], highlight_muscles: ["tibialis_anterior", "gastrocnemius"] },
+
+  // ─── TOE LIFTS ─────
+  { exercise_id: "fa_252", exercise_name: "Toe Lifts", program_tag: "Foot/Ankle", difficulty: 1, equipment: "none", position: "seated", view_angle_default: "front", goal: "stability", primary_outcome: "Big toe isolation and control", movement_type: "isolation", primary_joints: ["toes"], locked_segments: ["ankle_stable"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: NEUTRAL_SEATED, duration: 1, breath: "natural", easing: "easeInOut", cue: "Feet flat on floor" },
+      { name: "Big Toe Up", pose: poseFrom(NEUTRAL_SEATED, { forefoot_r: [72, 74] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Lift big toe ONLY — others stay down" },
+      { name: "Others Up", pose: poseFrom(NEUTRAL_SEATED, { forefoot_r: [72, 72] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Now lift others — big toe stays down" },
+      { name: "Return", pose: NEUTRAL_SEATED, duration: 1, breath: "inhale", easing: "easeInOut", cue: "All down" },
+    ], form_checks: ["No ankle dorsiflexion substitute", "Foot doesn't roll"], highlight_muscles: [] },
+
+  // ─── STAR SLIDERS ─────
+  { exercise_id: "fa_253", exercise_name: "Star Sliders", program_tag: "Foot/Ankle", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "front", goal: "stability", primary_outcome: "Single-leg stability with sliding reaches", movement_type: "slide", primary_joints: ["hip", "ankle"], locked_segments: ["pelvis_level"], planes: ["sagittal", "frontal"],
+    phases: [
+      { name: "Balance", pose: NEUTRAL_STANDING, duration: 1, breath: "natural", easing: "easeInOut", cue: "Stand on one leg" },
+      { name: "Slide Front", pose: poseFrom(NEUTRAL_STANDING, { forefoot_r: [62, 74] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Slide foot forward — stance leg stable", muscles: ["gluteus_medius"] },
+      { name: "Slide Lateral", pose: poseFrom(NEUTRAL_STANDING, { forefoot_r: [72, 78] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Slide to side" },
+      { name: "Slide Back", pose: poseFrom(NEUTRAL_STANDING, { forefoot_r: [64, 86] }), duration: 2, breath: "exhale", easing: "easeInOut", cue: "Slide behind" },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 1, breath: "inhale", easing: "easeInOut", cue: "Return" },
+    ], form_checks: ["Stance knee doesn't collapse", "Pelvis stays level"], highlight_muscles: ["gluteus_medius"] },
+
+  // ─── MODIFIED PISTOL SQUAT ─────
+  { exercise_id: "str_254", exercise_name: "Modified Pistol Squat", program_tag: "Performance", difficulty: 3, equipment: "chair", position: "standing", view_angle_default: "side", goal: "strength", primary_outcome: "Single-leg squat to chair", movement_type: "squat", primary_joints: ["hip", "knee"], locked_segments: ["spine_neutral"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [58, 58] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Stand on one leg, other extended" },
+      { name: "Sit Back", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [50, 56], knee_l: [40, 68], hip_l: [44, 54], knee_r: [58, 56] }), duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1], cue: "Sit back to chair — single leg", muscles: ["quadriceps", "gluteus_maximus"] },
+      { name: "Drive Up", pose: NEUTRAL_STANDING, duration: 3, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Drive up through heel" },
+    ], form_checks: ["Knee tracks over midfoot", "No knee valgus", "Control descent"], highlight_muscles: ["quadriceps", "gluteus_maximus"] },
+
+  // ─── STORK DRILL ─────
+  { exercise_id: "fa_255", exercise_name: "Stork Drill", program_tag: "Foot/Ankle", difficulty: 3, equipment: "wall", position: "standing", view_angle_default: "side", goal: "strength", primary_outcome: "Explosive loading into wall", movement_type: "drive", primary_joints: ["hip", "ankle"], locked_segments: ["core_braced"], planes: ["sagittal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 28], hand_r: [62, 28] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Face wall, slight lean" },
+      { name: "Drive", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [58, 50], hip_r: [56, 46] }), duration: 1, breath: "exhale", easing: [0.2, 0, 0.2, 1], cue: "Drive knee up explosively — wall catch", muscles: ["hip_flexors", "gastrocnemius"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [58, 50] }), duration: 2, breath: "hold", easing: "linear", cue: "Hold — absorb at wall" },
+      { name: "Return", pose: NEUTRAL_STANDING, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower with control" },
+    ], form_checks: ["Drive from hip/foot", "No hip hike", "Foot doesn't collapse on landing"], highlight_muscles: ["hip_flexors", "gastrocnemius"] },
+
+  // ─── SQUAT JUMP ─────
+  { exercise_id: "str_256", exercise_name: "Squat Jump", program_tag: "Performance", difficulty: 3, equipment: "none", position: "standing", view_angle_default: "side", goal: "strength", primary_outcome: "Explosive lower body power with soft landing", movement_type: "plyometric", primary_joints: ["hip", "knee", "ankle"], locked_segments: [], planes: ["sagittal"],
+    phases: [
+      { name: "Dip", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [50, 52], knee_l: [42, 66], knee_r: [58, 66] }), duration: 1, breath: "inhale", easing: [0.4, 0, 0.2, 1], cue: "Small dip — hips back" },
+      { name: "Jump", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [50, 40], knee_l: [44, 56], knee_r: [56, 56], ankle_l: [42, 68], ankle_r: [58, 68] }), duration: 0.5, breath: "exhale", easing: [0.2, 0, 0.2, 1], cue: "JUMP — full extension", muscles: ["quadriceps", "gluteus_maximus", "gastrocnemius"] },
+      { name: "Land", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [50, 52], knee_l: [42, 66], knee_r: [58, 66] }), duration: 1, breath: "inhale", easing: [0.4, 0, 0.2, 1], cue: "QUIET landing — knees track, hips back" },
+      { name: "Stand", pose: NEUTRAL_STANDING, duration: 1, breath: "exhale", easing: "easeInOut", cue: "Stand tall — reset" },
+    ], form_checks: ["Quiet landing", "Knees track toes on landing", "Hips absorb impact"], highlight_muscles: ["quadriceps", "gluteus_maximus", "gastrocnemius"] },
+
+  // ─── SKATERS ─────
+  { exercise_id: "str_257", exercise_name: "Skaters", program_tag: "Performance", difficulty: 3, equipment: "none", position: "standing", view_angle_default: "front", goal: "strength", primary_outcome: "Lateral plyometric with soft landing", movement_type: "plyometric", primary_joints: ["hip", "knee", "ankle"], locked_segments: [], planes: ["frontal"],
+    phases: [
+      { name: "Jump Left", pose: poseFrom(NEUTRAL_STANDING, { hip_l: [38, 48], knee_l: [34, 64], ankle_l: [32, 78], knee_r: [46, 68] }), duration: 1, breath: "exhale", easing: [0.2, 0, 0.2, 1], cue: "Jump left — land soft on left foot", muscles: ["gluteus_medius", "quadriceps"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [34, 64] }), duration: 1, breath: "hold", easing: "linear", cue: "Absorb — low COM" },
+      { name: "Jump Right", pose: poseFrom(NEUTRAL_STANDING, { hip_r: [62, 48], knee_r: [66, 64], ankle_r: [68, 78], knee_l: [54, 68] }), duration: 1, breath: "exhale", easing: [0.2, 0, 0.2, 1], cue: "Jump right — land soft", muscles: ["gluteus_medius"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { knee_r: [66, 64] }), duration: 1, breath: "hold", easing: "linear", cue: "Absorb landing" },
+    ], form_checks: ["Soft quiet landing", "No valgus collapse", "Low center of mass"], highlight_muscles: ["gluteus_medius", "quadriceps"] },
+
+  // ─── OBLIQUE SIT ─────
+  { exercise_id: "hip_258", exercise_name: "Oblique Sit", program_tag: "Hip Relief", difficulty: 2, equipment: "none", position: "side_lying", view_angle_default: "front", goal: "stability", primary_outcome: "Lateral core stability from floor", movement_type: "isometric", primary_joints: ["core", "hip"], locked_segments: ["rib_cage_stacked"], planes: ["frontal"],
+    phases: [
+      { name: "Setup", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], elbow_l: [24, 40], hip_l: [50, 42], hip_r: [50, 50] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Side sit, propped on elbow" },
+      { name: "Lift", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 42], pelvis: [48, 44], hip_l: [50, 40] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Lift hips — stack ribs over pelvis", muscles: ["obliques", "gluteus_medius"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_SUPINE, { pelvis: [48, 44] }), duration: 10, breath: "natural", easing: "linear", cue: "Hold — rib cage stacked, scap set" },
+      { name: "Lower", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44] }), duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower with control" },
+    ], form_checks: ["Rib cage stacked", "No shoulder shrug", "No hip drop"], highlight_muscles: ["obliques", "gluteus_medius"] },
+
+  // ─── SHOULDER BEAR ─────
+  { exercise_id: "neck_259", exercise_name: "Shoulder Bear", program_tag: "Shoulder Relief", difficulty: 2, equipment: "none", position: "quadruped", view_angle_default: "side", goal: "stability", primary_outcome: "Serratus/scap stability in bear", movement_type: "isometric", primary_joints: ["scapula", "core"], locked_segments: ["spine_neutral"], planes: ["sagittal"],
+    phases: [
+      { name: "Bear Hover", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [66, 56] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Bear hover — serratus active, chin tucked", muscles: ["serratus_anterior", "deep_neck_flexors"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_QUADRUPED, { knee_l: [66, 52], knee_r: [66, 56] }), duration: 15, breath: "natural", easing: "linear", cue: "Hold — push through hands, chin tucked" },
+      { name: "Lower", pose: NEUTRAL_QUADRUPED, duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower knees" },
+    ], form_checks: ["Deep neck flexors ON", "Scapula stable — no winging", "Head doesn't jut forward"], highlight_muscles: ["serratus_anterior", "deep_neck_flexors"] },
+
+  // ─── SHOULDER UPRIGHTING ─────
+  { exercise_id: "neck_260", exercise_name: "Shoulder Uprighting", program_tag: "Shoulder Relief", difficulty: 1, equipment: "none", position: "standing", view_angle_default: "front", goal: "stability", primary_outcome: "Scap control + cuff positioning", movement_type: "posture", primary_joints: ["scapula"], locked_segments: ["cervical_neutral"], planes: ["frontal"],
+    phases: [
+      { name: "Slouch", pose: poseFrom(NEUTRAL_STANDING, { shoulder_l: [34, 26], shoulder_r: [66, 26], scap_l: [36, 28], scap_r: [64, 28] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Start with shoulders forward" },
+      { name: "Upright", pose: poseFrom(NEUTRAL_STANDING, { shoulder_l: [40, 22], shoulder_r: [60, 22], scap_l: [42, 26], scap_r: [58, 26], sternum: [50, 22] }), duration: 3, breath: "exhale", easing: [0.3, 0, 0.15, 1], cue: "Roll shoulders back & down — neck neutral", muscles: ["lower_trapezius", "rhomboids"] },
+      { name: "Hold", pose: poseFrom(NEUTRAL_STANDING, { scap_l: [42, 26], scap_r: [58, 26] }), duration: 5, breath: "natural", easing: "linear", cue: "Hold — feel lower traps working" },
+    ], form_checks: ["No shrugging", "Neck stays neutral"], highlight_muscles: ["lower_trapezius", "rhomboids"] },
+
 ];
 
 // ─── NAME ALIASES (maps common DB names → spec exercise_name) ─────

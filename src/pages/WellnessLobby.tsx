@@ -587,14 +587,14 @@ const MoreTab = () => {
 
       {/* Book Coaching Call */}
       <div className="mb-6">
-        <h2 className="font-display text-base font-semibold text-foreground mb-3">🤝 Need to Talk to a Professional?</h2>
+        <h2 className="font-display text-base font-semibold text-foreground mb-3">👨🏻‍⚕️ Need to Talk to a Professional?</h2>
         <a
           href="https://calendly.com/drchriszeiter/30min"
           target="_blank"
           rel="noopener noreferrer"
           className="w-full glass rounded-xl p-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98] block"
         >
-          <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center text-lg shrink-0">📞</div>
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-lg shrink-0">📞</div>
           <div className="flex-1">
             <h4 className="font-display font-semibold text-foreground text-sm">Book a Coaching Call</h4>
             <p className="text-xs text-muted-foreground">1-on-1 guidance from a wellness professional</p>

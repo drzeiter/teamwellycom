@@ -331,10 +331,11 @@ export default function WellyAssistant() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
+          className="fixed bottom-24 right-4 z-50 flex items-center gap-2 rounded-full bg-accent text-accent-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-3 pr-4 py-2.5"
           aria-label="Open Welly AI Assistant"
         >
-          <img src={logoSubmark} alt="Welly" className="w-7 h-7 object-contain brightness-0 invert" />
+          <img src={logoSubmark} alt="Welly" className="w-7 h-7 object-contain" />
+          <span className="text-xs font-semibold whitespace-nowrap">Ask Welly AI</span>
         </button>
       )}
 

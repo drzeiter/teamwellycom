@@ -159,6 +159,34 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
       </div>
     </div>
 
+    {/* Wearable Metrics Placeholder */}
+    <div className="px-5 mb-4">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="glass rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display text-xs font-bold text-foreground uppercase tracking-wider">⌚ Live Metrics</h3>
+          <button onClick={() => setActiveTab("steps")} className="text-[10px] text-primary font-medium">Connect Device →</button>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-secondary/60 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-bold text-wellness-coral">--</p>
+            <p className="text-[9px] text-muted-foreground">❤️ BPM</p>
+          </div>
+          <div className="bg-secondary/60 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-bold text-wellness-gold">--</p>
+            <p className="text-[9px] text-muted-foreground">🔥 kcal</p>
+          </div>
+          <div className="bg-secondary/60 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-bold text-wellness-green">--</p>
+            <p className="text-[9px] text-muted-foreground">😴 Sleep</p>
+          </div>
+          <div className="bg-secondary/60 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-bold text-wellness-purple">--</p>
+            <p className="text-[9px] text-muted-foreground">🫀 HRV</p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+
     {/* Level Progress */}
     <div className="px-5 mb-4">
       <div className="glass rounded-xl p-3">

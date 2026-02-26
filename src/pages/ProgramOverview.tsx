@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Clock, Target, ChevronRight, Check, Lock, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoSubmark from "@/assets/logo-submark.png";
+import logoWhite from "@/assets/logo-white.png";
 
 interface Program {
   id: string;
@@ -114,7 +114,7 @@ const ProgramOverview = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <img src={logoSubmark} alt="Team Welly" className="w-12 h-12 mx-auto mb-4 animate-pulse" />
+          <img src={logoWhite} alt="Team Welly" className="h-8 w-auto mx-auto mb-4 animate-pulse" />
           <p className="text-muted-foreground text-sm">Loading program...</p>
         </div>
       </div>
@@ -137,6 +137,7 @@ const ProgramOverview = () => {
           <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
+          <img src={logoWhite} alt="Team Welly" className="h-6 w-auto" />
           <div className="flex-1 min-w-0">
             <h1 className="font-display text-base font-bold text-foreground truncate">{program.name}</h1>
             <p className="text-xs text-muted-foreground">Week {Math.min(currentWeek, 12)} of 12</p>

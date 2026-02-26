@@ -589,7 +589,7 @@ const MoreTab = () => {
       <div className="mb-6">
         <h2 className="font-display text-base font-semibold text-foreground mb-3">🤝 Need to Talk to a Professional?</h2>
         <a
-          href="https://calendly.com"
+          href="https://calendly.com/drchriszeiter/30min"
           target="_blank"
           rel="noopener noreferrer"
           className="w-full glass rounded-xl p-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98] block"

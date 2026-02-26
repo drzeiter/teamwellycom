@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Bookmark, Phone } from "lucide-react";
+import { X, Send, Bookmark, Phone, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { addToCalendar, type CalendarProvider } from "@/utils/calendarEvent";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -182,7 +183,20 @@ export default function WellyAssistant() {
   };
 
   const handleBookCall = () => {
-    toast({ title: "Book a Call", description: "Coaching call booking coming soon!" });
+    window.open("https://calendly.com/drchriszeiter/30min", "_blank");
+  };
+
+  const handleAddToCalendar = (assistantMessage: string) => {
+    // Extract a routine name from the message (first line or first bold text)
+    const boldMatch = assistantMessage.match(/\*\*(.+?)\*\*/);
+    const title = boldMatch?.[1] || "Wellness Routine";
+    const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
+    addToCalendar(provider, {
+      title,
+      description: assistantMessage.slice(0, 200),
+      durationMinutes: 15,
+    });
+    toast({ title: "Added to calendar! 📅", description: `"${title}" scheduled for ~2 hours from now.` });
   };
 
   const clearChat = () => {
@@ -237,7 +251,13 @@ export default function WellyAssistant() {
               )}
               {/* Action buttons on assistant messages */}
               {msg.role === "assistant" && msg.content.length > 50 && (
-                <div className="flex gap-2 mt-2 pt-2 border-t border-border/50">
+                <div className="flex gap-2 mt-2 pt-2 border-t border-border/50 flex-wrap">
+                  <button
+                    onClick={() => handleAddToCalendar(msg.content)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <CalendarPlus className="w-3 h-3" /> Add to Calendar
+                  </button>
                   <button
                     onClick={() => handleSaveRoutine(msg.content)}
                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"

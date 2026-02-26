@@ -335,7 +335,7 @@ export default function WellyAssistant() {
           aria-label="Open Welly AI Assistant"
         >
           <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
-            <img src={logoSubmark} alt="Welly" className="w-7 h-7 object-contain brightness-0 invert" />
+            <img src={logoSubmark} alt="Welly" className="w-7 h-7 object-contain brightness-0" />
           </div>
           <span className="text-xs font-semibold whitespace-nowrap">Ask Welly AI</span>
         </button>

@@ -86,6 +86,39 @@ export type Database = {
         }
         Relationships: []
       }
+      conditions_kb: {
+        Row: {
+          body_region: string | null
+          condition_json: Json
+          condition_name: string
+          created_at: string
+          id: string
+          source_doc: string | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          body_region?: string | null
+          condition_json?: Json
+          condition_name: string
+          created_at?: string
+          id?: string
+          source_doc?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          body_region?: string | null
+          condition_json?: Json
+          condition_name?: string
+          created_at?: string
+          id?: string
+          source_doc?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exercise_aliases: {
         Row: {
           alias_name: string
@@ -276,6 +309,44 @@ export type Database = {
         }
         Relationships: []
       }
+      program_mapping: {
+        Row: {
+          body_regions: string[] | null
+          created_at: string
+          id: string
+          program_id: string | null
+          program_name: string
+          tags: string[] | null
+          use_when: string[] | null
+        }
+        Insert: {
+          body_regions?: string[] | null
+          created_at?: string
+          id?: string
+          program_id?: string | null
+          program_name: string
+          tags?: string[] | null
+          use_when?: string[] | null
+        }
+        Update: {
+          body_regions?: string[] | null
+          created_at?: string
+          id?: string
+          program_id?: string | null
+          program_name?: string
+          tags?: string[] | null
+          use_when?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_mapping_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       programs: {
         Row: {
           category: string
@@ -327,6 +398,33 @@ export type Database = {
           region?: string | null
           sort_order?: number | null
           target_area?: string
+        }
+        Relationships: []
+      }
+      saved_routines: {
+        Row: {
+          created_at: string
+          id: string
+          routine_json: Json
+          routine_name: string
+          source_condition: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          routine_json?: Json
+          routine_name: string
+          source_condition?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          routine_json?: Json
+          routine_name?: string
+          source_condition?: string | null
+          user_id?: string
         }
         Relationships: []
       }

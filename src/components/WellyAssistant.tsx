@@ -331,7 +331,7 @@ export default function WellyAssistant() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-24 right-4 z-50 flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2"
+          className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2"
           aria-label="Open Welly AI Assistant"
         >
           <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">

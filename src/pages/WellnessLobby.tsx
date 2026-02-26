@@ -100,7 +100,7 @@ const WellnessLobby = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "home": return <HomeTab {...{ firstName, points, programs: quickContent, twelveWeekPrograms, quickResets, deskResets, relaxPrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps: health.dailySteps, tipsMode, setTipsMode }} />;
+      case "home": return <HomeTab {...{ firstName, points, programs: quickContent, twelveWeekPrograms, quickResets, deskResets, relaxPrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps: health.dailySteps, tipsMode, setTipsMode, setActiveTab }} />;
       case "programs": return <ProgramsTab {...{ programs: quickContent, twelveWeekPrograms, categories, selectedCategory, setSelectedCategory, navigate }} />;
       case "progress": return <ProgressTab {...{ progressHistory, programs: [...quickContent, ...twelveWeekPrograms], points, completedCount }} />;
       case "steps": return <StepsTab {...{ dailySteps: health.dailySteps, weeklySteps: health.weeklySteps, points, health }} />;
@@ -129,7 +129,7 @@ const WellnessLobby = () => {
 };
 
 // ─── HOME TAB ────────────────────────────────────────
-const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets, deskResets, relaxPrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps, tipsMode, setTipsMode }: any) => (
+const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets, deskResets, relaxPrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps, tipsMode, setTipsMode, setActiveTab }: any) => (
   <>
     {/* Header */}
     <div className="px-5 pt-6 pb-4">
@@ -219,7 +219,7 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
             </motion.button>
           ))}
           {twelveWeekPrograms.length > 3 && (
-            <button onClick={() => navigate("/programs")} className="w-full text-center text-primary text-xs font-medium py-2">
+            <button onClick={() => setActiveTab("programs")} className="w-full text-center text-primary text-xs font-medium py-2">
               View all {twelveWeekPrograms.length} programs →
             </button>
           )}

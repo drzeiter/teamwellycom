@@ -1277,7 +1277,7 @@ export const EXERCISE_SPECS: ExerciseMovementSpec[] = [
     highlight_muscles: ["quadriceps", "gluteus_maximus"],
   },
 
-  // ─── 22. ROMANIAN DEADLIFT ─────────────────
+  // ─── 22. ROMANIAN DEADLIFT (distinct from Hip Hinge #18: loaded, deeper, hamstring bias) ─────
   {
     exercise_id: "back_022",
     exercise_name: "Romanian Deadlift",
@@ -1287,45 +1287,48 @@ export const EXERCISE_SPECS: ExerciseMovementSpec[] = [
     position: "standing",
     view_angle_default: "side",
     goal: "strength",
-    primary_outcome: "Hamstring strength, hip hinge mastery",
+    primary_outcome: "Loaded hamstring eccentric, hip hinge under tension",
     movement_type: "hinge",
     primary_joints: ["hip"],
-    locked_segments: ["spine_neutral"],
+    locked_segments: ["spine_neutral", "scapula_retracted"],
     planes: ["sagittal"],
     phases: [
-      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 48], hand_r: [62, 48] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Hold weights in front of thighs" },
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 48], hand_r: [62, 48], wrist_l: [38, 46], wrist_r: [62, 46], scap_l: [42, 28], scap_r: [58, 28] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Weights in front, shoulders packed, soft knees" },
       {
-        name: "Hinge Down",
+        name: "Eccentric Lower",
         pose: poseFrom(NEUTRAL_STANDING, {
-          skull: [40, 22], c_spine: [42, 28], t_spine: [44, 36], l_spine: [46, 42],
-          pelvis: [54, 50], sacrum: [56, 52],
-          hand_l: [40, 56], hand_r: [60, 56],
-          wrist_l: [40, 54], wrist_r: [60, 54],
-          knee_l: [44, 66], knee_r: [58, 66],
+          skull: [36, 28], c_spine: [38, 32], t_spine: [42, 38], l_spine: [46, 44],
+          pelvis: [58, 54], sacrum: [60, 56],
+          hand_l: [42, 62], hand_r: [58, 62],
+          wrist_l: [42, 60], wrist_r: [58, 60],
+          knee_l: [44, 68], knee_r: [58, 68],
+          hip_l: [48, 54], hip_r: [56, 54],
+          scap_l: [42, 32], scap_r: [58, 32],
         }),
-        duration: 3, breath: "inhale", easing: [0.4, 0, 0.2, 1],
-        cue: "Push hips back — weights slide down legs",
-        muscles: ["hamstrings", "gluteus_maximus", "erector_spinae"],
+        duration: 3, breath: "inhale", easing: [0.35, 0, 0.15, 1],
+        cue: "Slide weights down shins — push hips FAR back",
+        muscles: ["hamstrings", "erector_spinae", "gluteus_maximus"],
       },
       {
-        name: "Bottom",
+        name: "Stretch Hold",
         pose: poseFrom(NEUTRAL_STANDING, {
-          skull: [38, 26], t_spine: [42, 38], l_spine: [46, 44],
-          pelvis: [56, 52], hand_l: [40, 60], hand_r: [60, 60],
+          skull: [34, 30], t_spine: [40, 40], l_spine: [46, 46],
+          pelvis: [60, 56], hand_l: [42, 66], hand_r: [58, 66],
+          knee_l: [44, 68], knee_r: [58, 68],
         }),
-        duration: 1, breath: "hold", easing: "linear",
-        cue: "Feel hamstring stretch — spine stays neutral",
+        duration: 2, breath: "hold", easing: "linear",
+        cue: "Feel deep hamstring stretch — spine STAYS neutral",
       },
       {
-        name: "Drive Up",
-        pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 48], hand_r: [62, 48] }),
+        name: "Concentric Drive",
+        pose: poseFrom(NEUTRAL_STANDING, { hand_l: [38, 48], hand_r: [62, 48], scap_l: [42, 28], scap_r: [58, 28] }),
         duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1],
-        cue: "Squeeze glutes — drive hips forward",
+        cue: "Squeeze glutes HARD — drive hips through",
         muscles: ["gluteus_maximus", "hamstrings"],
       },
     ],
-    form_checks: ["Spine STAYS neutral", "Hamstring bias, not lumbar", "Soft knees"],
-    highlight_muscles: ["hamstrings", "gluteus_maximus"],
+    form_checks: ["Spine STAYS neutral — no rounding", "Weights stay close to legs", "Knees soft but NOT bending more", "Hamstring bias, not lumbar"],
+    highlight_muscles: ["hamstrings", "gluteus_maximus", "erector_spinae"],
   },
 
   // ─── 23-32: NECK / SHOULDER SERIES ─────────────────
@@ -1449,13 +1452,14 @@ export const EXERCISE_SPECS: ExerciseMovementSpec[] = [
   },
 
   // 27-32: Abbreviated specs
-  { exercise_id: "shoulder_027", exercise_name: "Wall Slide with Lift Off", program_tag: "Shoulder Relief", difficulty: 2, equipment: "wall", position: "standing", view_angle_default: "side", goal: "mobility", primary_outcome: "Scapular upward rotation", movement_type: "slide", primary_joints: ["scapula"], locked_segments: ["lumbar_neutral"], planes: ["sagittal", "frontal"],
+  { exercise_id: "shoulder_027", exercise_name: "Wall Slide with Lift Off", program_tag: "Shoulder Relief", difficulty: 2, equipment: "wall", position: "standing", view_angle_default: "side", goal: "mobility", primary_outcome: "Scapular upward rotation with end-range activation", movement_type: "slide_lift", primary_joints: ["scapula", "glenohumeral"], locked_segments: ["lumbar_neutral", "rib_cage_down"], planes: ["sagittal", "frontal"],
     phases: [
-      { name: "Start", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [34, 28], elbow_r: [66, 28], wrist_l: [34, 22], wrist_r: [66, 22] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Arms on wall at 90°" },
-      { name: "Slide Up", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [36, 18], elbow_r: [64, 18], wrist_l: [36, 8], wrist_r: [64, 8] }), duration: 3, breath: "inhale", easing: [0.4, 0, 0.2, 1], cue: "Slide up — posterior tilt scapula", muscles: ["serratus_anterior", "lower_trapezius"] },
-      { name: "Lift Off", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [36, 16], elbow_r: [64, 16], wrist_l: [36, 6], wrist_r: [64, 6] }), duration: 2, breath: "hold", easing: "easeInOut", cue: "Lift hands off wall 1 inch" },
-      { name: "Return", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [34, 28], elbow_r: [66, 28] }), duration: 3, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Slide back down" },
-    ], form_checks: ["Ribs stay flat", "Posterior tilt at top"], highlight_muscles: ["serratus_anterior", "lower_trapezius"] },
+      { name: "Start Low", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [32, 34], elbow_r: [68, 34], wrist_l: [30, 28], wrist_r: [70, 28], hand_l: [29, 26], hand_r: [71, 26], scap_l: [40, 28], scap_r: [60, 28] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Forearms flat on wall, elbows below shoulders" },
+      { name: "Slide Up Overhead", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [38, 14], elbow_r: [62, 14], wrist_l: [40, 4], wrist_r: [60, 4], hand_l: [40, 2], hand_r: [60, 2], scap_l: [42, 22], scap_r: [58, 22], shoulder_l: [38, 18], shoulder_r: [62, 18] }), duration: 3, breath: "inhale", easing: [0.4, 0, 0.2, 1], cue: "Slide overhead — scapula tilts posteriorly", muscles: ["serratus_anterior", "lower_trapezius"] },
+      { name: "Lift Off Wall", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [38, 12], elbow_r: [62, 12], wrist_l: [40, 2], wrist_r: [60, 2], hand_l: [40, 0], hand_r: [60, 0], scap_l: [43, 21], scap_r: [57, 21] }), duration: 2, breath: "hold", easing: [0.3, 0, 0.2, 1], cue: "Peel hands off wall — hold 2 sec", muscles: ["lower_trapezius", "serratus_anterior", "infraspinatus"] },
+      { name: "Replace on Wall", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [38, 14], elbow_r: [62, 14], wrist_l: [40, 4], wrist_r: [60, 4] }), duration: 1, breath: "exhale", easing: "easeInOut", cue: "Place hands back gently" },
+      { name: "Slide Down", pose: poseFrom(NEUTRAL_STANDING, { elbow_l: [32, 34], elbow_r: [68, 34], wrist_l: [30, 28], wrist_r: [70, 28], hand_l: [29, 26], hand_r: [71, 26] }), duration: 3, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Slide back to start — ribs stay flat" },
+    ], form_checks: ["Ribs stay flat throughout", "Posterior scapular tilt at top", "Hands lift only 1-2 inches"], highlight_muscles: ["serratus_anterior", "lower_trapezius", "infraspinatus"] },
 
   { exercise_id: "shoulder_028", exercise_name: "Serratus Punch", program_tag: "Shoulder Relief", difficulty: 1, equipment: "none", position: "supine", view_angle_default: "side", goal: "stability", primary_outcome: "Scapular protraction", movement_type: "punch", primary_joints: ["scapula"], locked_segments: ["ribs_neutral"], planes: ["sagittal"],
     phases: [
@@ -1576,13 +1580,13 @@ export const EXERCISE_SPECS: ExerciseMovementSpec[] = [
       { name: "Lower", pose: poseFrom(NEUTRAL_SUPINE, { skull: [20, 44], pelvis: [48, 52] }), duration: 2, breath: "inhale", easing: "easeInOut", cue: "Lower with control" },
     ], form_checks: ["Pelvis stacked", "Adductor bias"], highlight_muscles: ["adductors", "obliques"] },
 
-  { exercise_id: "hip_042", exercise_name: "Split Squat", program_tag: "Hip Relief", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "side", goal: "strength", primary_outcome: "Single-leg strength, hip stability", movement_type: "squat", primary_joints: ["hip", "knee"], locked_segments: ["torso_upright"], planes: ["sagittal"],
+  { exercise_id: "hip_042", exercise_name: "Split Squat", program_tag: "Hip Relief", difficulty: 2, equipment: "none", position: "standing", view_angle_default: "front", goal: "strength", primary_outcome: "Quad-dominant single-leg strength, static base", movement_type: "squat", primary_joints: ["knee", "hip"], locked_segments: ["torso_vertical", "feet_fixed"], planes: ["sagittal"],
     phases: [
-      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 60], knee_r: [62, 64], heel_r: [64, 76], forefoot_l: [42, 80] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Split stance, torso tall" },
-      { name: "Lower", pose: poseFrom(NEUTRAL_STANDING, { skull: [50, 18], pelvis: [50, 52], knee_l: [42, 64], knee_r: [64, 72], ankle_r: [66, 82] }), duration: 3, breath: "inhale", easing: [0.4, 0, 0.2, 1], cue: "Lower — both knees bend", muscles: ["quadriceps", "gluteus_maximus"] },
-      { name: "Bottom", pose: poseFrom(NEUTRAL_STANDING, { pelvis: [50, 54], knee_l: [42, 66], knee_r: [64, 74] }), duration: 1, breath: "hold", easing: "linear", cue: "Pause at bottom" },
-      { name: "Drive Up", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [44, 60], knee_r: [62, 64] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Drive through front heel", muscles: ["quadriceps", "gluteus_maximus"] },
-    ], form_checks: ["Torso upright", "Controlled descent"], highlight_muscles: ["quadriceps", "gluteus_maximus"] },
+      { name: "Setup", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [42, 58], knee_r: [64, 62], heel_r: [68, 78], forefoot_l: [40, 80], forefoot_r: [70, 82], hip_l: [44, 48], hip_r: [56, 48], ankle_r: [68, 76] }), duration: 1, breath: "natural", easing: "easeInOut", cue: "Static split stance — feet stay planted" },
+      { name: "Descend Vertical", pose: poseFrom(NEUTRAL_STANDING, { skull: [50, 20], c_spine: [50, 26], t_spine: [50, 34], pelvis: [50, 56], knee_l: [38, 68], knee_r: [68, 76], ankle_r: [70, 84], hip_l: [44, 54], hip_r: [56, 54], heel_r: [72, 86] }), duration: 3, breath: "inhale", easing: [0.4, 0, 0.2, 1], cue: "Drop straight down — torso stays vertical", muscles: ["quadriceps", "rectus_femoris"] },
+      { name: "Bottom Pause", pose: poseFrom(NEUTRAL_STANDING, { skull: [50, 22], pelvis: [50, 58], knee_l: [36, 70], knee_r: [68, 78], hip_l: [44, 56], hip_r: [56, 56] }), duration: 2, breath: "hold", easing: "linear", cue: "Pause — back knee hovers 1 inch off floor" },
+      { name: "Drive Up", pose: poseFrom(NEUTRAL_STANDING, { knee_l: [42, 58], knee_r: [64, 62], heel_r: [68, 78], hip_l: [44, 48], hip_r: [56, 48] }), duration: 2, breath: "exhale", easing: [0.4, 0, 0.2, 1], cue: "Push through front foot — extend both knees", muscles: ["quadriceps", "gluteus_maximus"] },
+    ], form_checks: ["Torso stays VERTICAL (unlike lunge forward lean)", "Feet stay planted — no stepping", "Back knee hovers, doesn't touch"], highlight_muscles: ["quadriceps", "rectus_femoris", "gluteus_maximus"] },
 
   // ─── 43-50: BREATH + NERVOUS SYSTEM ─────────────────
 
@@ -1652,17 +1656,125 @@ export const EXERCISE_SPECS: ExerciseMovementSpec[] = [
     ], form_checks: ["Slow and controlled", "3 breaths minimum", "Complete relaxation at end"], highlight_muscles: ["diaphragm", "deep_neck_flexors", "rectus_abdominis"] },
 ];
 
-// ─── LOOKUP HELPER ─────────────────────────────────────────
+// ─── NAME ALIASES (maps common DB names → spec exercise_name) ─────
+const EXERCISE_ALIASES: Record<string, string> = {
+  "chin tuck": "Cervical Retraction",
+  "chin tucks": "Cervical Retraction",
+  "cervical retraction (chin tuck)": "Cervical Retraction",
+  "thoracic extension": "Seated Thoracic Extension Over Chair",
+  "thoracic extension over chair": "Seated Thoracic Extension Over Chair",
+  "t-spine rotation": "Seated Thoracic Rotation",
+  "thoracic rotation seated": "Seated Thoracic Rotation",
+  "trap release": "Upper Trap Relax + Rib Expansion",
+  "upper trap relax": "Upper Trap Relax + Rib Expansion",
+  "scap retraction": "Scapular Retraction",
+  "wall angels": "Standing Wall Angels",
+  "pec stretch": "Doorway Pec Opener",
+  "pec opener": "Doorway Pec Opener",
+  "nerve glide": "Wrist Extension Nerve Glide",
+  "median nerve glide": "Wrist Extension Nerve Glide",
+  "pelvic tilts": "Seated Pelvic Tilts",
+  "back extension": "Standing Back Extension Reset",
+  "cat cow": "Cat-Cow",
+  "cat-cow segmental": "Cat-Cow",
+  "child's pose": "Child's Pose with Side Reach",
+  "childs pose": "Child's Pose with Side Reach",
+  "glute bridge": "Glute Bridge",
+  "bridge": "Glute Bridge",
+  "side plank": "Side Plank",
+  "side plank modified": "Side Plank",
+  "pallof": "Pallof Press",
+  "hip hinge": "Hip Hinge Drill",
+  "hip hinge drill": "Hip Hinge Drill",
+  "wall tap hip hinge": "Hip Hinge Drill",
+  "90/90 hip": "90/90 Hip Internal Rotation",
+  "90 90 hip": "90/90 Hip Internal Rotation",
+  "jefferson curl": "Jefferson Curl",
+  "reverse lunge": "Reverse Lunge",
+  "rdl": "Romanian Deadlift",
+  "romanian deadlift": "Romanian Deadlift",
+  "deep neck flexor": "Deep Neck Flexor Hold",
+  "dnf hold": "Deep Neck Flexor Hold",
+  "scapular cars": "Scapular CARs",
+  "scap cars": "Scapular CARs",
+  "shoulder er": "Shoulder External Rotation",
+  "external rotation": "Shoulder External Rotation",
+  "prone y": "Prone Y Raise",
+  "y raise": "Prone Y Raise",
+  "wall slide": "Wall Slide with Lift Off",
+  "wall slide lift off": "Wall Slide with Lift Off",
+  "serratus punch": "Serratus Punch",
+  "levator scap": "Levator Scap Stretch",
+  "levator stretch": "Levator Scap Stretch",
+  "thread the needle": "Thread the Needle",
+  "farmer carry": "Farmer Carry",
+  "face pull": "Face Pull",
+  "hip flexor stretch": "Half Kneeling Hip Flexor Stretch",
+  "half kneeling hip flexor": "Half Kneeling Hip Flexor Stretch",
+  "lateral band walk": "Lateral Band Walk",
+  "band walk": "Lateral Band Walk",
+  "cossack squat": "Cossack Squat",
+  "cossack": "Cossack Squat",
+  "single leg rdl": "Single Leg RDL",
+  "sl rdl": "Single Leg RDL",
+  "step down": "Step Down Control",
+  "step downs": "Step Down Control",
+  "tibialis raise": "Tibialis Raises",
+  "tib raise": "Tibialis Raises",
+  "calf raise": "Calf Raise Tempo",
+  "calf raises": "Calf Raise Tempo",
+  "ankle cars": "Ankle CARs",
+  "copenhagen plank": "Copenhagen Plank",
+  "copenhagen": "Copenhagen Plank",
+  "split squat": "Split Squat",
+  "crocodile breathing": "Crocodile Breathing",
+  "crocodile breath": "Crocodile Breathing",
+  "90/90 breathing": "90/90 Breathing",
+  "90 90 breathing": "90/90 Breathing",
+  "cyclic sigh": "Cyclic Sigh",
+  "cyclic sighing": "Cyclic Sigh",
+  "4-7-8": "4-7-8 Breathing",
+  "4 7 8": "4-7-8 Breathing",
+  "coherent breathing": "Coherent Breathing",
+  "coherent breath": "Coherent Breathing",
+  "box breathing": "Box Breathing",
+  "box breath": "Box Breathing",
+  "rib expansion": "Supine Rib Expansion Hold",
+  "rib expansion hold": "Supine Rib Expansion Hold",
+  "parasympathetic downshift": "Parasympathetic Downshift Combo",
+  "downshift combo": "Parasympathetic Downshift Combo",
+};
+
+// ─── LOOKUP HELPER (precise matching with alias support) ─────
 export function findExerciseSpec(exerciseName: string): ExerciseMovementSpec | undefined {
-  const n = exerciseName.toLowerCase();
-  return EXERCISE_SPECS.find(s => {
+  const n = exerciseName.toLowerCase().trim();
+
+  // 1. Exact match on exercise_name
+  const exact = EXERCISE_SPECS.find(s => s.exercise_name.toLowerCase() === n);
+  if (exact) return exact;
+
+  // 2. Alias lookup
+  const aliasTarget = EXERCISE_ALIASES[n];
+  if (aliasTarget) {
+    const aliased = EXERCISE_SPECS.find(s => s.exercise_name.toLowerCase() === aliasTarget.toLowerCase());
+    if (aliased) return aliased;
+  }
+
+  // 3. Check if input contains the full spec name or vice versa
+  const containsMatch = EXERCISE_SPECS.find(s => {
     const sn = s.exercise_name.toLowerCase();
-    // Exact match
-    if (sn === n) return true;
-    // Fuzzy: check if key words match
-    const words = sn.split(/\s+/);
-    const matchCount = words.filter(w => n.includes(w.toLowerCase())).length;
-    return matchCount >= Math.ceil(words.length * 0.6);
+    return n.includes(sn) || sn.includes(n);
+  });
+  if (containsMatch) return containsMatch;
+
+  // 4. Strict fuzzy: ALL significant words (3+ chars) of the spec name must appear in input
+  const STOP_WORDS = new Set(["with", "the", "and", "for", "over", "modified"]);
+  return EXERCISE_SPECS.find(s => {
+    const specWords = s.exercise_name.toLowerCase().split(/[\s\-\/]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
+    if (specWords.length === 0) return false;
+    const matchCount = specWords.filter(w => n.includes(w)).length;
+    // Require ALL significant words to match (strict)
+    return matchCount === specWords.length;
   });
 }
 

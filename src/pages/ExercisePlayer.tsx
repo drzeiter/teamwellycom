@@ -337,15 +337,45 @@ const ExercisePlayer = () => {
               />
             )}
 
-            {/* Exercise name */}
+            {/* Exercise name + prescription */}
             <h2 className="font-display text-xl font-bold text-foreground mb-1">
               {currentExercise?.name}
             </h2>
+
+            {/* Side indicator */}
+            {side && (
+              <span className="inline-block px-3 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider mb-2">
+                {side} side
+              </span>
+            )}
+
             {currentExercise?.instruction_text && (
-              <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
+              <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-3">
                 {currentExercise.instruction_text}
               </p>
             )}
+
+            {/* Duration & rep info bar */}
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/80">
+                <Play className="w-3 h-3 text-primary" />
+                <span className="text-xs font-medium text-foreground">
+                  {currentExercise?.duration_seconds
+                    ? currentExercise.duration_seconds >= 60
+                      ? `${Math.floor(currentExercise.duration_seconds / 60)}m ${currentExercise.duration_seconds % 60 > 0 ? `${currentExercise.duration_seconds % 60}s` : ""}`
+                      : `${currentExercise.duration_seconds}s`
+                    : "--"}
+                </span>
+              </div>
+              {currentExercise?.is_bilateral && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/80">
+                  <span className="text-xs font-medium text-foreground">⟷ Both Sides</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/80">
+                <span className="text-xs text-muted-foreground">{currentIndex + 1} of {exercises.length}</span>
+              </div>
+            </div>
 
             {/* Timer */}
             <div className="relative w-36 h-36 mx-auto mb-6">

@@ -168,32 +168,44 @@ const ExerciseDetail = () => {
           </motion.div>
         )}
 
-        {/* Sets / Reps from module context */}
+        {/* Prescription — enhanced with timer-style UI */}
         {moduleExercise && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass rounded-2xl p-5">
-            <h3 className="font-display text-sm font-bold text-foreground mb-3">📋 Prescription</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <h3 className="font-display text-sm font-bold text-foreground mb-3">📋 Your Prescription</h3>
+            <div className="grid grid-cols-3 gap-2 mb-3">
               {moduleExercise.sets && (
-                <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Sets</p>
-                  <p className="font-display text-sm font-bold text-foreground">{moduleExercise.sets}</p>
+                <div className="bg-secondary/50 rounded-xl p-3 text-center">
+                  <p className="font-display text-2xl font-bold text-primary">{moduleExercise.sets}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Sets</p>
                 </div>
               )}
               {moduleExercise.reps && (
-                <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Reps</p>
-                  <p className="font-display text-sm font-bold text-foreground">{moduleExercise.reps}</p>
+                <div className="bg-secondary/50 rounded-xl p-3 text-center">
+                  <p className="font-display text-2xl font-bold text-primary">{moduleExercise.reps}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Reps</p>
                 </div>
               )}
-              {moduleExercise.frequency && (
-                <div className="bg-secondary/50 rounded-xl p-3 col-span-2">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Frequency</p>
-                  <p className="font-display text-sm font-bold text-foreground">{moduleExercise.frequency}</p>
+              {moduleExercise.hold_duration && (
+                <div className="bg-secondary/50 rounded-xl p-3 text-center">
+                  <p className="font-display text-2xl font-bold text-wellness-coral">{moduleExercise.hold_duration}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">Hold</p>
                 </div>
               )}
             </div>
+            {moduleExercise.frequency && (
+              <div className="bg-primary/5 rounded-xl p-3 flex items-center gap-2 mb-2">
+                <span className="text-primary text-sm">🔁</span>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Frequency</p>
+                  <p className="font-display text-sm font-bold text-foreground">{moduleExercise.frequency}</p>
+                </div>
+              </div>
+            )}
             {moduleExercise.notes && (
-              <p className="text-xs text-muted-foreground mt-3 italic">{moduleExercise.notes}</p>
+              <div className="bg-wellness-gold/5 rounded-xl p-3 flex items-start gap-2">
+                <span className="text-sm mt-0.5">💡</span>
+                <p className="text-xs text-muted-foreground italic leading-relaxed">{moduleExercise.notes}</p>
+              </div>
             )}
           </motion.div>
         )}

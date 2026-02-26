@@ -123,7 +123,7 @@ const ExerciseDetail = () => {
             exerciseName={exercise.name}
             isPlaying={isPlaying}
             side={exercise.is_bilateral ? "left" : null}
-            className="w-40 h-40 mb-4"
+            className="w-48 h-48 mb-8"
           />
           <button
             onClick={() => setIsPlaying(!isPlaying)}

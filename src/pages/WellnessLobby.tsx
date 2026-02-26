@@ -265,6 +265,35 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
         </button>
       </motion.div>
     </div>
+
+    {/* Quick Resets Grid */}
+    {quickResets.length > 0 && (
+      <div className="px-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="font-display text-base font-bold text-foreground">⚡ Quick Resets</h2>
+            <p className="text-muted-foreground text-xs">Targeted relief in 5-10 minutes</p>
+          </div>
+          <button onClick={() => setActiveTab("programs")} className="text-primary text-xs font-medium">View all →</button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {quickResets.slice(0, 6).map((program: Program, i: number) => (
+            <motion.button
+              key={program.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              onClick={() => navigate(`/player/${program.id}`)}
+              className="glass rounded-xl p-3 text-left hover:border-primary/30 transition-all active:scale-[0.98]"
+            >
+              <div className="text-xl mb-1">{AREA_ICONS[program.target_area] || "🏋️"}</div>
+              <h4 className="font-display font-semibold text-foreground text-xs leading-tight truncate">{program.name}</h4>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{program.duration_minutes} min</p>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    )}
   </>
 );
 

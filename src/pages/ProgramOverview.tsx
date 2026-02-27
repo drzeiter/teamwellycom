@@ -3,8 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Clock, Target, ChevronRight, Check, Lock, Zap } from "lucide-react";
+import { ArrowLeft, Clock, Target, ChevronRight, Check, Lock, Zap, Plus, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import logoWhite from "@/assets/logo-white.png";
 
 interface Program {
@@ -57,6 +58,8 @@ const ProgramOverview = () => {
   const [completedWeeks, setCompletedWeeks] = useState<Set<number>>(new Set());
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
 
   useEffect(() => {
     if (!programId || !user) return;
@@ -100,15 +103,37 @@ const ProgramOverview = () => {
         .eq("user_id", user.id)
         .eq("program_id", programId);
       if (progressData) {
-        // Simple: count unique completed sessions as weeks
         setCompletedWeeks(new Set(progressData.map((_, i) => i + 1)));
       }
+      // Check enrollment
+      const { data: enrollData } = await (supabase as any)
+        .from("user_enrolled_programs")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("program_id", programId)
+        .eq("is_active", true);
+      if (enrollData && enrollData.length > 0) setIsEnrolled(true);
       setLoading(false);
     };
     fetchData();
   }, [programId, user]);
 
   const currentWeek = completedWeeks.size + 1;
+
+  const handleEnroll = async () => {
+    if (!user || !programId) return;
+    setEnrolling(true);
+    const { error } = await (supabase as any)
+      .from("user_enrolled_programs")
+      .upsert({ user_id: user.id, program_id: programId, is_active: true }, { onConflict: "user_id,program_id" });
+    if (!error) {
+      setIsEnrolled(true);
+      toast({ title: "Added to My Plan! ✅", description: "This program is now in your Plan tab." });
+    } else {
+      toast({ title: "Error", description: "Could not add to plan.", variant: "destructive" });
+    }
+    setEnrolling(false);
+  };
 
   if (loading) {
     return (
@@ -298,6 +323,25 @@ const ProgramOverview = () => {
             );
           })}
         </div>
+      </div>
+
+      {/* Floating Add to Plan button */}
+      <div className="fixed bottom-6 left-4 z-40">
+        <button
+          onClick={isEnrolled ? undefined : handleEnroll}
+          disabled={enrolling || isEnrolled}
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-display font-semibold transition-all active:scale-95 ${
+            isEnrolled
+              ? "bg-wellness-green/20 text-wellness-green border border-wellness-green/30"
+              : "gradient-primary text-primary-foreground glow-primary"
+          }`}
+        >
+          {isEnrolled ? (
+            <><CheckCircle className="w-4 h-4" /> In My Plan</>
+          ) : (
+            <><Plus className="w-4 h-4" /> {enrolling ? "Adding..." : "Add to My Plan"}</>
+          )}
+        </button>
       </div>
     </div>
   );

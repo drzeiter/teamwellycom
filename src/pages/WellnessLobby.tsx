@@ -15,7 +15,7 @@ import StepTracker from "@/components/StepTracker";
 import CalendarSync from "@/components/CalendarSync";
 import { useHealthData } from "@/hooks/useHealthData";
 import logoWhite from "@/assets/logo-white.png";
-import MyTasks from "@/components/MyTasks";
+import MyPlan from "@/components/MyPlan";
 
 interface WellyPointsData {
   total_points: number;
@@ -103,7 +103,7 @@ const WellnessLobby = () => {
     switch (activeTab) {
       case "home": return <HomeTab {...{ firstName, points, programs: quickContent, twelveWeekPrograms, quickResets, deskResets, relaxPrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps: health.dailySteps, tipsMode, setTipsMode, setActiveTab }} />;
       case "programs": return <ProgramsTab {...{ programs: quickContent, twelveWeekPrograms, categories, selectedCategory, setSelectedCategory, navigate }} />;
-      case "plan": return <PlanTab navigate={navigate} />;
+      case "plan": return <PlanTab />;
       case "steps": return <StepsTab {...{ dailySteps: health.dailySteps, weeklySteps: health.weeklySteps, points, health, progressHistory, programs: [...quickContent, ...twelveWeekPrograms] }} />;
       case "more": return <MoreTab />;
     }
@@ -220,8 +220,7 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
       </AnimatePresence>
     </div>
 
-    {/* My Wellness Tasks */}
-    <MyTasks />
+    {/* My Wellness Tasks - removed, now in Plan tab */}
 
     {/* Quick Resets Grid */}
     {quickResets.length > 0 && (
@@ -396,7 +395,7 @@ const ProgramsTab = ({ programs, twelveWeekPrograms, categories, selectedCategor
 };
 
 // ─── PLAN TAB ────────────────────────────────────
-const PlanTab = ({ navigate }: { navigate: (path: string) => void }) => (
+const PlanTab = () => (
   <div className="pt-6 px-5">
     <div className="flex items-center gap-3 mb-4">
       <img src={logoWhite} alt="" className="h-7 w-auto" />
@@ -405,7 +404,7 @@ const PlanTab = ({ navigate }: { navigate: (path: string) => void }) => (
         <p className="text-muted-foreground text-xs">Your scheduled wellness activities</p>
       </div>
     </div>
-    <MyTasks />
+    <MyPlan />
   </div>
 );
 

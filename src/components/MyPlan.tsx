@@ -82,6 +82,9 @@ export default function MyPlan() {
     );
   }
 
+  // Split: only 12-week programs go under "My Programs"
+  const performanceEnrollments = enrollments.filter(e => (e.program?.duration_weeks || 0) >= 12);
+  const quickEnrollments = enrollments.filter(e => (e.program?.duration_weeks || 0) < 12);
   const hasContent = enrollments.length > 0;
 
   return (
@@ -91,24 +94,23 @@ export default function MyPlan() {
         <div className="flex items-center gap-2 mb-3">
           <Target className="w-4 h-4 text-primary" />
           <h2 className="font-display text-sm font-bold text-foreground">My Programs</h2>
-          {enrollments.length > 0 && (
-            <span className="text-[10px] text-muted-foreground ml-auto">{enrollments.length} active</span>
+          {performanceEnrollments.length > 0 && (
+            <span className="text-[10px] text-muted-foreground ml-auto">{performanceEnrollments.length} active</span>
           )}
         </div>
 
-        {enrollments.length === 0 ? (
+        {performanceEnrollments.length === 0 ? (
           <div className="glass rounded-xl p-5 text-center">
             <Target className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">No programs added yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Browse Programs and tap "Add to My Plan" to get started.</p>
+            <p className="text-xs text-muted-foreground mt-1">Browse 12-week programs and tap "Add to My Plan" to get started.</p>
           </div>
         ) : (
           <div className="space-y-2">
             <AnimatePresence>
-              {enrollments.map((enrollment, i) => {
+              {performanceEnrollments.map((enrollment, i) => {
                 const prog = enrollment.program;
                 if (!prog) return null;
-                const isPerformance = (prog.duration_weeks || 0) >= 12;
                 return (
                   <motion.div
                     key={enrollment.id}
@@ -125,31 +127,22 @@ export default function MyPlan() {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-display font-semibold text-foreground text-sm truncate">{prog.name}</h4>
                         <p className="text-xs text-muted-foreground">
-                          {isPerformance ? `Week ${enrollment.current_week} of ${prog.duration_weeks}` : `${prog.duration_minutes} min`}
+                          Week {enrollment.current_week} of {prog.duration_weeks}
                           {" · "}{prog.target_area}
                         </p>
-                        {isPerformance && (
-                          <div className="h-1.5 bg-secondary rounded-full overflow-hidden mt-1.5 w-full max-w-[120px]">
-                            <div
-                              className="h-full gradient-primary rounded-full transition-all"
-                              style={{ width: `${(enrollment.current_week / (prog.duration_weeks || 12)) * 100}%` }}
-                            />
-                          </div>
-                        )}
+                        <div className="h-1.5 bg-secondary rounded-full overflow-hidden mt-1.5 w-full max-w-[120px]">
+                          <div
+                            className="h-full gradient-primary rounded-full transition-all"
+                            style={{ width: `${(enrollment.current_week / (prog.duration_weeks || 12)) * 100}%` }}
+                          />
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => {
-                            if (isPerformance) {
-                              navigate(`/program/${prog.id}`);
-                            } else {
-                              navigate(`/player/${prog.id}`);
-                            }
-                          }}
+                          onClick={() => navigate(`/program/${prog.id}`)}
                           className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg gradient-primary text-primary-foreground active:scale-95 transition-transform"
                         >
-                          <Play className="w-3 h-3" />
-                          {isPerformance ? "Open" : "Start"}
+                          <Play className="w-3 h-3" /> Open
                         </button>
                         <button
                           onClick={() => removeEnrollment(enrollment.id)}
@@ -168,8 +161,8 @@ export default function MyPlan() {
         )}
       </div>
 
-      {/* My Tasks Section */}
-      <MyTasks />
+      {/* My Tasks Section - includes quick enrollments + scheduled tasks */}
+      <MyTasks quickEnrollments={quickEnrollments} onRemoveEnrollment={removeEnrollment} />
 
       {!hasContent && (
         <div className="glass rounded-xl p-6 text-center">

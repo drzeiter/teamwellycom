@@ -131,6 +131,14 @@ export default function WellyAssistant() {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [fabHidden, setFabHidden] = useState(false);
+  const [onboardingDone, setOnboardingDone] = useState(false);
+
+  // Hide until onboarding is complete
+  useEffect(() => {
+    if (!user) { setOnboardingDone(false); return; }
+    supabase.from("profiles").select("onboarding_completed").eq("user_id", user.id).single()
+      .then(({ data }) => setOnboardingDone(!!data?.onboarding_completed));
+  }, [user]);
 
   // Listen for hide/show events from overlays (e.g. ScheduleBottomSheet)
   useEffect(() => {
@@ -478,10 +486,12 @@ export default function WellyAssistant() {
     </div>
   );
 
+  if (!onboardingDone) return null;
+
   return (
     <>
       {/* FAB */}
-      {!open && !fabHidden && (
+      {!open && !fabHidden && onboardingDone && (
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2"

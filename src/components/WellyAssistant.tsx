@@ -59,7 +59,7 @@ function CalendarBlock({ json, programs }: { json: string; programs: { id: strin
       const startDate = new Date(`${date}T${time}:00`);
       if (isNaN(startDate.getTime())) throw new Error("Invalid date");
       const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
-      const baseUrl = "https://teamwellycom.lovable.app";
+      const baseUrl = "https://teamwelly.com";
       const programUrl = matchedProgram ? `${baseUrl}/player/${matchedProgram.id}` : baseUrl;
       addToCalendar(provider, {
         title,
@@ -82,7 +82,7 @@ function CalendarBlock({ json, programs }: { json: string; programs: { id: strin
       setAdded(true);
     } catch {
       const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
-      const baseUrl = "https://teamwellycom.lovable.app";
+      const baseUrl = "https://teamwelly.com";
       addToCalendar(provider, { title: "Wellness Routine", durationMinutes: 15, url: baseUrl });
       setAdded(true);
     }
@@ -306,7 +306,7 @@ export default function WellyAssistant() {
     const matched = programs.find(p =>
       title.toLowerCase().includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(title.toLowerCase())
     );
-    const baseUrl = "https://teamwellycom.lovable.app";
+    const baseUrl = "https://teamwelly.com";
     const programUrl = matched ? `${baseUrl}/player/${matched.id}` : baseUrl;
     addToCalendar(provider, {
       title,

@@ -125,7 +125,7 @@ export default function MyPlan() {
       description: `Time for ${selectedMovement.name}! Open TeamWelly to start.`,
       durationMinutes,
       startDate: scheduledAt,
-      url: "https://teamwellycom.lovable.app",
+      url: "https://teamwelly.com",
     };
     addToCalendar(provider, eventData);
 

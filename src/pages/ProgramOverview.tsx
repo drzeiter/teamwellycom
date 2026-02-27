@@ -241,8 +241,8 @@ const ProgramOverview = () => {
                 transition={{ delay: i * 0.03 }}
               >
                 <button
-                  onClick={() => setExpandedWeek(isExpanded ? null : week.week_number)}
-                  className={`w-full text-left rounded-xl border transition-all ${
+                  onClick={() => !isLocked && setExpandedWeek(isExpanded ? null : week.week_number)}
+                  className={`w-full text-left rounded-xl border transition-all ${isLocked ? "cursor-not-allowed " : ""}${
                     isCurrent
                       ? "border-primary/50 bg-primary/5 glow-primary"
                       : isCompleted

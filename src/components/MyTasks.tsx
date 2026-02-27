@@ -48,7 +48,21 @@ export default function MyTasks() {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
-  if (loading || tasks.length === 0) return null;
+  if (loading) return <div className="px-5 mb-4"><div className="glass rounded-xl p-6 text-center"><p className="text-sm text-muted-foreground">Loading tasks...</p></div></div>;
+
+  if (tasks.length === 0) return (
+    <div className="px-5 mb-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Calendar className="w-4 h-4 text-primary" />
+        <h2 className="font-display text-sm font-bold text-foreground">My Wellness Tasks</h2>
+      </div>
+      <div className="glass rounded-xl p-6 text-center">
+        <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">No tasks yet</p>
+        <p className="text-xs text-muted-foreground mt-1">Ask Welly AI to schedule a routine, or add exercises from Programs.</p>
+      </div>
+    </div>
+  );
 
   const formatTime = (dateStr: string) => {
     const d = new Date(dateStr);

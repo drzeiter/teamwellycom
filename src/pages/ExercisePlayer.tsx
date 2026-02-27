@@ -10,7 +10,7 @@ import BreathingVisualizer from "@/components/BreathingVisualizer";
 import ConfettiEffect from "@/components/ConfettiEffect";
 import {
   ArrowLeft, Play, Pause, SkipForward,
-  Trophy, Zap, ChevronLeft, ChevronRight, Check, Flame,
+  Trophy, Zap, ChevronLeft, ChevronRight, Check, Flame, Plus, CheckCircle,
 } from "lucide-react";
 import logoWhite from "@/assets/logo-white.png";
 
@@ -58,6 +58,8 @@ const ExercisePlayer = () => {
   const [totalPoints, setTotalPoints] = useState(0);
   const [showMotivation, setShowMotivation] = useState("");
   const [exerciseXP, setExerciseXP] = useState(0);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
 
   useEffect(() => {
     if (!programId) return;
@@ -67,6 +69,16 @@ const ExercisePlayer = () => {
         supabase.from("exercises").select("*").eq("program_id", programId).order("sequence_order"),
       ]);
       if (progRes.data) setProgram(progRes.data);
+      // Check enrollment
+      if (user) {
+        const { data: enrollData } = await (supabase as any)
+          .from("user_enrolled_programs")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("program_id", programId)
+          .eq("is_active", true);
+        if (enrollData && enrollData.length > 0) setIsEnrolled(true);
+      }
       if (exRes.data && exRes.data.length > 0) {
         setExercises(exRes.data);
         const first = exRes.data[0];
@@ -75,7 +87,22 @@ const ExercisePlayer = () => {
       }
     };
     fetchData();
-  }, [programId]);
+  }, [programId, user]);
+
+  const handleEnroll = async () => {
+    if (!user || !programId) return;
+    setEnrolling(true);
+    const { error } = await (supabase as any)
+      .from("user_enrolled_programs")
+      .upsert({ user_id: user.id, program_id: programId, is_active: true }, { onConflict: "user_id,program_id" });
+    if (!error) {
+      setIsEnrolled(true);
+      toast({ title: "Added to My Plan! ✅", description: "This program is now in your Plan tab." });
+    } else {
+      toast({ title: "Error", description: "Could not add to plan.", variant: "destructive" });
+    }
+    setEnrolling(false);
+  };
 
   const currentExercise = exercises[currentIndex];
 
@@ -444,6 +471,25 @@ const ExercisePlayer = () => {
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
+      </div>
+
+      {/* Floating Add to Plan button */}
+      <div className="fixed bottom-6 left-4 z-40">
+        <button
+          onClick={isEnrolled ? undefined : handleEnroll}
+          disabled={enrolling || isEnrolled}
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-display font-semibold transition-all active:scale-95 ${
+            isEnrolled
+              ? "bg-wellness-green/20 text-wellness-green border border-wellness-green/30"
+              : "gradient-primary text-primary-foreground glow-primary"
+          }`}
+        >
+          {isEnrolled ? (
+            <><CheckCircle className="w-4 h-4" /> In My Plan</>
+          ) : (
+            <><Plus className="w-4 h-4" /> {enrolling ? "Adding..." : "Add to My Plan"}</>
+          )}
+        </button>
       </div>
     </div>
   );

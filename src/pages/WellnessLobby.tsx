@@ -201,8 +201,7 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
       </div>
     </div>
 
-    {/* My Wellness Tasks */}
-    <MyTasks />
+    {/* Tips / Quotes Toggle */}
 
     {/* Tips / Quotes Toggle */}
     <div className="px-5 mb-4">
@@ -220,6 +219,9 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
         </motion.div>
       </AnimatePresence>
     </div>
+
+    {/* My Wellness Tasks */}
+    <MyTasks />
 
     {/* Quick Resets Grid */}
     {quickResets.length > 0 && (

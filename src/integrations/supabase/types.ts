@@ -469,6 +469,41 @@ export type Database = {
           },
         ]
       }
+      user_enrolled_programs: {
+        Row: {
+          current_week: number
+          enrolled_at: string
+          id: string
+          is_active: boolean
+          program_id: string
+          user_id: string
+        }
+        Insert: {
+          current_week?: number
+          enrolled_at?: string
+          id?: string
+          is_active?: boolean
+          program_id: string
+          user_id: string
+        }
+        Update: {
+          current_week?: number
+          enrolled_at?: string
+          id?: string
+          is_active?: boolean
+          program_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_enrolled_programs_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progress: {
         Row: {
           completed_at: string

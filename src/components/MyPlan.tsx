@@ -43,6 +43,15 @@ export default function MyPlan() {
   const [availablePrograms, setAvailablePrograms] = useState<any[]>([]);
   const [selectedMovement, setSelectedMovement] = useState<any>(null);
   const [showScheduleSheet, setShowScheduleSheet] = useState(false);
+
+  // Hide Welly FAB when any overlay is open
+  const anyOverlayOpen = showMovementPicker || showScheduleSheet;
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("welly-fab-visibility", { detail: { hidden: anyOverlayOpen } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent("welly-fab-visibility", { detail: { hidden: false } }));
+    };
+  }, [anyOverlayOpen]);
   const [saving, setSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -83,10 +92,10 @@ export default function MyPlan() {
   };
 
   const handleOpenMovementPicker = async () => {
-    // Fetch all programs for the picker
+    // Fetch ALL programs (including breathwork, desk resets, quick sessions, etc.)
     const { data } = await supabase
       .from("programs")
-      .select("id, name, target_area, category_type, duration_minutes")
+      .select("id, name, target_area, category_type, duration_minutes, category")
       .order("sort_order", { ascending: true });
     setAvailablePrograms(data || []);
     setShowMovementPicker(true);
@@ -261,22 +270,35 @@ export default function MyPlan() {
               className="w-full max-w-md glass-strong rounded-t-2xl p-5 safe-bottom max-h-[70vh] overflow-y-auto"
             >
               <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
-              <h3 className="font-display text-lg font-bold text-foreground mb-1">Pick an Exercise</h3>
-              <p className="text-xs text-muted-foreground mb-4">Choose a movement to schedule</p>
+              <h3 className="font-display text-lg font-bold text-foreground mb-1">Pick a Movement</h3>
+              <p className="text-xs text-muted-foreground mb-4">Exercises, breathwork, desk resets & more</p>
               <div className="space-y-2">
-                {availablePrograms.map(prog => (
-                  <button
-                    key={prog.id}
-                    onClick={() => handleSelectMovement(prog)}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary/80 transition-all active:scale-[0.98]"
-                  >
-                    <span className="text-xl">{AREA_ICONS[prog.target_area] || "🏋️"}</span>
-                    <div className="text-left flex-1">
-                      <p className="text-sm font-medium text-foreground">{prog.name}</p>
-                      <p className="text-xs text-muted-foreground">{prog.duration_minutes} min · {prog.target_area}</p>
+                {(() => {
+                  const grouped: Record<string, any[]> = {};
+                  availablePrograms.forEach(prog => {
+                    const cat = prog.category_type || prog.category || "Other";
+                    if (!grouped[cat]) grouped[cat] = [];
+                    grouped[cat].push(prog);
+                  });
+                  return Object.entries(grouped).map(([cat, progs]) => (
+                    <div key={cat}>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 mt-2">{cat}</p>
+                      {progs.map(prog => (
+                        <button
+                          key={prog.id}
+                          onClick={() => handleSelectMovement(prog)}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary/80 transition-all active:scale-[0.98] mb-1"
+                        >
+                          <span className="text-xl">{AREA_ICONS[prog.target_area] || "🏋️"}</span>
+                          <div className="text-left flex-1">
+                            <p className="text-sm font-medium text-foreground">{prog.name}</p>
+                            <p className="text-xs text-muted-foreground">{prog.duration_minutes} min · {prog.target_area}</p>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  </button>
-                ))}
+                  ));
+                })()}
               </div>
               <button
                 onClick={() => setShowMovementPicker(false)}

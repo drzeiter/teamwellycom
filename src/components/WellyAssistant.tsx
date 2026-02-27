@@ -39,6 +39,56 @@ function saveHistory(messages: Message[]) {
   } catch {}
 }
 
+// Inline calendar block rendered from AI ```calendar``` code blocks
+function CalendarBlock({ json }: { json: string }) {
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    try {
+      const parsed = JSON.parse(json);
+      const { title, date, time, duration } = parsed;
+      const startDate = new Date(`${date}T${time}:00`);
+      if (isNaN(startDate.getTime())) throw new Error("Invalid date");
+      const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
+      addToCalendar(provider, { title, durationMinutes: duration || 15, startDate });
+      setAdded(true);
+    } catch {
+      // fallback: download generic ICS
+      const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
+      addToCalendar(provider, { title: "Wellness Routine", durationMinutes: 15 });
+      setAdded(true);
+    }
+  };
+
+  let parsed: any = {};
+  try { parsed = JSON.parse(json); } catch {}
+
+  return (
+    <div className="my-2 p-3 rounded-xl bg-primary/10 border border-primary/20">
+      <div className="flex items-center gap-2 mb-1">
+        <CalendarPlus className="w-4 h-4 text-primary" />
+        <span className="text-sm font-semibold text-foreground">{parsed.title || "Wellness Event"}</span>
+      </div>
+      {parsed.date && (
+        <p className="text-xs text-muted-foreground mb-2">
+          📅 {parsed.date} at {parsed.time} · {parsed.duration || 15} min
+        </p>
+      )}
+      <button
+        onClick={handleAdd}
+        disabled={added}
+        className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${
+          added
+            ? "bg-wellness-green/20 text-wellness-green"
+            : "gradient-primary text-primary-foreground active:scale-95"
+        }`}
+      >
+        {added ? "✅ Added to Calendar" : "Add to My Calendar"}
+      </button>
+    </div>
+  );
+}
+
 export default function WellyAssistant() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -244,7 +294,20 @@ export default function WellyAssistant() {
             }`}>
               {msg.role === "assistant" ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1 [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm [&>h1]:font-bold [&>h2]:font-semibold [&>h3]:font-semibold">
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      code({ className, children }) {
+                        const text = String(children).trim();
+                        if (className === "language-calendar" || text.startsWith('{"title"')) {
+                          return <CalendarBlock json={text} />;
+                        }
+                        return <code className={className}>{children}</code>;
+                      },
+                      a({ href, children }) {
+                        return <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline">{children}</a>;
+                      },
+                    }}
+                  >{msg.content}</ReactMarkdown>
                 </div>
               ) : (
                 <p>{msg.content}</p>

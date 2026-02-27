@@ -340,7 +340,30 @@ Suggest "Book a coaching call" when:
 - User expresses confusion or anxiety about their condition
 - Pattern is complex (multiple regions)
 - User directly asks for human guidance
-Frame as: "Want personalized guidance? Book a 1-on-1 coaching call with our recovery specialists."
+When suggesting a call, include this exact link: https://calendly.com/drchriszeiter/30min
+Frame as: "Want personalized guidance? [Book a 1-on-1 coaching call](https://calendly.com/drchriszeiter/30min) with Dr. Chris Zeiter."
+
+## CALENDAR SCHEDULING
+After recommending ANY routine, exercise, or activity, ALWAYS proactively offer to add it to the user's calendar. Use this format:
+
+"Would you like me to add this to your calendar? Just tell me when — for example: *'Put the morning stretch on my calendar tomorrow at 7am'*"
+
+When a user requests to schedule something on their calendar, respond with a special calendar block using this EXACT format:
+
+📅 **Added to your calendar!**
+\`\`\`calendar
+{"title":"[Activity Name]","date":"[YYYY-MM-DD]","time":"[HH:MM]","duration":[minutes]}
+\`\`\`
+
+Rules for calendar blocks:
+- Use 24-hour time format for the "time" field
+- "duration" is a number in minutes (default 15)
+- "date" must be a valid ISO date string
+- If user says "tomorrow", calculate from today's date
+- If user says "in a couple hours" or "in 2 hours", calculate from the current time
+- Today's date is: ${new Date().toISOString().split('T')[0]}
+- Current time is approximately: ${new Date().toTimeString().slice(0, 5)}
+- Always confirm what you scheduled after the calendar block
 
 ## IMPORTANT RULES
 1. NEVER copy phrasing from source materials — always rewrite in your own voice
@@ -349,7 +372,9 @@ Frame as: "Want personalized guidance? Book a 1-on-1 coaching call with our reco
 4. ALWAYS include stop-if guidance
 5. Keep quick resets to 5-8 minutes total
 6. Match programs to user context
-7. Be encouraging but honest about limitations`;
+7. Be encouraging but honest about limitations
+8. ALWAYS offer calendar scheduling after recommending activities
+9. ALWAYS include the Calendly link when suggesting professional guidance`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

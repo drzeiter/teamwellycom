@@ -24,13 +24,14 @@ export default function MyTasks() {
   useEffect(() => {
     if (!user) return;
     const fetch = async () => {
-      const { data } = await supabase
+      const { data, error } = await (supabase as any)
         .from("scheduled_tasks")
         .select("*")
         .eq("user_id", user.id)
         .eq("is_completed", false)
         .order("scheduled_at", { ascending: true })
         .limit(6);
+      console.log("MyTasks fetch:", { data, error });
       if (data) setTasks(data as ScheduledTask[]);
       setLoading(false);
     };
@@ -38,12 +39,12 @@ export default function MyTasks() {
   }, [user]);
 
   const markDone = async (id: string) => {
-    await supabase.from("scheduled_tasks").update({ is_completed: true }).eq("id", id);
+    await (supabase as any).from("scheduled_tasks").update({ is_completed: true }).eq("id", id);
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
   const deleteTask = async (id: string) => {
-    await supabase.from("scheduled_tasks").delete().eq("id", id);
+    await (supabase as any).from("scheduled_tasks").delete().eq("id", id);
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 

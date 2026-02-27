@@ -71,7 +71,7 @@ function CalendarBlock({ json, programs }: { json: string; programs: { id: strin
       // Save as a task
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from("scheduled_tasks").insert({
+        await (supabase as any).from("scheduled_tasks").insert({
           user_id: user.id,
           title,
           scheduled_at: startDate.toISOString(),
@@ -297,7 +297,7 @@ export default function WellyAssistant() {
     });
     // Save as a task
     if (user) {
-      await supabase.from("scheduled_tasks").insert({
+      await (supabase as any).from("scheduled_tasks").insert({
         user_id: user.id,
         title,
         scheduled_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),

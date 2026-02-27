@@ -130,6 +130,17 @@ export default function WellyAssistant() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [fabHidden, setFabHidden] = useState(false);
+
+  // Listen for hide/show events from overlays (e.g. ScheduleBottomSheet)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setFabHidden(!!detail?.hidden);
+    };
+    window.addEventListener("welly-fab-visibility", handler);
+    return () => window.removeEventListener("welly-fab-visibility", handler);
+  }, []);
   const [messages, setMessages] = useState<Message[]>(loadHistory);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -470,7 +481,7 @@ export default function WellyAssistant() {
   return (
     <>
       {/* FAB */}
-      {!open && (
+      {!open && !fabHidden && (
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2"

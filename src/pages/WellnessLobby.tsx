@@ -50,7 +50,7 @@ const AREA_ICONS: Record<string, string> = {
   "Glutes": "🍑", "Desk": "🖥️", "Full Body": "🧘", "Warm-Up": "🔥", "Relax": "🫁",
 };
 
-type Tab = "home" | "programs" | "progress" | "steps" | "more";
+type Tab = "home" | "programs" | "plan" | "steps" | "more";
 
 const WellnessLobby = () => {
   const { user, signOut } = useAuth();
@@ -103,8 +103,8 @@ const WellnessLobby = () => {
     switch (activeTab) {
       case "home": return <HomeTab {...{ firstName, points, programs: quickContent, twelveWeekPrograms, quickResets, deskResets, relaxPrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps: health.dailySteps, tipsMode, setTipsMode, setActiveTab }} />;
       case "programs": return <ProgramsTab {...{ programs: quickContent, twelveWeekPrograms, categories, selectedCategory, setSelectedCategory, navigate }} />;
-      case "progress": return <ProgressTab {...{ progressHistory, programs: [...quickContent, ...twelveWeekPrograms], points, completedCount }} />;
-      case "steps": return <StepsTab {...{ dailySteps: health.dailySteps, weeklySteps: health.weeklySteps, points, health }} />;
+      case "plan": return <PlanTab navigate={navigate} />;
+      case "steps": return <StepsTab {...{ dailySteps: health.dailySteps, weeklySteps: health.weeklySteps, points, health, progressHistory, programs: [...quickContent, ...twelveWeekPrograms] }} />;
       case "more": return <MoreTab />;
     }
   };
@@ -121,7 +121,7 @@ const WellnessLobby = () => {
           <NavItem icon={<Activity className="w-5 h-5" />} label="Home" active={activeTab === "home"} onClick={() => setActiveTab("home")} />
           <NavItem icon={<LayoutGrid className="w-5 h-5" />} label="Programs" active={activeTab === "programs"} onClick={() => setActiveTab("programs")} />
           <NavItem icon={<Footprints className="w-5 h-5" />} label="Activity" active={activeTab === "steps"} onClick={() => setActiveTab("steps")} />
-          <NavItem icon={<BarChart3 className="w-5 h-5" />} label="Progress" active={activeTab === "progress"} onClick={() => setActiveTab("progress")} />
+          <NavItem icon={<Calendar className="w-5 h-5" />} label="Plan" active={activeTab === "plan"} onClick={() => setActiveTab("plan")} />
           <NavItem icon={<Settings className="w-5 h-5" />} label="Settings" active={activeTab === "more"} onClick={() => setActiveTab("more")} />
         </div>
       </div>
@@ -395,69 +395,22 @@ const ProgramsTab = ({ programs, twelveWeekPrograms, categories, selectedCategor
   );
 };
 
-// ─── PROGRESS TAB ────────────────────────────────────
-const ProgressTab = ({ progressHistory, programs, points, completedCount }: any) => (
+// ─── PLAN TAB ────────────────────────────────────
+const PlanTab = ({ navigate }: { navigate: (path: string) => void }) => (
   <div className="pt-6 px-5">
     <div className="flex items-center gap-3 mb-4">
       <img src={logoWhite} alt="" className="h-7 w-auto" />
-      <h1 className="font-display text-xl font-bold text-foreground">Your Progress</h1>
-    </div>
-    <div className="grid grid-cols-2 gap-3 mb-6">
-      <div className="glass rounded-xl p-4 text-center">
-        <TrendingUp className="w-5 h-5 text-primary mx-auto mb-1" />
-        <p className="font-display text-2xl font-bold text-foreground">{completedCount}</p>
-        <p className="text-xs text-muted-foreground">Sessions</p>
-      </div>
-      <div className="glass rounded-xl p-4 text-center">
-        <Flame className="w-5 h-5 text-wellness-coral mx-auto mb-1" />
-        <p className="font-display text-2xl font-bold text-foreground">{points.current_streak}</p>
-        <p className="text-xs text-muted-foreground">Day Streak</p>
-      </div>
-      <div className="glass rounded-xl p-4 text-center">
-        <Star className="w-5 h-5 text-wellness-gold mx-auto mb-1" />
-        <p className="font-display text-2xl font-bold text-foreground">{points.longest_streak}</p>
-        <p className="text-xs text-muted-foreground">Best Streak</p>
-      </div>
-      <div className="glass rounded-xl p-4 text-center">
-        <Zap className="w-5 h-5 text-wellness-purple mx-auto mb-1" />
-        <p className="font-display text-2xl font-bold text-foreground">{points.total_points}</p>
-        <p className="text-xs text-muted-foreground">Total XP</p>
+      <div>
+        <h1 className="font-display text-xl font-bold text-foreground">My Plan</h1>
+        <p className="text-muted-foreground text-xs">Your scheduled wellness activities</p>
       </div>
     </div>
-
-    {/* My Wellness Tasks */}
     <MyTasks />
-
-    <h2 className="font-display text-base font-semibold text-foreground mb-3">Recent Activity</h2>
-    {progressHistory.length === 0 ? (
-      <div className="glass rounded-xl p-6 text-center">
-        <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-        <p className="text-muted-foreground text-sm">Complete your first session to see activity here!</p>
-      </div>
-    ) : (
-      <div className="space-y-2">
-        {progressHistory.slice(0, 5).map((entry: any, i: number) => {
-          const prog = programs.find((p: Program) => p.id === entry.program_id);
-          return (
-            <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="glass rounded-xl p-3 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-xs">
-                {AREA_ICONS[prog?.target_area || ""] || "🏋️"}
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">{prog?.name || "Session"}</p>
-                <p className="text-xs text-muted-foreground">{new Date(entry.completed_at).toLocaleDateString()}</p>
-              </div>
-              <span className="text-xs font-mono text-wellness-gold">+{entry.points_earned || 0}</span>
-            </motion.div>
-          );
-        })}
-      </div>
-    )}
   </div>
 );
 
 // ─── STEPS TAB ────────────────────────────────────
-const StepsTab = ({ dailySteps, weeklySteps, points, health }: any) => {
+const StepsTab = ({ dailySteps, weeklySteps, points, health, progressHistory, programs }: any) => {
   const [showWearableModal, setShowWearableModal] = useState(false);
 
   const WEARABLES = [
@@ -511,6 +464,25 @@ const StepsTab = ({ dailySteps, weeklySteps, points, health }: any) => {
         </div>
       )}
 
+      {/* Connect Device - at top */}
+      <div className="mb-4 glass rounded-xl p-4 text-center">
+        {health.isConnected ? (
+          <>
+            <p className="text-sm text-foreground mb-2">✅ Wearable connected</p>
+            <button onClick={() => health.refresh()} className="px-4 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium active:scale-95 transition-transform">
+              🔄 Refresh Data
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground mb-2">Connect your device for real step data</p>
+            <button onClick={() => setShowWearableModal(true)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium active:scale-95 transition-transform">
+              <Footprints className="w-4 h-4 inline mr-1" /> Connect Wearable
+            </button>
+          </>
+        )}
+      </div>
+
       <StepTracker dailySteps={dailySteps} dailyGoal={10000} weeklySteps={weeklySteps} />
 
       <div className="mt-4 glass rounded-xl p-4">
@@ -534,21 +506,32 @@ const StepsTab = ({ dailySteps, weeklySteps, points, health }: any) => {
         </div>
       </div>
 
-      <div className="mt-4 glass rounded-xl p-4 text-center">
-        {health.isConnected ? (
-          <>
-            <p className="text-sm text-foreground mb-2">✅ Wearable connected</p>
-            <button onClick={() => health.refresh()} className="px-4 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium active:scale-95 transition-transform">
-              🔄 Refresh Data
-            </button>
-          </>
+      {/* Recent Activity */}
+      <div className="mt-6">
+        <h2 className="font-display text-base font-semibold text-foreground mb-3">Recent Activity</h2>
+        {(!progressHistory || progressHistory.length === 0) ? (
+          <div className="glass rounded-xl p-6 text-center">
+            <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-muted-foreground text-sm">Complete your first session to see activity here!</p>
+          </div>
         ) : (
-          <>
-            <p className="text-sm text-muted-foreground mb-2">Connect your device for real step data</p>
-            <button onClick={() => setShowWearableModal(true)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium active:scale-95 transition-transform">
-              <Footprints className="w-4 h-4 inline mr-1" /> Connect Wearable
-            </button>
-          </>
+          <div className="space-y-2">
+            {progressHistory.slice(0, 5).map((entry: any, i: number) => {
+              const prog = programs?.find((p: Program) => p.id === entry.program_id);
+              return (
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="glass rounded-xl p-3 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-xs">
+                    {AREA_ICONS[prog?.target_area || ""] || "🏋️"}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">{prog?.name || "Session"}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(entry.completed_at).toLocaleDateString()}</p>
+                  </div>
+                  <span className="text-xs font-mono text-wellness-gold">+{entry.points_earned || 0}</span>
+                </motion.div>
+              );
+            })}
+          </div>
         )}
       </div>
 

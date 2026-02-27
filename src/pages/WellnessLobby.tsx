@@ -425,6 +425,9 @@ const ProgressTab = ({ progressHistory, programs, points, completedCount }: any)
       </div>
     </div>
 
+    {/* My Wellness Tasks */}
+    <MyTasks />
+
     <h2 className="font-display text-base font-semibold text-foreground mb-3">Recent Activity</h2>
     {progressHistory.length === 0 ? (
       <div className="glass rounded-xl p-6 text-center">
@@ -433,7 +436,7 @@ const ProgressTab = ({ progressHistory, programs, points, completedCount }: any)
       </div>
     ) : (
       <div className="space-y-2">
-        {progressHistory.map((entry: any, i: number) => {
+        {progressHistory.slice(0, 5).map((entry: any, i: number) => {
           const prog = programs.find((p: Program) => p.id === entry.program_id);
           return (
             <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="glass rounded-xl p-3 flex items-center gap-3">

@@ -31,8 +31,9 @@ function escapeICS(text: string): string {
 
 export function generateICSFile(data: CalendarEventData): string {
   const { start, end } = getStartEnd(data);
+  const baseDesc = escapeICS(data.description || "Time for your wellness routine!");
   const desc = data.url
-    ? `${data.description || "Time for your wellness routine!"}\\n\\nOpen your program: ${data.url}`
+    ? `${baseDesc}\\n\\nOpen your program:\\n${data.url}`
     : escapeICS(data.description || "Time for your wellness routine! Open TeamWelly to start.");
 
   const lines = [

@@ -72,7 +72,8 @@ function CalendarBlock({ json, programs }: { json: string; programs: { id: strin
       setAdded(true);
     } catch {
       const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
-      addToCalendar(provider, { title: "Wellness Routine", durationMinutes: 15 });
+      const baseUrl = "https://teamwellycom.lovable.app";
+      addToCalendar(provider, { title: "Wellness Routine", durationMinutes: 15, url: baseUrl });
       setAdded(true);
     }
   };
@@ -270,14 +271,20 @@ export default function WellyAssistant() {
   };
 
   const handleAddToCalendar = (assistantMessage: string) => {
-    // Extract a routine name from the message (first line or first bold text)
     const boldMatch = assistantMessage.match(/\*\*(.+?)\*\*/);
     const title = boldMatch?.[1] || "Wellness Routine";
     const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
+    // Try to match a program for deep linking
+    const matched = programs.find(p =>
+      title.toLowerCase().includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(title.toLowerCase())
+    );
+    const baseUrl = "https://teamwellycom.lovable.app";
+    const programUrl = matched ? `${baseUrl}/player/${matched.id}` : baseUrl;
     addToCalendar(provider, {
       title,
       description: assistantMessage.slice(0, 200),
       durationMinutes: 15,
+      url: programUrl,
     });
     toast({ title: "Added to calendar! 📅", description: `"${title}" scheduled for ~2 hours from now.` });
   };

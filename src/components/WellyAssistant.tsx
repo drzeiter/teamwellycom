@@ -59,13 +59,15 @@ function CalendarBlock({ json, programs }: { json: string; programs: { id: strin
       const startDate = new Date(`${date}T${time}:00`);
       if (isNaN(startDate.getTime())) throw new Error("Invalid date");
       const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
-      // Include deep link in calendar event description
-      const appUrl = matchedProgram ? `${window.location.origin}/player/${matchedProgram.id}` : window.location.origin;
+      // Use published URL for deep link so it works outside the preview
+      const baseUrl = "https://teamwellycom.lovable.app";
+      const programUrl = matchedProgram ? `${baseUrl}/player/${matchedProgram.id}` : baseUrl;
       addToCalendar(provider, {
         title,
         durationMinutes: duration || 15,
         startDate,
-        description: `Time for your wellness routine! Open TeamWelly to start:\n${appUrl}`,
+        description: "Time for your wellness routine!",
+        url: programUrl,
       });
       setAdded(true);
     } catch {

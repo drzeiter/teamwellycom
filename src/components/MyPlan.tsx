@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Play, Trash2, Target } from "lucide-react";
+import { Calendar, Play, Trash2, Target, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
+import { toast } from "@/hooks/use-toast";
+import { addToCalendar, type CalendarProvider, type CalendarEventData } from "@/utils/calendarEvent";
 
 import MyTasks from "@/components/MyTasks";
+import ScheduleBottomSheet from "@/components/ScheduleBottomSheet";
 
 const AREA_ICONS: Record<string, string> = {
   "Low Back": "🔻", "Hips": "🦴", "Shoulders": "💪", "Neck": "🦒",
@@ -35,6 +39,12 @@ export default function MyPlan() {
   const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState<EnrolledProgram[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showMovementPicker, setShowMovementPicker] = useState(false);
+  const [availablePrograms, setAvailablePrograms] = useState<any[]>([]);
+  const [selectedMovement, setSelectedMovement] = useState<any>(null);
+  const [showScheduleSheet, setShowScheduleSheet] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -70,6 +80,55 @@ export default function MyPlan() {
   const removeEnrollment = async (id: string) => {
     await (supabase as any).from("user_enrolled_programs").update({ is_active: false }).eq("id", id);
     setEnrollments(prev => prev.filter(e => e.id !== id));
+  };
+
+  const handleOpenMovementPicker = async () => {
+    // Fetch all programs for the picker
+    const { data } = await supabase
+      .from("programs")
+      .select("id, name, target_area, category_type, duration_minutes")
+      .order("sort_order", { ascending: true });
+    setAvailablePrograms(data || []);
+    setShowMovementPicker(true);
+  };
+
+  const handleSelectMovement = (program: any) => {
+    setSelectedMovement(program);
+    setShowMovementPicker(false);
+    setShowScheduleSheet(true);
+  };
+
+  const handleScheduleConfirm = async (scheduledAt: Date, durationMinutes: number) => {
+    if (!selectedMovement || !user) return;
+    setSaving(true);
+
+    await (supabase as any).from("scheduled_tasks").insert({
+      user_id: user.id,
+      title: selectedMovement.name,
+      scheduled_at: scheduledAt.toISOString(),
+      duration_minutes: durationMinutes,
+      program_id: selectedMovement.id,
+    });
+
+    const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
+    const eventData: CalendarEventData = {
+      title: selectedMovement.name,
+      description: `Time for ${selectedMovement.name}! Open TeamWelly to start.`,
+      durationMinutes,
+      startDate: scheduledAt,
+      url: "https://teamwellycom.lovable.app",
+    };
+    addToCalendar(provider, eventData);
+
+    toast({
+      title: "Scheduled! ✅",
+      description: `${selectedMovement.name} on ${format(scheduledAt, "MMM d 'at' h:mm a")}`,
+    });
+
+    setSelectedMovement(null);
+    setShowScheduleSheet(false);
+    setSaving(false);
+    setRefreshKey(k => k + 1);
   };
 
   if (loading) {
@@ -162,7 +221,7 @@ export default function MyPlan() {
       </div>
 
       {/* My Tasks Section - includes quick enrollments + scheduled tasks */}
-      <MyTasks quickEnrollments={quickEnrollments} onRemoveEnrollment={removeEnrollment} />
+      <MyTasks key={refreshKey} quickEnrollments={quickEnrollments} onRemoveEnrollment={removeEnrollment} />
 
       {!hasContent && (
         <div className="glass rounded-xl p-6 text-center">
@@ -171,6 +230,77 @@ export default function MyPlan() {
           <p className="text-xs text-muted-foreground">Add programs from the Programs tab or ask Welly AI to schedule a routine for you.</p>
         </div>
       )}
+
+      {/* Schedule a Movement - floating button */}
+      <motion.button
+        onClick={handleOpenMovementPicker}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        className="fixed bottom-24 left-4 z-40 flex items-center gap-2 px-4 py-3 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm shadow-lg active:scale-95 transition-transform"
+      >
+        <Plus className="w-4 h-4" />
+        Schedule a Movement
+      </motion.button>
+
+      {/* Movement Picker Modal */}
+      <AnimatePresence>
+        {showMovementPicker && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end justify-center"
+            onClick={() => setShowMovementPicker(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-md glass-strong rounded-t-2xl p-5 safe-bottom max-h-[70vh] overflow-y-auto"
+            >
+              <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
+              <h3 className="font-display text-lg font-bold text-foreground mb-1">Pick an Exercise</h3>
+              <p className="text-xs text-muted-foreground mb-4">Choose a movement to schedule</p>
+              <div className="space-y-2">
+                {availablePrograms.map(prog => (
+                  <button
+                    key={prog.id}
+                    onClick={() => handleSelectMovement(prog)}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary/80 transition-all active:scale-[0.98]"
+                  >
+                    <span className="text-xl">{AREA_ICONS[prog.target_area] || "🏋️"}</span>
+                    <div className="text-left flex-1">
+                      <p className="text-sm font-medium text-foreground">{prog.name}</p>
+                      <p className="text-xs text-muted-foreground">{prog.duration_minutes} min · {prog.target_area}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowMovementPicker(false)}
+                className="w-full mt-4 py-3 rounded-xl bg-secondary text-muted-foreground text-sm font-medium"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Schedule Bottom Sheet for chosen movement */}
+      <ScheduleBottomSheet
+        open={showScheduleSheet}
+        onClose={() => { setShowScheduleSheet(false); setSelectedMovement(null); }}
+        title={selectedMovement?.name || ""}
+        subtitle="Pick a date & time for this movement"
+        defaultHour={9}
+        defaultMinute={0}
+        defaultDurationMinutes={selectedMovement?.duration_minutes ?? 10}
+        onConfirm={handleScheduleConfirm}
+        saving={saving}
+      />
     </div>
   );
 }

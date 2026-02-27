@@ -59,6 +59,7 @@ export default function ReminderScheduler() {
       description: `${activeReminder.desc} — Open TeamWelly to start your session.`,
       durationMinutes,
       startDate: scheduledAt,
+      url: "https://teamwellycom.lovable.app",
     };
     addToCalendar(provider, eventData);
 

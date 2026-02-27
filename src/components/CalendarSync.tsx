@@ -81,6 +81,7 @@ const CalendarSync = () => {
       description: "Time for your wellness routine! Open TeamWelly to start.",
       durationMinutes,
       startDate: scheduledAt,
+      url: "https://teamwellycom.lovable.app",
     };
     addToCalendar(provider, data);
 

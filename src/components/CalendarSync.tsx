@@ -1,15 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Bell, Clock, ChevronRight, Check, Smartphone, X } from "lucide-react";
+import { Calendar, ChevronRight, Check, Smartphone, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { addToCalendar, CalendarProvider, type CalendarEventData } from "@/utils/calendarEvent";
-
-const REMINDER_OPTIONS = [
-  { id: "morning", label: "Morning Stretch", time: "8:00 AM", desc: "Start the day with mobility" },
-  { id: "midday", label: "Midday Reset", time: "12:30 PM", desc: "Beat the afternoon slump" },
-  { id: "afternoon", label: "Posture Check", time: "3:00 PM", desc: "Realign after sitting" },
-  { id: "evening", label: "Wind Down", time: "7:00 PM", desc: "Breathwork before bed" },
-];
+import ReminderScheduler from "@/components/ReminderScheduler";
 
 const SUGGESTED_ROUTINES = [
   { name: "5-Min Desk Reset", when: "Every 2 hours during work", emoji: "🖥️", durationMinutes: 5 },
@@ -34,15 +28,8 @@ function getSavedProvider(): CalendarProvider | null {
 }
 
 const CalendarSync = () => {
-  const [enabledReminders, setEnabledReminders] = useState<string[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<CalendarProvider | null>(getSavedProvider);
   const [showProviderPicker, setShowProviderPicker] = useState(false);
-
-  const toggleReminder = (id: string) => {
-    setEnabledReminders(prev =>
-      prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]
-    );
-  };
 
   const handlePickProvider = (provider: CalendarProvider) => {
     setSelectedProvider(provider);
@@ -157,39 +144,7 @@ const CalendarSync = () => {
       </AnimatePresence>
 
       {/* Reminder Settings */}
-      <div className="glass rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Bell className="w-4 h-4 text-primary" />
-          <h3 className="font-display font-semibold text-foreground text-sm">Daily Reminders</h3>
-        </div>
-        <div className="space-y-2">
-          {REMINDER_OPTIONS.map(reminder => (
-            <button
-              key={reminder.id}
-              onClick={() => toggleReminder(reminder.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all ${
-                enabledReminders.includes(reminder.id)
-                  ? "bg-primary/10 border border-primary/30"
-                  : "bg-secondary/50 border border-transparent"
-              }`}
-            >
-              <Clock className="w-4 h-4 text-muted-foreground shrink-0" />
-              <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-foreground">{reminder.label}</p>
-                <p className="text-xs text-muted-foreground">{reminder.desc}</p>
-              </div>
-              <span className="text-xs text-muted-foreground font-mono">{reminder.time}</span>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                enabledReminders.includes(reminder.id)
-                  ? "border-primary bg-primary"
-                  : "border-muted-foreground/30"
-              }`}>
-                {enabledReminders.includes(reminder.id) && <Check className="w-3 h-3 text-primary-foreground" />}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
+      <ReminderScheduler />
 
       {/* Suggested Routines */}
       <div className="glass rounded-xl p-4">

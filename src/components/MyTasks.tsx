@@ -48,10 +48,10 @@ export default function MyTasks() {
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
-  if (loading) return <div className="px-5 mb-4"><div className="glass rounded-xl p-6 text-center"><p className="text-sm text-muted-foreground">Loading tasks...</p></div></div>;
+  if (loading) return <div><div className="glass rounded-xl p-6 text-center"><p className="text-sm text-muted-foreground">Loading tasks...</p></div></div>;
 
   if (tasks.length === 0) return (
-    <div className="px-5 mb-4">
+    <div>
       <div className="flex items-center gap-2 mb-2">
         <Calendar className="w-4 h-4 text-primary" />
         <h2 className="font-display text-sm font-bold text-foreground">My Wellness Tasks</h2>
@@ -72,7 +72,7 @@ export default function MyTasks() {
   };
 
   return (
-    <div className="px-5 mb-4">
+    <div>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-primary" />

@@ -1,11 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, ChevronRight, Check, Smartphone, X } from "lucide-react";
+import { format } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 import { addToCalendar, CalendarProvider, type CalendarEventData } from "@/utils/calendarEvent";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import ReminderScheduler from "@/components/ReminderScheduler";
+import ScheduleBottomSheet from "@/components/ScheduleBottomSheet";
 
-const SUGGESTED_ROUTINES = [
+interface RoutineOption {
+  name: string;
+  when: string;
+  emoji: string;
+  durationMinutes: number;
+}
+
+const SUGGESTED_ROUTINES: RoutineOption[] = [
   { name: "5-Min Desk Reset", when: "Every 2 hours during work", emoji: "🖥️", durationMinutes: 5 },
   { name: "Morning Mobility", when: "Daily at 7:30 AM", emoji: "🌅", durationMinutes: 15 },
   { name: "Box Breathing", when: "Before meetings", emoji: "🫁", durationMinutes: 5 },
@@ -22,14 +33,16 @@ const PROVIDER_STORAGE_KEY = "welly_calendar_provider";
 
 function getSavedProvider(): CalendarProvider | null {
   try {
-    const v = localStorage.getItem(PROVIDER_STORAGE_KEY);
-    return v as CalendarProvider | null;
+    return localStorage.getItem(PROVIDER_STORAGE_KEY) as CalendarProvider | null;
   } catch { return null; }
 }
 
 const CalendarSync = () => {
+  const { user } = useAuth();
   const [selectedProvider, setSelectedProvider] = useState<CalendarProvider | null>(getSavedProvider);
   const [showProviderPicker, setShowProviderPicker] = useState(false);
+  const [activeRoutine, setActiveRoutine] = useState<RoutineOption | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const handlePickProvider = (provider: CalendarProvider) => {
     setSelectedProvider(provider);
@@ -47,18 +60,37 @@ const CalendarSync = () => {
     toast({ title: "Disconnected", description: "Calendar provider removed." });
   };
 
-  const handleAddToCalendar = (name: string, durationMinutes = 15) => {
+  const handleRoutineConfirm = async (scheduledAt: Date, durationMinutes: number) => {
+    if (!activeRoutine) return;
+    setSaving(true);
+
+    // Save to scheduled_tasks if logged in
+    if (user) {
+      await (supabase as any).from("scheduled_tasks").insert({
+        user_id: user.id,
+        title: activeRoutine.name,
+        scheduled_at: scheduledAt.toISOString(),
+        duration_minutes: durationMinutes,
+      });
+    }
+
+    // Add to calendar
     const provider = selectedProvider || "apple";
     const data: CalendarEventData = {
-      title: name,
+      title: activeRoutine.name,
       description: "Time for your wellness routine! Open TeamWelly to start.",
       durationMinutes,
+      startDate: scheduledAt,
     };
     addToCalendar(provider, data);
+
     toast({
       title: "Added to calendar! ✅",
-      description: `${name} has been added via ${CALENDAR_PROVIDERS.find(p => p.id === provider)?.label || "download"}.`,
+      description: `${activeRoutine.name} on ${format(scheduledAt, "MMM d 'at' h:mm a")}`,
     });
+
+    setActiveRoutine(null);
+    setSaving(false);
   };
 
   const connectedProvider = CALENDAR_PROVIDERS.find(p => p.id === selectedProvider);
@@ -153,7 +185,7 @@ const CalendarSync = () => {
           {SUGGESTED_ROUTINES.map(routine => (
             <button
               key={routine.name}
-              onClick={() => handleAddToCalendar(routine.name, routine.durationMinutes)}
+              onClick={() => setActiveRoutine(routine)}
               className="w-full flex items-center gap-3 p-3 rounded-lg bg-secondary/50 hover:bg-secondary/80 transition-all"
             >
               <span className="text-lg">{routine.emoji}</span>
@@ -166,6 +198,19 @@ const CalendarSync = () => {
           ))}
         </div>
       </div>
+
+      {/* Schedule picker for suggested routines */}
+      <ScheduleBottomSheet
+        open={!!activeRoutine}
+        onClose={() => setActiveRoutine(null)}
+        title={activeRoutine?.name || ""}
+        subtitle="Pick a date & time for this routine"
+        defaultHour={9}
+        defaultMinute={0}
+        defaultDurationMinutes={activeRoutine?.durationMinutes ?? 10}
+        onConfirm={handleRoutineConfirm}
+        saving={saving}
+      />
     </div>
   );
 };

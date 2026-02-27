@@ -7,6 +7,7 @@ export interface CalendarEventData {
   description?: string;
   durationMinutes?: number;
   startDate?: Date; // defaults to ~2 hours from now
+  url?: string; // deep link URL shown in event notes
 }
 
 function pad(n: number) {
@@ -17,35 +18,50 @@ function toICSDate(d: Date): string {
   return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
 }
 
-function toGoogleDate(d: Date): string {
-  return toICSDate(d);
-}
-
 function getStartEnd(data: CalendarEventData) {
-  const start = data.startDate ?? new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
+  const start = data.startDate ?? new Date(Date.now() + 2 * 60 * 60 * 1000);
   const end = new Date(start.getTime() + (data.durationMinutes || 15) * 60 * 1000);
   return { start, end };
 }
 
+// Escape special chars for ICS text fields
+function escapeICS(text: string): string {
+  return text.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+}
+
 export function generateICSFile(data: CalendarEventData): string {
   const { start, end } = getStartEnd(data);
-  return [
+  const desc = data.url
+    ? `${data.description || "Time for your wellness routine!"}\\n\\nOpen your program: ${data.url}`
+    : escapeICS(data.description || "Time for your wellness routine! Open TeamWelly to start.");
+
+  const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//TeamWelly//Wellness//EN",
     "BEGIN:VEVENT",
     `DTSTART:${toICSDate(start)}`,
     `DTEND:${toICSDate(end)}`,
-    `SUMMARY:${data.title} - TeamWelly`,
-    `DESCRIPTION:${data.description || "Time for your wellness routine! Open TeamWelly to start."}`,
+    `SUMMARY:${escapeICS(data.title)} - TeamWelly`,
+    `DESCRIPTION:${desc}`,
+  ];
+
+  // URL field is rendered as a clickable link in most calendar apps
+  if (data.url) {
+    lines.push(`URL:${data.url}`);
+  }
+
+  lines.push(
     "BEGIN:VALARM",
     "TRIGGER:-PT5M",
     "ACTION:DISPLAY",
-    `DESCRIPTION:${data.title} starting soon`,
+    `DESCRIPTION:${escapeICS(data.title)} starting soon`,
     "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR",
-  ].join("\r\n");
+  );
+
+  return lines.join("\r\n");
 }
 
 export function downloadICS(data: CalendarEventData) {
@@ -61,24 +77,33 @@ export function downloadICS(data: CalendarEventData) {
 
 export function openGoogleCalendar(data: CalendarEventData) {
   const { start, end } = getStartEnd(data);
+  // Google Calendar renders HTML in details, so we can include a clickable link
+  let details = data.description || "Time for your wellness routine! Open TeamWelly to start.";
+  if (data.url) {
+    details += `\n\n🔗 Open your program: ${data.url}`;
+  }
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: `${data.title} - TeamWelly`,
-    dates: `${toGoogleDate(start)}/${toGoogleDate(end)}`,
-    details: data.description || "Time for your wellness routine! Open TeamWelly to start.",
+    dates: `${toICSDate(start)}/${toICSDate(end)}`,
+    details,
   });
   window.open(`https://calendar.google.com/calendar/event?${params.toString()}`, "_blank");
 }
 
 export function openOutlookCalendar(data: CalendarEventData) {
   const { start, end } = getStartEnd(data);
+  let body = data.description || "Time for your wellness routine! Open TeamWelly to start.";
+  if (data.url) {
+    body += `\n\n🔗 Open your program: ${data.url}`;
+  }
   const params = new URLSearchParams({
     path: "/calendar/action/compose",
     rru: "addevent",
     subject: `${data.title} - TeamWelly`,
     startdt: start.toISOString(),
     enddt: end.toISOString(),
-    body: data.description || "Time for your wellness routine! Open TeamWelly to start.",
+    body,
   });
   window.open(`https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`, "_blank");
 }

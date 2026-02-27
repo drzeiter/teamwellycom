@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, Send, Bookmark, Phone, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -40,28 +41,39 @@ function saveHistory(messages: Message[]) {
 }
 
 // Inline calendar block rendered from AI ```calendar``` code blocks
-function CalendarBlock({ json }: { json: string }) {
+function CalendarBlock({ json, programs }: { json: string; programs: { id: string; name: string }[] }) {
   const [added, setAdded] = useState(false);
+  const navigate = useNavigate();
+
+  let parsed: any = {};
+  try { parsed = JSON.parse(json); } catch {}
+
+  // Find matching program by fuzzy name match
+  const matchedProgram = parsed.program
+    ? programs.find(p => p.name.toLowerCase().includes(parsed.program.toLowerCase()) || parsed.program.toLowerCase().includes(p.name.toLowerCase()))
+    : null;
 
   const handleAdd = () => {
     try {
-      const parsed = JSON.parse(json);
       const { title, date, time, duration } = parsed;
       const startDate = new Date(`${date}T${time}:00`);
       if (isNaN(startDate.getTime())) throw new Error("Invalid date");
       const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
-      addToCalendar(provider, { title, durationMinutes: duration || 15, startDate });
+      // Include deep link in calendar event description
+      const appUrl = matchedProgram ? `${window.location.origin}/player/${matchedProgram.id}` : window.location.origin;
+      addToCalendar(provider, {
+        title,
+        durationMinutes: duration || 15,
+        startDate,
+        description: `Time for your wellness routine! Open TeamWelly to start:\n${appUrl}`,
+      });
       setAdded(true);
     } catch {
-      // fallback: download generic ICS
       const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
       addToCalendar(provider, { title: "Wellness Routine", durationMinutes: 15 });
       setAdded(true);
     }
   };
-
-  let parsed: any = {};
-  try { parsed = JSON.parse(json); } catch {}
 
   return (
     <div className="my-2 p-3 rounded-xl bg-primary/10 border border-primary/20">
@@ -74,17 +86,27 @@ function CalendarBlock({ json }: { json: string }) {
           📅 {parsed.date} at {parsed.time} · {parsed.duration || 15} min
         </p>
       )}
-      <button
-        onClick={handleAdd}
-        disabled={added}
-        className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${
-          added
-            ? "bg-wellness-green/20 text-wellness-green"
-            : "gradient-primary text-primary-foreground active:scale-95"
-        }`}
-      >
-        {added ? "✅ Added to Calendar" : "Add to My Calendar"}
-      </button>
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={handleAdd}
+          disabled={added}
+          className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${
+            added
+              ? "bg-wellness-green/20 text-wellness-green"
+              : "gradient-primary text-primary-foreground active:scale-95"
+          }`}
+        >
+          {added ? "✅ Added to Calendar" : "Add to My Calendar"}
+        </button>
+        {matchedProgram && (
+          <button
+            onClick={() => navigate(`/player/${matchedProgram.id}`)}
+            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-secondary text-foreground hover:bg-secondary/80 transition-all active:scale-95 flex items-center gap-1"
+          >
+            ▶️ Open {matchedProgram.name}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -92,13 +114,22 @@ function CalendarBlock({ json }: { json: string }) {
 export default function WellyAssistant() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>(loadHistory);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [programs, setPrograms] = useState<{ id: string; name: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch programs for deep linking
+  useEffect(() => {
+    supabase.from("programs").select("id, name").then(({ data }) => {
+      if (data) setPrograms(data);
+    });
+  }, []);
 
   useEffect(() => { saveHistory(messages); }, [messages]);
 
@@ -299,7 +330,7 @@ export default function WellyAssistant() {
                       code({ className, children }) {
                         const text = String(children).trim();
                         if (className === "language-calendar" || text.startsWith('{"title"')) {
-                          return <CalendarBlock json={text} />;
+                          return <CalendarBlock json={text} programs={programs} />;
                         }
                         return <code className={className}>{children}</code>;
                       },

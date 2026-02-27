@@ -352,7 +352,7 @@ When a user requests to schedule something on their calendar, respond with a spe
 
 📅 **Added to your calendar!**
 \`\`\`calendar
-{"title":"[Activity Name]","date":"[YYYY-MM-DD]","time":"[HH:MM]","duration":[minutes]}
+{"title":"[Activity Name]","date":"[YYYY-MM-DD]","time":"[HH:MM]","duration":[minutes],"program":"[Matching Program Name]"}
 \`\`\`
 
 Rules for calendar blocks:
@@ -364,6 +364,7 @@ Rules for calendar blocks:
 - Today's date is: ${new Date().toISOString().split('T')[0]}
 - Current time is approximately: ${new Date().toTimeString().slice(0, 5)}
 - Always confirm what you scheduled after the calendar block
+- The "program" field MUST match one of the available program names from the PROGRAM_MAP above (e.g. "Desk Reset", "Low Back Reset", "Breathing Reset", "Full Body Recovery", etc.). Pick the closest match to the activity being scheduled. This is used to deep-link the user directly to the program in the app.
 
 ## IMPORTANT RULES
 1. NEVER copy phrasing from source materials — always rewrite in your own voice

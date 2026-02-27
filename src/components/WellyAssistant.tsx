@@ -53,13 +53,12 @@ function CalendarBlock({ json, programs }: { json: string; programs: { id: strin
     ? programs.find(p => p.name.toLowerCase().includes(parsed.program.toLowerCase()) || parsed.program.toLowerCase().includes(p.name.toLowerCase()))
     : null;
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     try {
       const { title, date, time, duration } = parsed;
       const startDate = new Date(`${date}T${time}:00`);
       if (isNaN(startDate.getTime())) throw new Error("Invalid date");
       const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
-      // Use published URL for deep link so it works outside the preview
       const baseUrl = "https://teamwellycom.lovable.app";
       const programUrl = matchedProgram ? `${baseUrl}/player/${matchedProgram.id}` : baseUrl;
       addToCalendar(provider, {
@@ -69,6 +68,17 @@ function CalendarBlock({ json, programs }: { json: string; programs: { id: strin
         description: "Time for your wellness routine!",
         url: programUrl,
       });
+      // Save as a task
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("scheduled_tasks").insert({
+          user_id: user.id,
+          title,
+          scheduled_at: startDate.toISOString(),
+          duration_minutes: duration || 15,
+          program_id: matchedProgram?.id || null,
+        });
+      }
       setAdded(true);
     } catch {
       const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
@@ -270,11 +280,10 @@ export default function WellyAssistant() {
     window.open("https://calendly.com/drchriszeiter/30min", "_blank");
   };
 
-  const handleAddToCalendar = (assistantMessage: string) => {
+  const handleAddToCalendar = async (assistantMessage: string) => {
     const boldMatch = assistantMessage.match(/\*\*(.+?)\*\*/);
     const title = boldMatch?.[1] || "Wellness Routine";
     const provider = (localStorage.getItem("welly_calendar_provider") as CalendarProvider) || "apple";
-    // Try to match a program for deep linking
     const matched = programs.find(p =>
       title.toLowerCase().includes(p.name.toLowerCase()) || p.name.toLowerCase().includes(title.toLowerCase())
     );
@@ -286,7 +295,17 @@ export default function WellyAssistant() {
       durationMinutes: 15,
       url: programUrl,
     });
-    toast({ title: "Added to calendar! 📅", description: `"${title}" scheduled for ~2 hours from now.` });
+    // Save as a task
+    if (user) {
+      await supabase.from("scheduled_tasks").insert({
+        user_id: user.id,
+        title,
+        scheduled_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        duration_minutes: 15,
+        program_id: matched?.id || null,
+      });
+    }
+    toast({ title: "Added to calendar! 📅", description: `"${title}" scheduled and added to your tasks.` });
   };
 
   const clearChat = () => {

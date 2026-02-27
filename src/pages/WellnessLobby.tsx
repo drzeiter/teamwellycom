@@ -15,6 +15,7 @@ import StepTracker from "@/components/StepTracker";
 import CalendarSync from "@/components/CalendarSync";
 import { useHealthData } from "@/hooks/useHealthData";
 import logoWhite from "@/assets/logo-white.png";
+import MyTasks from "@/components/MyTasks";
 
 interface WellyPointsData {
   total_points: number;
@@ -199,6 +200,9 @@ const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets,
         </div>
       </div>
     </div>
+
+    {/* My Wellness Tasks */}
+    <MyTasks />
 
     {/* Tips / Quotes Toggle */}
     <div className="px-5 mb-4">

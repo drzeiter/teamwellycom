@@ -37,13 +37,38 @@ Return ONLY valid JSON (no markdown, no code fences) with this exact structure:
     "shoulders": <number 0-100>
   },
   "joint_measurements": {
-    "knee_valgus_angle": <number in degrees or null>,
+    "knee_valgus_angle": <number in degrees, estimate even if approximate>,
     "hip_shift": "<left/right/neutral>",
+    "hip_shift_degrees": <number in degrees of lateral deviation from center, 0 if neutral>,
     "pelvic_tilt": "<anterior/posterior/neutral>",
-    "torso_forward_lean": <number in degrees or null>,
-    "ankle_dorsiflexion_range": <number in degrees or null>,
-    "shoulder_flexion_range": <number in degrees or null>,
-    "squat_depth": "<full/parallel/quarter/minimal>"
+    "pelvic_tilt_degrees": <number in degrees of tilt>,
+    "torso_forward_lean": <number in degrees from vertical>,
+    "ankle_dorsiflexion_range": <number in degrees>,
+    "shoulder_flexion_range": <number in degrees>,
+    "squat_depth": "<full/parallel/quarter/minimal>",
+    "head_position": "<forward/neutral/extended>",
+    "head_forward_degrees": <number in degrees of forward deviation>,
+    "lumbar_curve": "<excessive/normal/flat>",
+    "thoracic_curve": "<excessive/normal/flat>",
+    "knee_over_toe": <boolean whether knees track past toes>,
+    "feet_turn_out": "<none/mild/excessive>",
+    "feet_turn_out_degrees": <number in degrees>,
+    "arm_fall_forward": <boolean whether arms fall forward during overhead>,
+    "weight_distribution": "<even/left-heavy/right-heavy/anterior/posterior>"
+  },
+  "posture_landmarks": {
+    "side_view": {
+      "ideal_plumb_line": "Ear -> Shoulder -> Hip -> Knee -> Ankle all vertically aligned",
+      "user_deviations": [
+        {"landmark": "<ear/shoulder/hip/knee/ankle>", "direction": "<forward/backward/left/right>", "offset_cm_approx": <number>}
+      ]
+    },
+    "front_view": {
+      "ideal_alignment": "Shoulders level, hips level, knees tracking over 2nd toe",
+      "user_deviations": [
+        {"landmark": "<left_shoulder/right_shoulder/left_hip/right_hip/left_knee/right_knee>", "direction": "<higher/lower/inward/outward>", "offset_cm_approx": <number>}
+      ]
+    }
   },
   "risk_flags": [
     {

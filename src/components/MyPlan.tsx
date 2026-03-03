@@ -158,6 +158,9 @@ export default function MyPlan() {
 
   return (
     <div className="space-y-6">
+      {/* Posture + Movement Analysis - Primary Feature */}
+      <AssessmentSection />
+
       {/* Enrolled Programs */}
       <div>
         <div className="flex items-center gap-2 mb-3">
@@ -230,8 +233,6 @@ export default function MyPlan() {
         )}
       </div>
 
-      {/* Posture + Movement Analysis */}
-      <AssessmentSection />
 
       {/* My Tasks Section - includes quick enrollments + scheduled tasks */}
       <MyTasks key={refreshKey} quickEnrollments={quickEnrollments} onRemoveEnrollment={removeEnrollment} />

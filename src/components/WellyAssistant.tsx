@@ -132,6 +132,8 @@ export default function WellyAssistant() {
   const [open, setOpen] = useState(false);
   const [fabHidden, setFabHidden] = useState(false);
   const [onboardingDone, setOnboardingDone] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [pendingAssessment, setPendingAssessment] = useState<any>(null);
 
   // Hide until onboarding is complete
   useEffect(() => {
@@ -149,6 +151,50 @@ export default function WellyAssistant() {
     window.addEventListener("welly-fab-visibility", handler);
     return () => window.removeEventListener("welly-fab-visibility", handler);
   }, []);
+
+  // Listen for assessment completion events
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setPendingAssessment(detail);
+      setNotificationCount(prev => prev + 1);
+    };
+    window.addEventListener("welly-assessment-complete", handler);
+    return () => window.removeEventListener("welly-assessment-complete", handler);
+  }, []);
+
+  // When Welly opens with a pending assessment, auto-send context
+  useEffect(() => {
+    if (open && pendingAssessment) {
+      const assessment = pendingAssessment;
+      setPendingAssessment(null);
+      setNotificationCount(0);
+
+      const riskSummary = (assessment.risk_flags || [])
+        .map((f: any) => `[${f.severity}] ${f.area}: ${f.finding}`)
+        .join("; ");
+      const imbalanceSummary = (assessment.muscle_imbalances || [])
+        .map((m: any) => `${m.finding} — tight: ${m.overactive_tight?.join(", ")} / weak: ${m.underactive_weak?.join(", ")} / injury risk: ${m.possible_injuries?.join(", ")}`)
+        .join("; ");
+      const areaScores = Object.entries(assessment.area_scores || {})
+        .map(([k, v]) => `${k}: ${v}/100`)
+        .join(", ");
+
+      const contextMessage = `I just completed a Posture + Movement Assessment. Here are my results:
+
+Overall Score: ${assessment.overall_score}/100
+Area Scores: ${areaScores}
+Risk Flags: ${riskSummary || "None"}
+Muscle Imbalances: ${imbalanceSummary || "None"}
+Findings: ${assessment.findings_text || "N/A"}
+
+Based on these results, what are my recommended next steps? What exercises and programs should I focus on to improve my weak areas and address my muscle imbalances?`;
+
+      // Auto-send after a short delay to let the UI open
+      setTimeout(() => send(contextMessage), 500);
+    }
+  }, [open, pendingAssessment]);
+
   const [messages, setMessages] = useState<Message[]>(loadHistory);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -493,10 +539,19 @@ export default function WellyAssistant() {
       {/* FAB */}
       {!open && !fabHidden && onboardingDone && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setOpen(true);
+            if (!pendingAssessment) setNotificationCount(0);
+          }}
           className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2"
           aria-label="Open Welly AI Assistant"
         >
+          {/* Notification Badge */}
+          {notificationCount > 0 && (
+            <span className="absolute -top-1.5 -right-1 min-w-[20px] h-5 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1 shadow-md animate-bounce z-10">
+              {notificationCount}
+            </span>
+          )}
           <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
             <img src={logoSubmark} alt="Welly" className="w-7 h-7 object-contain brightness-0" />
           </div>

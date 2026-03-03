@@ -576,6 +576,51 @@ export type Database = {
           },
         ]
       }
+      movement_assessments: {
+        Row: {
+          area_scores: Json
+          assessment_type: string
+          created_at: string
+          findings_text: string | null
+          id: string
+          joint_measurements: Json
+          overall_score: number | null
+          raw_ai_response: Json | null
+          recommended_program_ids: string[] | null
+          risk_flags: Json
+          user_id: string
+          video_snapshot_url: string | null
+        }
+        Insert: {
+          area_scores?: Json
+          assessment_type?: string
+          created_at?: string
+          findings_text?: string | null
+          id?: string
+          joint_measurements?: Json
+          overall_score?: number | null
+          raw_ai_response?: Json | null
+          recommended_program_ids?: string[] | null
+          risk_flags?: Json
+          user_id: string
+          video_snapshot_url?: string | null
+        }
+        Update: {
+          area_scores?: Json
+          assessment_type?: string
+          created_at?: string
+          findings_text?: string | null
+          id?: string
+          joint_measurements?: Json
+          overall_score?: number | null
+          raw_ai_response?: Json | null
+          recommended_program_ids?: string[] | null
+          risk_flags?: Json
+          user_id?: string
+          video_snapshot_url?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -10,6 +10,7 @@ import { addToCalendar, type CalendarProvider, type CalendarEventData } from "@/
 
 import MyTasks from "@/components/MyTasks";
 import ScheduleBottomSheet from "@/components/ScheduleBottomSheet";
+import AssessmentSection from "@/components/movement-analysis/AssessmentSection";
 
 const AREA_ICONS: Record<string, string> = {
   "Low Back": "🔻", "Hips": "🦴", "Shoulders": "💪", "Neck": "🦒",
@@ -228,6 +229,9 @@ export default function MyPlan() {
           </div>
         )}
       </div>
+
+      {/* Posture + Movement Analysis */}
+      <AssessmentSection />
 
       {/* My Tasks Section - includes quick enrollments + scheduled tasks */}
       <MyTasks key={refreshKey} quickEnrollments={quickEnrollments} onRemoveEnrollment={removeEnrollment} />

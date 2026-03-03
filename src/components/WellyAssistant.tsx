@@ -543,7 +543,7 @@ Based on these results, what are my recommended next steps? What exercises and p
             setOpen(true);
             if (!pendingAssessment) setNotificationCount(0);
           }}
-          className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2"
+          className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2 relative"
           aria-label="Open Welly AI Assistant"
         >
           {/* Notification Badge */}

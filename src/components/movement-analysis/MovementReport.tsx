@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowLeft, Download, TrendingUp, AlertTriangle, CheckCircle, XCircle, Activity, Zap, ShieldAlert } from "lucide-react";
 import { format } from "date-fns";
+import PostureAlignmentDiagram from "./PostureAlignmentDiagram";
 
 interface MuscleImbalance {
   finding: string;
@@ -59,6 +60,7 @@ const scoreColor = (score: number) => {
 export default function MovementReport({ assessment, onBack, previousScore }: MovementReportProps) {
   const { area_scores, joint_measurements, risk_flags, findings_text, overall_score } = assessment;
   const muscleImbalances: MuscleImbalance[] = (assessment as any).muscle_imbalances || (assessment as any).raw_ai_response?.muscle_imbalances || [];
+  const postureLandmarks = (assessment as any).posture_landmarks || (assessment as any).raw_ai_response?.posture_landmarks || {};
 
   const handleExport = () => {
     const content = `POSTURE + MOVEMENT REPORT
@@ -156,6 +158,9 @@ ${findings_text || "No findings available."}
         </div>
       )}
 
+      {/* Postural Alignment Diagram */}
+      <PostureAlignmentDiagram landmarks={postureLandmarks} jointMeasurements={joint_measurements} />
+
       {/* Area Scores */}
       <div className="glass rounded-xl p-4">
         <h3 className="font-display font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
@@ -192,21 +197,35 @@ ${findings_text || "No findings available."}
         <h3 className="font-display font-semibold text-foreground text-sm mb-3">Joint Measurements</h3>
         <div className="grid grid-cols-2 gap-2">
           {[
-            { label: "Knee Valgus", value: joint_measurements.knee_valgus_angle, unit: "°" },
-            { label: "Hip Shift", value: joint_measurements.hip_shift },
-            { label: "Pelvic Tilt", value: joint_measurements.pelvic_tilt },
-            { label: "Torso Lean", value: joint_measurements.torso_forward_lean, unit: "°" },
-            { label: "Ankle Dorsiflexion", value: joint_measurements.ankle_dorsiflexion_range, unit: "°" },
-            { label: "Shoulder Flexion", value: joint_measurements.shoulder_flexion_range, unit: "°" },
+            { label: "Knee Valgus", value: joint_measurements.knee_valgus_angle, unit: "°", desc: "Inward knee collapse" },
+            { label: "Hip Shift", value: joint_measurements.hip_shift, extra: joint_measurements.hip_shift_degrees ? `${joint_measurements.hip_shift_degrees}°` : null },
+            { label: "Pelvic Tilt", value: joint_measurements.pelvic_tilt, extra: joint_measurements.pelvic_tilt_degrees ? `${joint_measurements.pelvic_tilt_degrees}°` : null },
+            { label: "Torso Lean", value: joint_measurements.torso_forward_lean, unit: "°", desc: "Forward from vertical" },
+            { label: "Ankle Dorsiflexion", value: joint_measurements.ankle_dorsiflexion_range, unit: "°", desc: "Normal: 15-20°" },
+            { label: "Shoulder Flexion", value: joint_measurements.shoulder_flexion_range, unit: "°", desc: "Normal: 170-180°" },
             { label: "Squat Depth", value: joint_measurements.squat_depth },
-          ].map((item, i) => (
-            <div key={i} className="bg-secondary/50 rounded-lg p-3">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{item.label}</p>
-              <p className="text-sm font-semibold text-foreground mt-0.5">
-                {item.value != null ? `${item.value}${item.unit || ""}` : "N/A"}
-              </p>
-            </div>
-          ))}
+            { label: "Head Position", value: joint_measurements.head_position, extra: joint_measurements.head_forward_degrees ? `${joint_measurements.head_forward_degrees}°` : null },
+            { label: "Lumbar Curve", value: joint_measurements.lumbar_curve },
+            { label: "Thoracic Curve", value: joint_measurements.thoracic_curve },
+            { label: "Feet Turn Out", value: joint_measurements.feet_turn_out, extra: joint_measurements.feet_turn_out_degrees ? `${joint_measurements.feet_turn_out_degrees}°` : null },
+            { label: "Weight Distribution", value: joint_measurements.weight_distribution },
+          ].filter(item => item.value != null && item.value !== undefined).map((item, i) => {
+            const isNeutralOrNormal = typeof item.value === "string" && ["neutral", "normal", "none", "even"].includes(item.value.toLowerCase());
+            return (
+              <div key={i} className={`rounded-lg p-3 ${isNeutralOrNormal ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-secondary/50"}`}>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{item.label}</p>
+                <p className={`text-sm font-semibold mt-0.5 ${isNeutralOrNormal ? "text-emerald-400" : "text-foreground"}`}>
+                  {typeof item.value === "boolean" ? (item.value ? "Yes" : "No") : `${item.value}${item.unit || ""}`}
+                </p>
+                {item.extra && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{item.extra}</p>
+                )}
+                {item.desc && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5 opacity-60">{item.desc}</p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

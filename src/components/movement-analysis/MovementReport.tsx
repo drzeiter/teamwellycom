@@ -1,6 +1,13 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, TrendingUp, AlertTriangle, CheckCircle, XCircle, Activity } from "lucide-react";
+import { ArrowLeft, Download, TrendingUp, AlertTriangle, CheckCircle, XCircle, Activity, Zap, ShieldAlert } from "lucide-react";
 import { format } from "date-fns";
+
+interface MuscleImbalance {
+  finding: string;
+  overactive_tight: string[];
+  underactive_weak: string[];
+  possible_injuries: string[];
+}
 
 export interface AssessmentData {
   id: string;
@@ -11,6 +18,7 @@ export interface AssessmentData {
   area_scores: Record<string, number>;
   joint_measurements: Record<string, any>;
   risk_flags: Array<{ area: string; severity: string; finding: string }>;
+  muscle_imbalances?: MuscleImbalance[];
   findings_text: string | null;
   recommended_program_ids: string[];
 }
@@ -50,6 +58,7 @@ const scoreColor = (score: number) => {
 
 export default function MovementReport({ assessment, onBack, previousScore }: MovementReportProps) {
   const { area_scores, joint_measurements, risk_flags, findings_text, overall_score } = assessment;
+  const muscleImbalances: MuscleImbalance[] = (assessment as any).muscle_imbalances || (assessment as any).raw_ai_response?.muscle_imbalances || [];
 
   const handleExport = () => {
     const content = `POSTURE + MOVEMENT REPORT
@@ -72,6 +81,12 @@ JOINT MEASUREMENTS:
 
 RISK FLAGS:
 ${risk_flags.map(f => `  [${f.severity.toUpperCase()}] ${f.area}: ${f.finding}`).join("\n")}
+
+MUSCLE IMBALANCE BREAKDOWN:
+${muscleImbalances.map(m => `  Finding: ${m.finding}
+    Overactive/Tight: ${m.overactive_tight.join(", ")}
+    Underactive/Weak: ${m.underactive_weak.join(", ")}
+    Possible Injuries: ${m.possible_injuries.join(", ")}`).join("\n\n")}
 
 FINDINGS:
 ${findings_text || "No findings available."}
@@ -208,6 +223,56 @@ ${findings_text || "No findings available."}
                   <p className="text-xs opacity-80 mt-0.5">{flag.finding}</p>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Muscle Imbalance Breakdown */}
+      {muscleImbalances.length > 0 && (
+        <div className="glass rounded-xl p-4">
+          <h3 className="font-display font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-primary" /> Muscle Imbalance Breakdown
+          </h3>
+          <div className="space-y-4">
+            {muscleImbalances.map((imb, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-secondary/50 rounded-lg p-3 space-y-2.5"
+              >
+                <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-yellow-400" />
+                  {imb.finding}
+                </p>
+                <div className="grid grid-cols-1 gap-2">
+                  {/* Overactive / Tight */}
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-md p-2.5">
+                    <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider mb-1">
+                      Overactive / Tight
+                    </p>
+                    <p className="text-xs text-foreground">{imb.overactive_tight.join(", ")}</p>
+                  </div>
+                  {/* Underactive / Weak */}
+                  <div className="bg-primary/10 border border-primary/20 rounded-md p-2.5">
+                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">
+                      Underactive / Weak
+                    </p>
+                    <p className="text-xs text-foreground">{imb.underactive_weak.join(", ")}</p>
+                  </div>
+                  {/* Possible Injuries */}
+                  {imb.possible_injuries.length > 0 && (
+                    <div className="bg-yellow-400/10 border border-yellow-400/20 rounded-md p-2.5">
+                      <p className="text-[10px] font-semibold text-yellow-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                        <ShieldAlert className="w-3 h-3" /> Possible Injury Risk
+                      </p>
+                      <p className="text-xs text-foreground">{imb.possible_injuries.join(", ")}</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>

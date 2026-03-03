@@ -1,14 +1,16 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import {
-  Activity, ChevronRight, Play, LogOut,
-  Footprints, Calendar, Settings,
-  LayoutGrid, Heart, Moon, TrendingUp, Sparkles,
+  Activity, Flame, Trophy, Zap, ChevronRight, Play, LogOut,
+  TrendingUp, Star, Footprints, Wind, Calendar, Lightbulb, Quote,
+  LayoutGrid, Settings, BarChart3,
 } from "lucide-react";
+import WellnessTips from "@/components/WellnessTips";
+import WellnessQuotes from "@/components/WellnessQuotes";
 import StepTracker from "@/components/StepTracker";
 import CalendarSync from "@/components/CalendarSync";
 import { useHealthData } from "@/hooks/useHealthData";
@@ -50,25 +52,17 @@ const AREA_ICONS: Record<string, string> = {
 
 type Tab = "home" | "programs" | "plan" | "steps" | "more";
 
-// ─── AI INSIGHT ENGINE ────────────────────────────────────
-const getInsight = (streak: number, completedCount: number, hour: number) => {
-  if (streak >= 7) return { title: "Exceptional Consistency", subtitle: "Your body is adapting beautifully. Keep this momentum.", gradient: "from-emerald-500/20 via-teal-500/10 to-transparent" };
-  if (streak >= 3) return { title: "Building Strong Habits", subtitle: "Three days in a row. Your recovery is accelerating.", gradient: "from-sky-500/20 via-cyan-500/10 to-transparent" };
-  if (completedCount > 10) return { title: "High Readiness Today", subtitle: "Your body has recovered well. A great day for movement.", gradient: "from-violet-500/15 via-purple-500/10 to-transparent" };
-  if (hour < 12) return { title: "Fresh Morning Energy", subtitle: "Your readiness is high. An ideal time for your reset.", gradient: "from-amber-500/15 via-orange-500/10 to-transparent" };
-  if (hour < 17) return { title: "Afternoon Recovery Window", subtitle: "Combat the midday slump with targeted movement.", gradient: "from-sky-500/15 via-blue-500/10 to-transparent" };
-  return { title: "Evening Wind-Down", subtitle: "Gentle movement now supports deeper sleep tonight.", gradient: "from-indigo-500/15 via-purple-500/10 to-transparent" };
-};
-
 const WellnessLobby = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [points, setPoints] = useState<WellyPointsData>({ total_points: 0, current_streak: 0, longest_streak: 0 });
   const [programs, setPrograms] = useState<Program[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [displayName, setDisplayName] = useState("");
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [progressHistory, setProgressHistory] = useState<ProgressEntry[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
+  const [tipsMode, setTipsMode] = useState<"tips" | "quotes">("tips");
 
   const health = useHealthData();
 
@@ -92,15 +86,23 @@ const WellnessLobby = () => {
     fetchData();
   }, [user]);
 
+  // Separate 12-week programs from quick content
   const twelveWeekPrograms = programs.filter(p => (p.duration_weeks || 0) >= 12);
   const quickContent = programs.filter(p => (p.duration_weeks || 0) < 12);
+  const categories = ["all", ...new Set(quickContent.map(p => p.target_area))];
+  const filtered = selectedCategory === "all" ? quickContent : quickContent.filter(p => p.target_area === selectedCategory);
+  const quickResets = filtered.filter(p => p.category_type === "quick_reset");
+  const deskResets = filtered.filter(p => p.target_area === "Desk");
+  const relaxPrograms = filtered.filter(p => p.target_area === "Relax");
 
   const firstName = displayName?.split(" ")[0] || "there";
+  const level = Math.floor(points.total_points / 100) + 1;
+  const xpInLevel = points.total_points % 100;
 
   const renderContent = () => {
     switch (activeTab) {
-      case "home": return <HomeTab {...{ firstName, points, programs: quickContent, twelveWeekPrograms, navigate, completedCount, signOut, dailySteps: health.dailySteps, setActiveTab }} />;
-      case "programs": return <ProgramsTab {...{ programs: quickContent, twelveWeekPrograms, navigate }} />;
+      case "home": return <HomeTab {...{ firstName, points, programs: quickContent, twelveWeekPrograms, quickResets, deskResets, relaxPrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps: health.dailySteps, tipsMode, setTipsMode, setActiveTab }} />;
+      case "programs": return <ProgramsTab {...{ programs: quickContent, twelveWeekPrograms, categories, selectedCategory, setSelectedCategory, navigate }} />;
       case "plan": return <PlanTab />;
       case "steps": return <StepsTab {...{ dailySteps: health.dailySteps, weeklySteps: health.weeklySteps, points, health, progressHistory, programs: [...quickContent, ...twelveWeekPrograms] }} />;
       case "more": return <MoreTab />;
@@ -110,17 +112,15 @@ const WellnessLobby = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <AnimatePresence mode="wait">
-        <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+        <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
           {renderContent()}
         </motion.div>
       </AnimatePresence>
-
-      {/* Bottom Nav — refined */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-2xl border-t border-border/30 safe-bottom z-40">
+      <div className="fixed bottom-0 left-0 right-0 glass-strong safe-bottom z-40">
         <div className="flex items-center justify-around py-3 max-w-lg mx-auto">
-          <NavItem icon={<Sparkles className="w-5 h-5" />} label="Today" active={activeTab === "home"} onClick={() => setActiveTab("home")} />
+          <NavItem icon={<Activity className="w-5 h-5" />} label="Home" active={activeTab === "home"} onClick={() => setActiveTab("home")} />
           <NavItem icon={<LayoutGrid className="w-5 h-5" />} label="Programs" active={activeTab === "programs"} onClick={() => setActiveTab("programs")} />
-          <NavItem icon={<Activity className="w-5 h-5" />} label="Activity" active={activeTab === "steps"} onClick={() => setActiveTab("steps")} />
+          <NavItem icon={<Footprints className="w-5 h-5" />} label="Activity" active={activeTab === "steps"} onClick={() => setActiveTab("steps")} />
           <NavItem icon={<Calendar className="w-5 h-5" />} label="Plan" active={activeTab === "plan"} onClick={() => setActiveTab("plan")} />
           <NavItem icon={<Settings className="w-5 h-5" />} label="Settings" active={activeTab === "more"} onClick={() => setActiveTab("more")} />
         </div>
@@ -129,282 +129,235 @@ const WellnessLobby = () => {
   );
 };
 
-// ─── HOME TAB — Oura-inspired ────────────────────────────────────
-const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, navigate, completedCount, signOut, dailySteps, setActiveTab }: any) => {
-  const hour = new Date().getHours();
-  const insight = getInsight(points.current_streak, completedCount, hour);
-
-  // Compute a simple "Welly Score" from streak + completed + steps
-  const wellyScore = useMemo(() => {
-    const streakScore = Math.min(points.current_streak * 5, 30);
-    const completionScore = Math.min(completedCount * 2, 40);
-    const stepScore = Math.min(Math.round((dailySteps / 10000) * 30), 30);
-    return Math.min(streakScore + completionScore + stepScore, 100) || 42;
-  }, [points.current_streak, completedCount, dailySteps]);
-
-  const recoveryPct = Math.min(Math.round(wellyScore * 0.9 + 8), 100);
-  const mobilityPct = Math.min(Math.round(wellyScore * 0.75 + 15), 100);
-  const stressPct = Math.max(100 - wellyScore, 15);
-
-  const deskProgram = programs.find((p: Program) => p.target_area === "Desk" && p.duration_minutes === 5);
-  const quickResets = programs.filter((p: Program) => p.category_type === "quick_reset").slice(0, 4);
-
-  return (
-    <div className="max-w-lg mx-auto">
-      {/* Minimal Header */}
-      <div className="px-6 pt-8 pb-2 flex items-center justify-between">
+// ─── HOME TAB ────────────────────────────────────────
+const HomeTab = ({ firstName, points, programs, twelveWeekPrograms, quickResets, deskResets, relaxPrograms, categories, selectedCategory, setSelectedCategory, navigate, level, xpInLevel, completedCount, signOut, dailySteps, tipsMode, setTipsMode, setActiveTab }: any) => (
+  <>
+    {/* Header */}
+    <div className="px-5 pt-6 pb-4">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <img src={logoWhite} alt="Team Welly" className="h-7 w-auto opacity-80" />
+          <img src={logoWhite} alt="Team Welly" className="h-8 w-auto" />
+          <div>
+            <p className="text-muted-foreground text-[10px] uppercase tracking-wider">Custom Wellness</p>
+            <h1 className="font-display text-xl font-bold text-foreground">Hey, {firstName} 👋</h1>
+          </div>
         </div>
-        <button onClick={signOut} className="w-8 h-8 rounded-full bg-secondary/40 flex items-center justify-center">
-          <LogOut className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="px-3 py-1 rounded-full gradient-primary text-primary-foreground text-xs font-bold">Lv.{level}</div>
+          <button onClick={signOut} className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center">
+            <LogOut className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
-      {/* Daily State Header — Emotional anchor */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="px-6 pt-4 pb-6"
-      >
-        <p className="text-muted-foreground text-sm mb-1">Good {hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening"}, {firstName}</p>
-        <div className={`relative rounded-3xl p-6 overflow-hidden bg-gradient-to-br ${insight.gradient}`}>
-          {/* Subtle animated glow */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent"
-            animate={{ opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <div className="relative z-10">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-1">{insight.title}</h2>
-            <p className="text-muted-foreground text-sm leading-relaxed">{insight.subtitle}</p>
+      {/* Stats Row */}
+      <div className="glass rounded-2xl p-4 flex items-center justify-between">
+        <StatItem icon={<Zap className="w-4 h-4 text-wellness-gold" />} value={points.total_points} label="Points" />
+        <div className="w-px h-8 bg-border" />
+        <StatItem icon={<Flame className="w-4 h-4 text-wellness-coral" />} value={points.current_streak} label="Streak" />
+        <div className="w-px h-8 bg-border" />
+        <StatItem icon={<Footprints className="w-4 h-4 text-primary" />} value={dailySteps.toLocaleString()} label="Steps" />
+      </div>
+    </div>
+
+    {/* Wearable Metrics Placeholder */}
+    <div className="px-5 mb-4">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="glass rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display text-xs font-bold text-foreground uppercase tracking-wider">⌚ Live Metrics</h3>
+          <button onClick={() => setActiveTab("steps")} className="text-[10px] text-primary font-medium">Connect Device →</button>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-secondary/60 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-bold text-wellness-coral">--</p>
+            <p className="text-[9px] text-muted-foreground">❤️ BPM</p>
+          </div>
+          <div className="bg-secondary/60 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-bold text-wellness-gold">--</p>
+            <p className="text-[9px] text-muted-foreground">🔥 kcal</p>
+          </div>
+          <div className="bg-secondary/60 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-bold text-wellness-green">--</p>
+            <p className="text-[9px] text-muted-foreground">😴 Sleep</p>
+          </div>
+          <div className="bg-secondary/60 rounded-xl p-2.5 text-center">
+            <p className="text-lg font-bold text-wellness-purple">--</p>
+            <p className="text-[9px] text-muted-foreground">🫀 HRV</p>
           </div>
         </div>
       </motion.div>
+    </div>
 
-      {/* Core Welly Score */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.15, duration: 0.5 }}
-        className="px-6 pb-8"
-      >
-        <div className="flex flex-col items-center mb-6">
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            {/* Ring background */}
-            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--border))" strokeWidth="6" opacity="0.3" />
-              <motion.circle
-                cx="60" cy="60" r="52" fill="none"
-                stroke="hsl(var(--primary))"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 52}`}
-                initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
-                animate={{ strokeDashoffset: 2 * Math.PI * 52 * (1 - wellyScore / 100) }}
-                transition={{ delay: 0.3, duration: 1.2, ease: "easeOut" }}
-              />
-            </svg>
-            <div className="text-center z-10">
-              <motion.p
-                className="font-display text-4xl font-bold text-foreground"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                {wellyScore}
-              </motion.p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Welly Score</p>
-            </div>
+    {/* Level Progress */}
+    <div className="px-5 mb-4">
+      <div className="glass rounded-xl p-3">
+        <div className="flex justify-between text-xs mb-1">
+          <span className="text-muted-foreground">Level {level}</span>
+          <span className="text-primary font-mono">{xpInLevel}/100 XP</span>
+        </div>
+        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+          <motion.div className="h-full gradient-primary rounded-full" animate={{ width: `${xpInLevel}%` }} />
+        </div>
+      </div>
+    </div>
+
+    {/* Tips / Quotes Toggle */}
+
+    {/* Tips / Quotes Toggle */}
+    <div className="px-5 mb-4">
+      <div className="flex items-center gap-2 mb-2">
+        <button onClick={() => setTipsMode("tips")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${tipsMode === "tips" ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+          <Lightbulb className="w-3 h-3" /> Science & Tips
+        </button>
+        <button onClick={() => setTipsMode("quotes")} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${tipsMode === "quotes" ? "gradient-accent text-accent-foreground" : "bg-secondary text-muted-foreground"}`}>
+          <Quote className="w-3 h-3" /> Inspiration
+        </button>
+      </div>
+      <AnimatePresence mode="wait">
+        <motion.div key={tipsMode} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}>
+          {tipsMode === "tips" ? <WellnessTips /> : <WellnessQuotes />}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+
+    {/* My Wellness Tasks - removed, now in Plan tab */}
+
+    {/* Quick Resets Grid */}
+    {quickResets.length > 0 && (
+      <div className="px-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="font-display text-base font-bold text-foreground">⚡ Quick Resets</h2>
+            <p className="text-muted-foreground text-xs">Targeted relief in 5-10 minutes</p>
           </div>
+          <button onClick={() => setActiveTab("programs")} className="text-primary text-xs font-medium">View all →</button>
         </div>
-
-        {/* Sub-metrics */}
-        <div className="flex items-center justify-center gap-8">
-          <ScoreRing label="Recovery" value={recoveryPct} color="hsl(var(--wellness-green))" />
-          <ScoreRing label="Mobility" value={mobilityPct} color="hsl(var(--primary))" />
-          <ScoreRing label="Stress" value={stressPct} color="hsl(var(--wellness-coral))" inverted />
+        <div className="grid grid-cols-2 gap-2">
+          {quickResets.slice(0, 6).map((program: Program, i: number) => (
+            <motion.button
+              key={program.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              onClick={() => navigate(`/player/${program.id}`)}
+              className="glass rounded-xl p-3 text-left hover:border-primary/30 transition-all active:scale-[0.98]"
+            >
+              <div className="text-xl mb-1">{AREA_ICONS[program.target_area] || "🏋️"}</div>
+              <h4 className="font-display font-semibold text-foreground text-xs leading-tight truncate">{program.name}</h4>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{program.duration_minutes} min</p>
+            </motion.button>
+          ))}
         </div>
-      </motion.div>
+      </div>
+    )}
 
-      {/* Today's Primary Action */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-        className="px-6 pb-6"
-      >
+    {/* Quick Breathwork CTA */}
+    <div className="px-5 mb-4">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass rounded-2xl p-4 flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl gradient-accent flex items-center justify-center text-xl shrink-0">🫁</div>
+        <div className="flex-1">
+          <h4 className="font-display font-semibold text-foreground text-sm">Feeling Stressed?</h4>
+          <p className="text-xs text-muted-foreground">Try a 5-min breathing exercise</p>
+        </div>
         <button
           onClick={() => {
-            if (deskProgram) navigate(`/player/${deskProgram.id}`);
-            else if (quickResets.length > 0) navigate(`/player/${quickResets[0].id}`);
+            const breathe = programs.find((p: Program) => p.target_area === "Relax" && p.duration_minutes === 5);
+            if (breathe) navigate(`/player/${breathe.id}`);
           }}
-          className="w-full text-left group"
+          className="px-3 py-1.5 rounded-lg gradient-accent text-accent-foreground text-xs font-medium"
         >
-          <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10 p-6 transition-all group-hover:border-primary/20 group-active:scale-[0.99]">
-            <p className="text-[10px] text-primary uppercase tracking-widest font-semibold mb-2">Today's Reset</p>
-            <h3 className="font-display text-xl font-bold text-foreground mb-1">5-Min Desk Reset</h3>
-            <p className="text-sm text-muted-foreground mb-4">Quick relief designed for your body after sitting</p>
-            <div className="flex items-center gap-2 text-primary text-sm font-medium">
-              <Play className="w-4 h-4" />
-              Start Now
-            </div>
-          </div>
+          <Wind className="w-3 h-3 inline mr-1" />Breathe
         </button>
       </motion.div>
+    </div>
 
-      {/* Metrics Strip — horizontal scroll */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.35 }}
-        className="px-6 pb-8"
-      >
-        <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
-          <MetricCard icon={<Heart className="w-4 h-4" />} label="Heart Rate" value="--" unit="bpm" sparkColor="hsl(var(--wellness-coral))" />
-          <MetricCard icon={<Moon className="w-4 h-4" />} label="Sleep" value="--" unit="hrs" sparkColor="hsl(var(--wellness-purple))" />
-          <MetricCard icon={<Footprints className="w-4 h-4" />} label="Steps" value={dailySteps > 0 ? (dailySteps / 1000).toFixed(1) + "k" : "--"} unit="" sparkColor="hsl(var(--primary))" />
-          <MetricCard icon={<TrendingUp className="w-4 h-4" />} label="HRV" value="--" unit="ms" sparkColor="hsl(var(--wellness-green))" />
-        </div>
+    {/* Daily Desk Reset Suggestion */}
+    <div className="px-5 mb-4">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="gradient-primary rounded-2xl p-5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-foreground/5 -translate-y-8 translate-x-8" />
+        <p className="text-primary-foreground/70 text-xs font-medium uppercase tracking-wider mb-1">Today's Suggestion</p>
+        <h3 className="font-display text-lg font-bold text-primary-foreground mb-1">5-Min Desk Reset</h3>
+        <p className="text-primary-foreground/70 text-sm mb-3">Quick relief for sitting all day</p>
+        <button
+          onClick={() => {
+            const desk = programs.find((p: Program) => p.target_area === "Desk" && p.duration_minutes === 5);
+            if (desk) navigate(`/player/${desk.id}`);
+          }}
+          className="flex items-center gap-2 bg-primary-foreground/20 backdrop-blur-sm rounded-lg px-4 py-2 text-primary-foreground text-sm font-medium"
+        >
+          <Play className="w-4 h-4" /> Start Now
+        </button>
       </motion.div>
+    </div>
 
-      {/* Quick Resets — clean cards */}
-      {quickResets.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="px-6 pb-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display text-sm font-semibold text-foreground tracking-wide">Quick Resets</h3>
-            <button onClick={() => setActiveTab("programs")} className="text-xs text-muted-foreground hover:text-primary transition-colors">See all</button>
+    {/* 12-Week Programs Section */}
+    {twelveWeekPrograms.length > 0 && (
+      <div className="px-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="font-display text-base font-bold text-foreground">🎯 Pain → Performance</h2>
+            <p className="text-muted-foreground text-xs">12-week progressive programs</p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {quickResets.map((program: Program, i: number) => (
-              <motion.button
-                key={program.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.05 }}
-                onClick={() => navigate(`/player/${program.id}`)}
-                className="rounded-2xl bg-secondary/30 border border-border/30 p-4 text-left hover:bg-secondary/50 transition-all active:scale-[0.98]"
-              >
-                <span className="text-lg mb-2 block">{AREA_ICONS[program.target_area] || "🏋️"}</span>
-                <h4 className="font-display font-semibold text-foreground text-xs leading-tight">{program.name}</h4>
-                <p className="text-[10px] text-muted-foreground mt-1">{program.duration_minutes} min</p>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* 12-Week Programs — refined */}
-      {twelveWeekPrograms.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="px-6 pb-8"
-        >
-          <h3 className="font-display text-sm font-semibold text-foreground tracking-wide mb-4">12-Week Programs</h3>
-          <div className="space-y-3">
-            {twelveWeekPrograms.slice(0, 3).map((program: Program, i: number) => (
-              <motion.button
-                key={program.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + i * 0.06 }}
-                onClick={() => navigate(`/program/${program.id}`)}
-                className="w-full rounded-2xl bg-secondary/20 border border-border/20 p-4 flex items-center gap-4 text-left hover:bg-secondary/30 transition-all active:scale-[0.99]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
-                  {AREA_ICONS[program.target_area] || "🏋️"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-display font-semibold text-foreground text-sm truncate">{program.name}</h4>
-                  <p className="text-muted-foreground text-xs mt-0.5">{program.target_area} · Progressive</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground/50 shrink-0" />
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-      )}
-    </div>
-  );
-};
-
-// ─── Score Ring Sub-component ────────────────────────────────
-const ScoreRing = ({ label, value, color, inverted }: { label: string; value: number; color: string; inverted?: boolean }) => (
-  <div className="flex flex-col items-center gap-1.5">
-    <div className="relative w-14 h-14 flex items-center justify-center">
-      <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 56 56">
-        <circle cx="28" cy="28" r="22" fill="none" stroke="hsl(var(--border))" strokeWidth="3" opacity="0.2" />
-        <motion.circle
-          cx="28" cy="28" r="22" fill="none"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray={`${2 * Math.PI * 22}`}
-          initial={{ strokeDashoffset: 2 * Math.PI * 22 }}
-          animate={{ strokeDashoffset: 2 * Math.PI * 22 * (1 - value / 100) }}
-          transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-        />
-      </svg>
-      <span className="font-display text-sm font-bold text-foreground z-10">{value}</span>
-    </div>
-    <span className="text-[10px] text-muted-foreground">{label}</span>
-  </div>
-);
-
-// ─── Metric Card ────────────────────────────────
-const MetricCard = ({ icon, label, value, unit, sparkColor }: { icon: React.ReactNode; label: string; value: string; unit: string; sparkColor: string }) => (
-  <div className="min-w-[120px] rounded-2xl bg-secondary/20 border border-border/20 p-4 flex flex-col gap-2 shrink-0">
-    <div className="flex items-center gap-1.5" style={{ color: sparkColor }}>
-      {icon}
-      <span className="text-[10px] text-muted-foreground">{label}</span>
-    </div>
-    <div className="flex items-baseline gap-1">
-      <span className="font-display text-xl font-bold text-foreground">{value}</span>
-      {unit && <span className="text-[10px] text-muted-foreground">{unit}</span>}
-    </div>
-    {/* Mini sparkline placeholder */}
-    <div className="h-4 flex items-end gap-[2px]">
-      {[0.4, 0.6, 0.3, 0.8, 0.5, 0.7, 0.6].map((h, i) => (
-        <div key={i} className="flex-1 rounded-sm opacity-30" style={{ height: `${h * 100}%`, backgroundColor: sparkColor }} />
-      ))}
-    </div>
-  </div>
+        </div>
+        <div className="space-y-2">
+          {twelveWeekPrograms.slice(0, 3).map((program: Program, i: number) => (
+            <motion.button
+              key={program.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              onClick={() => navigate(`/program/${program.id}`)}
+              className="w-full glass rounded-xl p-4 flex items-center gap-4 text-left hover:border-primary/30 transition-all active:scale-[0.98]"
+            >
+              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-xl shrink-0">
+                {AREA_ICONS[program.target_area] || "🏋️"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-display font-semibold text-foreground text-sm truncate">{program.name}</h4>
+                <p className="text-muted-foreground text-xs">12 weeks · {program.target_area} · Progressive</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+            </motion.button>
+          ))}
+          {twelveWeekPrograms.length > 3 && (
+            <button onClick={() => setActiveTab("programs")} className="w-full text-center text-primary text-xs font-medium py-2">
+              View all {twelveWeekPrograms.length} programs →
+            </button>
+          )}
+        </div>
+      </div>
+    )}
+  </>
 );
 
 // ─── PROGRAMS TAB ────────────────────────────────────
-const ProgramsTab = ({ programs, twelveWeekPrograms, navigate }: any) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const categories = ["all", ...new Set(programs.map((p: Program) => p.target_area))];
+const ProgramsTab = ({ programs, twelveWeekPrograms, categories, selectedCategory, setSelectedCategory, navigate }: any) => {
   const filtered = selectedCategory === "all" ? programs : programs.filter((p: Program) => p.target_area === selectedCategory);
   const quickResets = filtered.filter((p: Program) => p.category_type === "quick_reset" && p.target_area !== "Relax");
   const relaxPrograms = filtered.filter((p: Program) => p.target_area === "Relax");
 
   return (
-    <div className="max-w-lg mx-auto pt-8">
-      <div className="px-6 mb-6">
-        <h1 className="font-display text-2xl font-bold text-foreground">Programs</h1>
-        <p className="text-muted-foreground text-sm mt-1">{programs.length + twelveWeekPrograms.length} available</p>
+    <div className="pt-6">
+      <div className="px-5 mb-4 flex items-center gap-3">
+        <img src={logoWhite} alt="" className="h-7 w-auto" />
+        <div>
+          <h1 className="font-display text-xl font-bold text-foreground">Programs</h1>
+          <p className="text-muted-foreground text-xs">{programs.length + twelveWeekPrograms.length} programs available</p>
+        </div>
       </div>
 
       {/* 12-Week Programs */}
       {twelveWeekPrograms.length > 0 && (
-        <div className="px-6 mb-8">
-          <h2 className="font-display text-sm font-semibold text-foreground tracking-wide mb-4">12-Week Progressive</h2>
+        <div className="px-5 mb-6">
+          <h2 className="font-display text-base font-bold text-foreground mb-1">🎯 Pain → Performance</h2>
+          <p className="text-xs text-muted-foreground mb-3">12-week progressive rehabilitation programs</p>
           <div className="grid grid-cols-2 gap-3">
             {twelveWeekPrograms.map((program: Program) => (
               <motion.button
                 key={program.id}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate(`/program/${program.id}`)}
-                className="rounded-2xl bg-secondary/20 border border-border/20 p-4 text-left hover:bg-secondary/30 transition-all"
+                className="glass rounded-xl p-4 text-left hover:border-primary/30 transition-all"
               >
                 <div className="text-2xl mb-2">{AREA_ICONS[program.target_area] || "🏋️"}</div>
                 <h4 className="font-display font-semibold text-foreground text-xs leading-tight">{program.name.replace("12-Week ", "")}</h4>
@@ -416,32 +369,41 @@ const ProgramsTab = ({ programs, twelveWeekPrograms, navigate }: any) => {
       )}
 
       {/* Divider */}
-      <div className="px-6 mb-6">
-        <div className="h-px bg-border/30" />
+      <div className="px-5 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground font-medium">Quick Sessions & Resets</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
       </div>
 
       {/* Category Filter */}
-      <div className="px-6 mb-4">
+      <div className="px-5 mb-4">
         <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
           {categories.map((cat: string) => (
             <button key={cat} onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${selectedCategory === cat ? "bg-primary text-primary-foreground" : "bg-secondary/30 text-muted-foreground"}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${selectedCategory === cat ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}
             >{cat === "all" ? "All" : cat}</button>
           ))}
         </div>
       </div>
 
-      {relaxPrograms.length > 0 && <ProgramSection title="Breathwork & Relax" programs={relaxPrograms} onSelect={(id: string) => navigate(`/player/${id}`)} />}
-      {quickResets.length > 0 && <ProgramSection title="Quick Resets" programs={quickResets} onSelect={(id: string) => navigate(`/player/${id}`)} />}
+      {relaxPrograms.length > 0 && <ProgramSection title="🫁 Breathwork & Relax" subtitle="" programs={relaxPrograms} onSelect={(id: string) => navigate(`/player/${id}`)} />}
+      {quickResets.length > 0 && <ProgramSection title="⚡ Quick Resets" subtitle="" programs={quickResets} onSelect={(id: string) => navigate(`/player/${id}`)} />}
     </div>
   );
 };
 
 // ─── PLAN TAB ────────────────────────────────────
 const PlanTab = () => (
-  <div className="max-w-lg mx-auto pt-8 px-6">
-    <h1 className="font-display text-2xl font-bold text-foreground mb-1">My Plan</h1>
-    <p className="text-muted-foreground text-sm mb-6">Your scheduled wellness activities</p>
+  <div className="pt-6 px-5">
+    <div className="flex items-center gap-3 mb-4">
+      <img src={logoWhite} alt="" className="h-7 w-auto" />
+      <div>
+        <h1 className="font-display text-xl font-bold text-foreground">My Plan</h1>
+        <p className="text-muted-foreground text-xs">Your scheduled wellness activities</p>
+      </div>
+    </div>
     <MyPlan />
   </div>
 );
@@ -473,72 +435,98 @@ const StepsTab = ({ dailySteps, weeklySteps, points, health, progressHistory, pr
   };
 
   return (
-    <div className="max-w-lg mx-auto pt-8 px-6">
-      <h1 className="font-display text-2xl font-bold text-foreground mb-1">Activity</h1>
-      <p className="text-muted-foreground text-sm mb-6">
-        {health.isConnected ? "Syncing live health data" : "Connect a device for real-time data"}
-      </p>
-
-      {/* Connect Device */}
-      <div className="mb-6 rounded-2xl bg-secondary/20 border border-border/20 p-5 text-center">
-        {health.isConnected ? (
-          <>
-            <p className="text-sm text-foreground mb-3">✅ Wearable connected</p>
-            <button onClick={() => health.refresh()} className="px-5 py-2.5 rounded-xl bg-secondary/50 text-foreground text-sm font-medium active:scale-95 transition-transform">
-              Refresh Data
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground mb-3">Connect your wearable for real health data</p>
-            <button onClick={() => setShowWearableModal(true)} className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium active:scale-95 transition-transform">
-              Connect Device
-            </button>
-          </>
-        )}
+    <div className="pt-6 px-5">
+      <div className="flex items-center gap-3 mb-4">
+        <img src={logoWhite} alt="" className="h-7 w-auto" />
+        <div>
+          <h1 className="font-display text-xl font-bold text-foreground">Activity Tracking</h1>
+          <p className="text-muted-foreground text-xs">
+            {health.isConnected ? "✅ Syncing live health data" : "Showing simulated data"}
+          </p>
+        </div>
       </div>
 
       {health.isConnected && (health.heartRate || health.calories > 0) && (
-        <div className="rounded-2xl bg-secondary/20 border border-border/20 p-5 mb-6 flex items-center justify-around">
+        <div className="glass rounded-xl p-4 mb-4 flex items-center justify-around">
           {health.heartRate && (
             <div className="text-center">
-              <p className="font-display text-2xl font-bold text-wellness-coral">{health.heartRate}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">BPM</p>
+              <p className="font-display text-xl font-bold text-wellness-coral">{health.heartRate}</p>
+              <p className="text-[10px] text-muted-foreground">❤️ BPM</p>
             </div>
           )}
           {health.calories > 0 && (
             <div className="text-center">
-              <p className="font-display text-2xl font-bold text-wellness-gold">{health.calories}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">kcal</p>
+              <p className="font-display text-xl font-bold text-wellness-gold">{health.calories}</p>
+              <p className="text-[10px] text-muted-foreground">🔥 kcal</p>
             </div>
           )}
         </div>
       )}
 
+      {/* Connect Device - at top */}
+      <div className="mb-4 glass rounded-xl p-4 text-center">
+        {health.isConnected ? (
+          <>
+            <p className="text-sm text-foreground mb-2">✅ Wearable connected</p>
+            <button onClick={() => health.refresh()} className="px-4 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium active:scale-95 transition-transform">
+              🔄 Refresh Data
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground mb-2">Connect your device for real step data</p>
+            <button onClick={() => setShowWearableModal(true)} className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-medium active:scale-95 transition-transform">
+              <Footprints className="w-4 h-4 inline mr-1" /> Connect Wearable
+            </button>
+          </>
+        )}
+      </div>
+
       <StepTracker dailySteps={dailySteps} dailyGoal={10000} weeklySteps={weeklySteps} />
 
+      <div className="mt-4 glass rounded-xl p-4">
+        <h3 className="font-display font-semibold text-foreground text-sm mb-2">🏅 Step Rewards</h3>
+        <div className="space-y-2">
+          {[
+            { steps: 5000, emoji: "🥉", label: "Bronze Walker", pts: "+10 XP" },
+            { steps: 7500, emoji: "🥈", label: "Silver Strider", pts: "+20 XP" },
+            { steps: 10000, emoji: "🥇", label: "Gold Mover", pts: "+30 XP" },
+            { steps: 15000, emoji: "💎", label: "Diamond Athlete", pts: "+50 XP" },
+          ].map((m) => (
+            <div key={m.steps} className={`flex items-center gap-3 p-2 rounded-lg ${dailySteps >= m.steps ? "bg-primary/10" : "bg-secondary/50"}`}>
+              <span className="text-lg">{m.emoji}</span>
+              <div className="flex-1">
+                <p className={`text-sm font-medium ${dailySteps >= m.steps ? "text-primary" : "text-muted-foreground"}`}>{m.label}</p>
+                <p className="text-xs text-muted-foreground">{m.steps.toLocaleString()} steps</p>
+              </div>
+              <span className={`text-xs font-mono ${dailySteps >= m.steps ? "text-wellness-gold" : "text-muted-foreground"}`}>{m.pts}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Recent Activity */}
-      <div className="mt-8">
-        <h2 className="font-display text-sm font-semibold text-foreground tracking-wide mb-4">Recent Activity</h2>
+      <div className="mt-6">
+        <h2 className="font-display text-base font-semibold text-foreground mb-3">Recent Activity</h2>
         {(!progressHistory || progressHistory.length === 0) ? (
-          <div className="rounded-2xl bg-secondary/20 border border-border/20 p-8 text-center">
-            <Activity className="w-6 h-6 text-muted-foreground mx-auto mb-2 opacity-50" />
-            <p className="text-muted-foreground text-sm">Complete a session to see activity here</p>
+          <div className="glass rounded-xl p-6 text-center">
+            <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-muted-foreground text-sm">Complete your first session to see activity here!</p>
           </div>
         ) : (
           <div className="space-y-2">
             {progressHistory.slice(0, 5).map((entry: any, i: number) => {
               const prog = programs?.find((p: Program) => p.id === entry.program_id);
               return (
-                <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl bg-secondary/20 border border-border/20 p-3 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-sm">
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="glass rounded-xl p-3 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-xs">
                     {AREA_ICONS[prog?.target_area || ""] || "🏋️"}
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">{prog?.name || "Session"}</p>
                     <p className="text-xs text-muted-foreground">{new Date(entry.completed_at).toLocaleDateString()}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground">+{entry.points_earned || 0} pts</span>
+                  <span className="text-xs font-mono text-wellness-gold">+{entry.points_earned || 0}</span>
                 </motion.div>
               );
             })}
@@ -549,23 +537,23 @@ const StepsTab = ({ dailySteps, weeklySteps, points, health, progressHistory, pr
       <AnimatePresence>
         {showWearableModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setShowWearableModal(false)}>
-            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25 }} onClick={e => e.stopPropagation()} className="w-full max-w-md bg-card border-t border-border/30 rounded-t-3xl p-6 safe-bottom">
-              <div className="w-10 h-1 bg-muted-foreground/20 rounded-full mx-auto mb-5" />
-              <h3 className="font-display text-lg font-bold text-foreground mb-1">Connect Device</h3>
-              <p className="text-sm text-muted-foreground mb-5">Choose your health data source</p>
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25 }} onClick={e => e.stopPropagation()} className="w-full max-w-md glass-strong rounded-t-2xl p-5 safe-bottom">
+              <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-4" />
+              <h3 className="font-display text-lg font-bold text-foreground mb-1">Connect Wearable</h3>
+              <p className="text-xs text-muted-foreground mb-4">Choose your health data source</p>
               <div className="space-y-2">
                 {WEARABLES.map(w => (
-                  <button key={w.name} onClick={() => handleConnect(w)} className="w-full flex items-center gap-3 p-4 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-all active:scale-[0.98]">
+                  <button key={w.name} onClick={() => handleConnect(w)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary/80 transition-all active:scale-[0.98]">
                     <span className="text-2xl">{w.emoji}</span>
                     <div className="text-left flex-1">
                       <p className="text-sm font-medium text-foreground">{w.name}</p>
                       <p className="text-xs text-muted-foreground">{w.desc}</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </button>
                 ))}
               </div>
-              <button onClick={() => setShowWearableModal(false)} className="w-full mt-4 py-3 rounded-xl bg-secondary/30 text-muted-foreground text-sm font-medium">Cancel</button>
+              <button onClick={() => setShowWearableModal(false)} className="w-full mt-4 py-3 rounded-xl bg-secondary text-muted-foreground text-sm font-medium">Cancel</button>
             </motion.div>
           </motion.div>
         )}
@@ -578,32 +566,35 @@ const StepsTab = ({ dailySteps, weeklySteps, points, health, progressHistory, pr
 const MoreTab = () => {
   const { signOut } = useAuth();
   return (
-    <div className="max-w-lg mx-auto pt-8 px-6">
-      <h1 className="font-display text-2xl font-bold text-foreground mb-6">Settings</h1>
-
-      <div className="mb-8">
-        <h2 className="font-display text-sm font-semibold text-foreground tracking-wide mb-3">Calendar & Reminders</h2>
+    <div className="pt-6 px-5">
+      <div className="flex items-center gap-3 mb-4">
+        <img src={logoWhite} alt="" className="h-7 w-auto" />
+        <h1 className="font-display text-xl font-bold text-foreground">Settings</h1>
+      </div>
+      <div className="mb-6">
+        <h2 className="font-display text-base font-semibold text-foreground mb-3">📅 Calendar & Reminders</h2>
         <CalendarSync />
       </div>
 
-      <div className="mb-8">
-        <h2 className="font-display text-sm font-semibold text-foreground tracking-wide mb-3">Professional Support</h2>
+      {/* Book Coaching Call */}
+      <div className="mb-6">
+        <h2 className="font-display text-base font-semibold text-foreground mb-3">👨🏻‍⚕️ Need to Talk to a Professional?</h2>
         <a
           href="https://calendly.com/drchriszeiter/30min"
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full rounded-2xl bg-secondary/20 border border-border/20 p-4 flex items-center gap-3 text-left hover:bg-secondary/30 transition-all active:scale-[0.98] block"
+          className="w-full glass rounded-xl p-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98] block"
         >
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">📞</div>
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-lg shrink-0">📞</div>
           <div className="flex-1">
             <h4 className="font-display font-semibold text-foreground text-sm">Book a Coaching Call</h4>
             <p className="text-xs text-muted-foreground">1-on-1 guidance from a wellness professional</p>
           </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground/50 shrink-0" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
         </a>
       </div>
 
-      <button onClick={signOut} className="w-full rounded-2xl bg-secondary/20 border border-border/20 p-4 flex items-center gap-3 text-destructive hover:bg-secondary/30 transition-all">
+      <button onClick={signOut} className="w-full glass rounded-xl p-4 flex items-center gap-3 text-destructive">
         <LogOut className="w-5 h-5" />
         <span className="font-medium text-sm">Sign Out</span>
       </button>
@@ -612,35 +603,46 @@ const MoreTab = () => {
 };
 
 // ─── SHARED COMPONENTS ────────────────────────────────────
+const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: number | string; label: string }) => (
+  <div className="flex items-center gap-2">
+    {icon}
+    <div>
+      <p className="font-display text-lg font-bold text-foreground">{value}</p>
+      <p className="text-[10px] text-muted-foreground">{label}</p>
+    </div>
+  </div>
+);
+
 const NavItem = ({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick?: () => void }) => (
-  <button onClick={onClick} className={`flex flex-col items-center gap-1 transition-colors relative ${active ? "text-primary" : "text-muted-foreground/60"}`}>
-    {active && <motion.div layoutId="navIndicator" className="absolute -top-0 w-6 h-0.5 rounded-full bg-primary" />}
+  <button onClick={onClick} className={`flex flex-col items-center gap-1 transition-colors relative ${active ? "text-primary" : "text-muted-foreground"}`}>
+    {active && <motion.div layoutId="navIndicator" className="absolute -top-0 w-8 h-0.5 rounded-full gradient-primary" />}
     {icon}
     <span className="text-[10px] font-medium">{label}</span>
   </button>
 );
 
-const ProgramSection = ({ title, programs, onSelect }: { title: string; programs: Program[]; onSelect: (id: string) => void }) => (
-  <div className="px-6 mb-8">
-    <h2 className="font-display text-sm font-semibold text-foreground tracking-wide mb-3">{title}</h2>
-    <div className="space-y-2">
+const ProgramSection = ({ title, subtitle, programs, onSelect }: { title: string; subtitle: string; programs: Program[]; onSelect: (id: string) => void }) => (
+  <div className="px-5 mb-6">
+    <h2 className="font-display text-base font-bold text-foreground">{title}</h2>
+    {subtitle && <p className="text-muted-foreground text-xs mb-3">{subtitle}</p>}
+    <div className="space-y-2 mt-2">
       {programs.map((program, i) => (
         <motion.button
           key={program.id}
-          initial={{ opacity: 0, y: 6 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.03 }}
           onClick={() => onSelect(program.id)}
-          className="w-full rounded-2xl bg-secondary/20 border border-border/20 p-4 flex items-center gap-3 text-left hover:bg-secondary/30 transition-all active:scale-[0.98]"
+          className="w-full glass rounded-xl p-3 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98]"
         >
-          <div className="w-10 h-10 rounded-xl bg-secondary/40 flex items-center justify-center text-lg shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-lg shrink-0">
             {AREA_ICONS[program.target_area] || "🏋️"}
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-display font-semibold text-foreground text-sm truncate">{program.name}</h4>
             <p className="text-muted-foreground text-xs">{program.duration_minutes} min · {program.exercise_count} exercises</p>
           </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
         </motion.button>
       ))}
     </div>

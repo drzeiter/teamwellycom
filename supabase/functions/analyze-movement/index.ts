@@ -57,6 +57,46 @@ Return ONLY valid JSON (no markdown, no code fences) with this exact structure:
     "weight_distribution": "<even/left-heavy/right-heavy/anterior/posterior>"
   },
   "posture_landmarks": {
+    "skeleton_joints": [
+      {"landmark": "head", "x": <0-1 proportion from left edge of image>, "y": <0-1 proportion from top>, "score": <0-100 alignment score>},
+      {"landmark": "neck", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "left_shoulder", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "right_shoulder", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "left_elbow", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "right_elbow", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "left_wrist", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "right_wrist", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "spine_mid", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "pelvis", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "left_hip", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "right_hip", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "left_knee", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "right_knee", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "left_ankle", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "right_ankle", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "left_foot", "x": <0-1>, "y": <0-1>, "score": <0-100>},
+      {"landmark": "right_foot", "x": <0-1>, "y": <0-1>, "score": <0-100>}
+    ],
+    "ideal_skeleton_joints": [
+      {"landmark": "head", "x": <ideal 0-1>, "y": <same y as user head>},
+      {"landmark": "neck", "x": <ideal>, "y": <same y as user neck>},
+      {"landmark": "left_shoulder", "x": <ideal>, "y": <ideal>},
+      {"landmark": "right_shoulder", "x": <ideal>, "y": <ideal>},
+      {"landmark": "left_elbow", "x": <ideal>, "y": <ideal>},
+      {"landmark": "right_elbow", "x": <ideal>, "y": <ideal>},
+      {"landmark": "left_wrist", "x": <ideal>, "y": <ideal>},
+      {"landmark": "right_wrist", "x": <ideal>, "y": <ideal>},
+      {"landmark": "spine_mid", "x": <ideal>, "y": <ideal>},
+      {"landmark": "pelvis", "x": <ideal>, "y": <ideal>},
+      {"landmark": "left_hip", "x": <ideal>, "y": <ideal>},
+      {"landmark": "right_hip", "x": <ideal>, "y": <ideal>},
+      {"landmark": "left_knee", "x": <ideal>, "y": <ideal>},
+      {"landmark": "right_knee", "x": <ideal>, "y": <ideal>},
+      {"landmark": "left_ankle", "x": <ideal>, "y": <ideal>},
+      {"landmark": "right_ankle", "x": <ideal>, "y": <ideal>},
+      {"landmark": "left_foot", "x": <ideal>, "y": <ideal>},
+      {"landmark": "right_foot", "x": <ideal>, "y": <ideal>}
+    ],
     "side_view": {
       "ideal_plumb_line": "Ear -> Shoulder -> Hip -> Knee -> Ankle all vertically aligned",
       "user_deviations": [
@@ -97,6 +137,11 @@ For each compensatory pattern observed, provide a muscle_imbalances entry identi
 - What injuries or conditions this pattern can lead to over time
 
 Use NASM corrective exercise methodology as the basis for muscle imbalance identification.
+
+CRITICAL FOR SKELETON OVERLAY:
+- For skeleton_joints: Estimate the x,y position of each body landmark as a proportion (0-1) of the image dimensions. x=0 is left edge, x=1 is right edge, y=0 is top, y=1 is bottom. Be as accurate as possible based on visible body landmarks in the frames.
+- For ideal_skeleton_joints: Provide the ideal biomechanically correct positions for the same movement, keeping the same approximate body size/location but correcting alignment. The ideal skeleton should show where joints SHOULD be for perfect form.
+- Each joint score (0-100) represents how close the user's position is to ideal for that specific joint.
 
 Analyze carefully:
 - knee valgus (knees caving inward)

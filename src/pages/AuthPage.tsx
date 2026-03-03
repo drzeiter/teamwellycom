@@ -2,17 +2,19 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import logoWhite from "@/assets/logo-white.png";
-import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, KeyRound } from "lucide-react";
 
 const AuthPage = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [companyCode, setCompanyCode] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -26,7 +28,20 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isSignUp) {
-        await signUp(email, password, displayName);
+        // Validate access code first
+        const { data, error: rpcError } = await supabase.rpc("validate_access_code", {
+          p_code: companyCode.trim(),
+        });
+        if (rpcError) throw rpcError;
+
+        const result = data as { valid: boolean; error?: string; company_name?: string };
+        if (!result.valid) {
+          toast({ title: "Invalid Code", description: result.error || "Please check your company access code.", variant: "destructive" });
+          setLoading(false);
+          return;
+        }
+
+        await signUp(email, password, displayName, companyCode.trim().toUpperCase());
         toast({ title: "Check your email!", description: "We sent you a verification link." });
       } else {
         await signIn(email, password);
@@ -70,7 +85,7 @@ const AuthPage = () => {
               {isSignUp ? "Start Your Journey" : "Welcome Back"}
             </h1>
             <p className="text-muted-foreground">
-              {isSignUp ? "Create your account to begin" : "Sign in to continue your wellness path"}
+              {isSignUp ? "Enter your company code to create an account" : "Sign in to continue your wellness path"}
             </p>
           </div>
 
@@ -81,7 +96,18 @@ const AuthPage = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
+                  className="space-y-4"
                 >
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      value={companyCode}
+                      onChange={(e) => setCompanyCode(e.target.value.toUpperCase())}
+                      placeholder="Company Access Code"
+                      className="pl-10 bg-secondary border-border/50 h-11 uppercase tracking-widest font-mono"
+                      required
+                    />
+                  </div>
                   <div className="relative">
                     <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Input

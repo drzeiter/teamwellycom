@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          code: string
+          company_name: string
+          created_at: string
+          current_uses: number
+          id: string
+          is_active: boolean
+          max_uses: number | null
+        }
+        Insert: {
+          code: string
+          company_name: string
+          created_at?: string
+          current_uses?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+        }
+        Update: {
+          code?: string
+          company_name?: string
+          created_at?: string
+          current_uses?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+        }
+        Relationships: []
+      }
       canonical_exercises: {
         Row: {
           animation_asset_id: string | null
@@ -252,6 +282,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          company_code: string | null
           created_at: string
           current_challenge: string | null
           daily_routine: string | null
@@ -271,6 +302,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          company_code?: string | null
           created_at?: string
           current_challenge?: string | null
           daily_routine?: string | null
@@ -290,6 +322,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          company_code?: string | null
           created_at?: string
           current_challenge?: string | null
           daily_routine?: string | null
@@ -648,6 +681,7 @@ export type Database = {
         Returns: boolean
       }
       is_owner: { Args: { _user_id: string }; Returns: boolean }
+      validate_access_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "hr_admin" | "user"

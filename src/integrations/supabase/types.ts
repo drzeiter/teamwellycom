@@ -116,6 +116,136 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_participants: {
+        Row: {
+          challenge_id: string
+          completed: boolean
+          created_at: string
+          id: string
+          progress_value: number
+          user_id: string
+          winner: boolean
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean
+          created_at?: string
+          id?: string
+          progress_value?: number
+          user_id: string
+          winner?: boolean
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean
+          created_at?: string
+          id?: string
+          progress_value?: number
+          user_id?: string
+          winner?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_participants_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by_user_id: string
+          description: string | null
+          end_at: string
+          id: string
+          metric_type: string
+          points_award: number
+          start_at: string
+          status: string
+          title: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by_user_id: string
+          description?: string | null
+          end_at: string
+          id?: string
+          metric_type?: string
+          points_award?: number
+          start_at: string
+          status?: string
+          title: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by_user_id?: string
+          description?: string | null
+          end_at?: string
+          id?: string
+          metric_type?: string
+          points_award?: number
+          start_at?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenges_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          accent_color: string | null
+          created_at: string
+          employee_access_code: string
+          id: string
+          logo_url: string | null
+          name: string
+          plan_name: string | null
+          plan_status: string | null
+          renewal_date: string | null
+          seats: number | null
+          slug: string
+        }
+        Insert: {
+          accent_color?: string | null
+          created_at?: string
+          employee_access_code?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          plan_name?: string | null
+          plan_status?: string | null
+          renewal_date?: string | null
+          seats?: number | null
+          slug: string
+        }
+        Update: {
+          accent_color?: string | null
+          created_at?: string
+          employee_access_code?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          plan_name?: string | null
+          plan_status?: string | null
+          renewal_date?: string | null
+          seats?: number | null
+          slug?: string
+        }
+        Relationships: []
+      }
       conditions_kb: {
         Row: {
           body_region: string | null
@@ -148,6 +278,88 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      event_attendance: {
+        Row: {
+          attended_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          attended_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          attended_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendance_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          attendance_code: string | null
+          company_id: string
+          created_at: string
+          created_by_user_id: string
+          description: string | null
+          end_at: string | null
+          id: string
+          location: string | null
+          points_award: number | null
+          start_at: string
+          status: string
+          title: string
+        }
+        Insert: {
+          attendance_code?: string | null
+          company_id: string
+          created_at?: string
+          created_by_user_id: string
+          description?: string | null
+          end_at?: string | null
+          id?: string
+          location?: string | null
+          points_award?: number | null
+          start_at: string
+          status?: string
+          title: string
+        }
+        Update: {
+          attendance_code?: string | null
+          company_id?: string
+          created_at?: string
+          created_by_user_id?: string
+          description?: string | null
+          end_at?: string | null
+          id?: string
+          location?: string | null
+          points_award?: number | null
+          start_at?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exercise_aliases: {
         Row: {
@@ -225,6 +437,91 @@ export type Database = {
           },
         ]
       }
+      invites: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by_user_id: string
+          expires_at: string
+          id: string
+          role_to_assign: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by_user_id: string
+          expires_at?: string
+          id?: string
+          role_to_assign?: string
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by_user_id?: string
+          expires_at?: string
+          id?: string
+          role_to_assign?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      metrics_daily: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          date: string
+          hrv: number | null
+          id: string
+          resting_hr: number | null
+          sleep_score: number | null
+          steps: number | null
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          date: string
+          hrv?: number | null
+          id?: string
+          resting_hr?: number | null
+          sleep_score?: number | null
+          steps?: number | null
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          date?: string
+          hrv?: number | null
+          id?: string
+          resting_hr?: number | null
+          sleep_score?: number | null
+          steps?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metrics_daily_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_exercises: {
         Row: {
           created_at: string
@@ -283,6 +580,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           company_code: string | null
+          company_id: string | null
           created_at: string
           current_challenge: string | null
           daily_routine: string | null
@@ -290,6 +588,7 @@ export type Database = {
           equipment: string[] | null
           fitness_level: string | null
           id: string
+          last_active_at: string | null
           main_goal: string | null
           onboarding_completed: boolean | null
           pain_duration: string | null
@@ -303,6 +602,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           company_code?: string | null
+          company_id?: string | null
           created_at?: string
           current_challenge?: string | null
           daily_routine?: string | null
@@ -310,6 +610,7 @@ export type Database = {
           equipment?: string[] | null
           fitness_level?: string | null
           id?: string
+          last_active_at?: string | null
           main_goal?: string | null
           onboarding_completed?: boolean | null
           pain_duration?: string | null
@@ -323,6 +624,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           company_code?: string | null
+          company_id?: string | null
           created_at?: string
           current_challenge?: string | null
           daily_routine?: string | null
@@ -330,6 +632,7 @@ export type Database = {
           equipment?: string[] | null
           fitness_level?: string | null
           id?: string
+          last_active_at?: string | null
           main_goal?: string | null
           onboarding_completed?: boolean | null
           pain_duration?: string | null
@@ -340,7 +643,15 @@ export type Database = {
           user_id?: string
           weekly_days?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       program_mapping: {
         Row: {
@@ -433,6 +744,85 @@ export type Database = {
           target_area?: string
         }
         Relationships: []
+      }
+      reward_redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reward_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reward_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reward_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          active: boolean
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          inventory_limit: number | null
+          points_cost: number
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          inventory_limit?: number | null
+          points_cost?: number
+          title: string
+        }
+        Update: {
+          active?: boolean
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          inventory_limit?: number | null
+          points_cost?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewards_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_routines: {
         Row: {
@@ -668,11 +1058,63 @@ export type Database = {
         }
         Relationships: []
       }
+      welly_points_ledger: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by_user_id: string
+          id: string
+          points_delta: number
+          reason: string
+          related_challenge_id: string | null
+          related_event_id: string | null
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by_user_id: string
+          id?: string
+          points_delta: number
+          reason: string
+          related_challenge_id?: string | null
+          related_event_id?: string | null
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by_user_id?: string
+          id?: string
+          points_delta?: number
+          reason?: string
+          related_challenge_id?: string | null
+          related_event_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "welly_points_ledger_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "welly_points_ledger_related_event_id_fkey"
+            columns: ["related_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_user_company_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -682,6 +1124,7 @@ export type Database = {
       }
       is_owner: { Args: { _user_id: string }; Returns: boolean }
       validate_access_code: { Args: { p_code: string }; Returns: Json }
+      validate_company_access_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "hr_admin" | "user"

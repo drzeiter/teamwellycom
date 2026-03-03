@@ -85,6 +85,19 @@ export default function AssessmentSection() {
       setShowCamera(false);
       setViewingReport(saved);
       await fetchAssessments();
+
+      // Dispatch event to notify Welly AI about the new assessment
+      window.dispatchEvent(new CustomEvent("welly-assessment-complete", {
+        detail: {
+          overall_score: data.overall_score,
+          area_scores: data.area_scores,
+          risk_flags: data.risk_flags,
+          muscle_imbalances: data.muscle_imbalances,
+          findings_text: data.findings_text,
+          recommended_categories: data.recommended_categories,
+          recommended_target_areas: data.recommended_target_areas,
+        }
+      }));
     } catch (err: any) {
       console.error("Analysis error:", err);
       toast({ title: "Analysis Failed", description: err.message || "Please try again", variant: "destructive" });

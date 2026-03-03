@@ -52,10 +52,26 @@ Return ONLY valid JSON (no markdown, no code fences) with this exact structure:
       "finding": "<brief description>"
     }
   ],
+  "muscle_imbalances": [
+    {
+      "finding": "<e.g. Excessive Forward Lean, Knee Valgus, Arms Falling Forward>",
+      "overactive_tight": ["<muscle names that are likely tight/overactive, e.g. Soleus, Gastrocnemius, Hip Flexor Group, Piriformis>"],
+      "underactive_weak": ["<muscle names that are likely weak/underactive, e.g. Tibialis Anterior, Glute Max, Core Stabilizers>"],
+      "possible_injuries": ["<potential injury risks if left unaddressed, e.g. Hamstring Strain, Low Back Pain, Patellar Tendinopathy>"]
+    }
+  ],
   "findings_text": "<2-4 paragraph plain-language explanation of findings, written in second person. Include specific observations and practical meaning. Example: 'You are shifting your weight to the left during your squat, likely due to limited right ankle mobility or reduced left glute stability.'>",
   "recommended_categories": ["<category_type values from: performance_program, quick_reset, breathwork, desk_reset matching issues found>"],
   "recommended_target_areas": ["<target_area values like: Low Back, Hips, Shoulders, Foot/Ankle, Knee, etc.>"]
 }
+
+For each compensatory pattern observed, provide a muscle_imbalances entry identifying:
+- The specific movement fault/finding
+- Which muscles are likely overactive/tight causing the compensation
+- Which muscles are likely underactive/weak allowing the compensation
+- What injuries or conditions this pattern can lead to over time
+
+Use NASM corrective exercise methodology as the basis for muscle imbalance identification.
 
 Analyze carefully:
 - knee valgus (knees caving inward)

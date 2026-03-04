@@ -138,10 +138,13 @@ For each compensatory pattern observed, provide a muscle_imbalances entry identi
 
 Use NASM corrective exercise methodology as the basis for muscle imbalance identification.
 
-CRITICAL FOR SKELETON OVERLAY:
-- For skeleton_joints: Estimate the x,y position of each body landmark as a proportion (0-1) of the image dimensions. x=0 is left edge, x=1 is right edge, y=0 is top, y=1 is bottom. Be as accurate as possible based on visible body landmarks in the frames.
-- For ideal_skeleton_joints: Provide the ideal biomechanically correct positions for the same movement, keeping the same approximate body size/location but correcting alignment. The ideal skeleton should show where joints SHOULD be for perfect form.
-- Each joint score (0-100) represents how close the user's position is to ideal for that specific joint.
+CRITICAL FOR SKELETON OVERLAY — FRONT VIEW:
+The primary view is FRONT-FACING. The skeleton will be overlaid directly on the user's photo.
+- For skeleton_joints: Estimate each landmark's x,y as a proportion (0-1) of the image. x=0 is LEFT edge, x=1 is RIGHT edge, y=0 is TOP, y=1 is BOTTOM.
+- Be VERY precise: place each joint exactly where it appears on the person's body in the image. The head should be at the top of the person's head, shoulders at the shoulder line, hips at the waist/hip crease, knees at the kneecap, ankles at the ankle bone, feet at the floor contact point.
+- Left/right is from the VIEWER's perspective (mirror): "left_shoulder" should be on the LEFT side of the image (the person's right shoulder).
+- For ideal_skeleton_joints: Show where each joint SHOULD be for perfect posture. Keep the same vertical positions (y) as the user but correct horizontal alignment — center the spine, level the shoulders, align knees over ankles.
+- Each joint score (0-100) = how close the user's position is to ideal for that specific joint. 90+ = excellent, 70-89 = minor deviation, below 70 = significant issue.
 
 Analyze carefully:
 - knee valgus (knees caving inward)

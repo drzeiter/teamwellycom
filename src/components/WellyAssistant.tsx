@@ -522,7 +522,8 @@ Based on these results, what are my recommended next steps? What exercises and p
             setOpen(true);
             if (!pendingAssessment) setNotificationCount(0);
           }}
-          className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all pl-2 pr-4 py-2.5 relative"
+          className="fixed left-auto right-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] sm:bottom-20 z-[60] flex items-center justify-center gap-2 rounded-full gradient-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all h-12 w-12 p-0 sm:h-auto sm:w-auto sm:pl-2 sm:pr-4 sm:py-2.5 relative"
+          style={{ left: "auto", right: "1rem" }}
           aria-label="Open Welly AI Assistant"
         >
           {/* Notification Badge */}
@@ -534,7 +535,7 @@ Based on these results, what are my recommended next steps? What exercises and p
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <img src={logoSubmark} alt="Welly" className="w-6 h-6 object-contain brightness-0" />
           </div>
-          <span className="whitespace-nowrap">Ask Welly AI</span>
+          <span className="hidden sm:inline whitespace-nowrap">Ask Welly AI</span>
         </button>
       )}
 

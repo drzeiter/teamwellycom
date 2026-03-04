@@ -132,7 +132,6 @@ export default function WellyAssistant() {
   const [open, setOpen] = useState(false);
   const [fabHidden, setFabHidden] = useState(false);
   const [onboardingDone, setOnboardingDone] = useState(false);
-  const [hasNewAssessment, setHasNewAssessment] = useState(() => !!localStorage.getItem("welly-pending-assessment"));
 
   // Hide until onboarding is complete
   useEffect(() => {
@@ -149,13 +148,6 @@ export default function WellyAssistant() {
     };
     window.addEventListener("welly-fab-visibility", handler);
     return () => window.removeEventListener("welly-fab-visibility", handler);
-  }, []);
-
-  // Listen for new assessment completions
-  useEffect(() => {
-    const handler = () => setHasNewAssessment(true);
-    window.addEventListener("welly-new-assessment", handler);
-    return () => window.removeEventListener("welly-new-assessment", handler);
   }, []);
   const [messages, setMessages] = useState<Message[]>(loadHistory);
   const [input, setInput] = useState("");
@@ -501,52 +493,14 @@ export default function WellyAssistant() {
       {/* FAB */}
       {!open && !fabHidden && onboardingDone && (
         <button
-          onClick={() => {
-            // If there's a pending assessment, auto-inject it as context
-            const pendingRaw = localStorage.getItem("welly-pending-assessment");
-            if (pendingRaw) {
-              try {
-                const assessment = JSON.parse(pendingRaw);
-                const riskSummary = (assessment.risk_flags || [])
-                  .map((f: any) => `[${f.severity}] ${f.area}: ${f.finding}`)
-                  .join("; ");
-                const areaScores = Object.entries(assessment.area_scores || {})
-                  .map(([k, v]) => `${k}: ${v}/100`)
-                  .join(", ");
-                const imbalances = (assessment.raw_ai_response?.muscle_imbalances || [])
-                  .map((m: any) => `${m.finding} — Tight: ${m.overactive_tight?.join(", ")}; Weak: ${m.underactive_weak?.join(", ")}; Risk: ${m.possible_injuries?.join(", ")}`)
-                  .join("; ");
-                const contextMsg = `I just completed a Posture + Movement Assessment. Here are my results:\n\nOverall Score: ${assessment.overall_score}/100\nArea Scores: ${areaScores}\nRisk Flags: ${riskSummary}\nMuscle Imbalances: ${imbalances}\nFindings: ${assessment.findings_text || "N/A"}\n\nBased on these findings, please give me a prioritized action plan of things I should work on, including specific exercises and programs.`;
-                const userMsg: Message = { role: "user", content: contextMsg };
-                setMessages(prev => [...prev, userMsg]);
-                localStorage.removeItem("welly-pending-assessment");
-                setHasNewAssessment(false);
-                // Auto-send
-                setOpen(true);
-                const allMsgs = [...messages, userMsg];
-                setTimeout(() => {
-                  setIsLoading(true);
-                  streamChat(allMsgs)
-                    .catch((e: any) => toast({ title: "Welly AI", description: e.message || "Something went wrong", variant: "destructive" }))
-                    .finally(() => setIsLoading(false));
-                }, 100);
-                return;
-              } catch {}
-            }
-            setOpen(true);
-          }}
-          className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2 relative"
+          onClick={() => setOpen(true)}
+          className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all pl-2 pr-4 py-2"
           aria-label="Open Welly AI Assistant"
         >
-          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center relative">
+          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
             <img src={logoSubmark} alt="Welly" className="w-7 h-7 object-contain brightness-0" />
           </div>
           <span className="text-xs font-semibold whitespace-nowrap">Ask Welly AI</span>
-          {hasNewAssessment && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
-              1
-            </span>
-          )}
         </button>
       )}
 

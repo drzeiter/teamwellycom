@@ -57,46 +57,6 @@ Return ONLY valid JSON (no markdown, no code fences) with this exact structure:
     "weight_distribution": "<even/left-heavy/right-heavy/anterior/posterior>"
   },
   "posture_landmarks": {
-    "skeleton_joints": [
-      {"landmark": "head", "x": <0-1 proportion from left edge of image>, "y": <0-1 proportion from top>, "score": <0-100 alignment score>},
-      {"landmark": "neck", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "left_shoulder", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "right_shoulder", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "left_elbow", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "right_elbow", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "left_wrist", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "right_wrist", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "spine_mid", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "pelvis", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "left_hip", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "right_hip", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "left_knee", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "right_knee", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "left_ankle", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "right_ankle", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "left_foot", "x": <0-1>, "y": <0-1>, "score": <0-100>},
-      {"landmark": "right_foot", "x": <0-1>, "y": <0-1>, "score": <0-100>}
-    ],
-    "ideal_skeleton_joints": [
-      {"landmark": "head", "x": <ideal 0-1>, "y": <same y as user head>},
-      {"landmark": "neck", "x": <ideal>, "y": <same y as user neck>},
-      {"landmark": "left_shoulder", "x": <ideal>, "y": <ideal>},
-      {"landmark": "right_shoulder", "x": <ideal>, "y": <ideal>},
-      {"landmark": "left_elbow", "x": <ideal>, "y": <ideal>},
-      {"landmark": "right_elbow", "x": <ideal>, "y": <ideal>},
-      {"landmark": "left_wrist", "x": <ideal>, "y": <ideal>},
-      {"landmark": "right_wrist", "x": <ideal>, "y": <ideal>},
-      {"landmark": "spine_mid", "x": <ideal>, "y": <ideal>},
-      {"landmark": "pelvis", "x": <ideal>, "y": <ideal>},
-      {"landmark": "left_hip", "x": <ideal>, "y": <ideal>},
-      {"landmark": "right_hip", "x": <ideal>, "y": <ideal>},
-      {"landmark": "left_knee", "x": <ideal>, "y": <ideal>},
-      {"landmark": "right_knee", "x": <ideal>, "y": <ideal>},
-      {"landmark": "left_ankle", "x": <ideal>, "y": <ideal>},
-      {"landmark": "right_ankle", "x": <ideal>, "y": <ideal>},
-      {"landmark": "left_foot", "x": <ideal>, "y": <ideal>},
-      {"landmark": "right_foot", "x": <ideal>, "y": <ideal>}
-    ],
     "side_view": {
       "ideal_plumb_line": "Ear -> Shoulder -> Hip -> Knee -> Ankle all vertically aligned",
       "user_deviations": [
@@ -137,14 +97,6 @@ For each compensatory pattern observed, provide a muscle_imbalances entry identi
 - What injuries or conditions this pattern can lead to over time
 
 Use NASM corrective exercise methodology as the basis for muscle imbalance identification.
-
-CRITICAL FOR SKELETON OVERLAY — FRONT VIEW:
-The primary view is FRONT-FACING. The skeleton will be overlaid directly on the user's photo.
-- For skeleton_joints: Estimate each landmark's x,y as a proportion (0-1) of the image. x=0 is LEFT edge, x=1 is RIGHT edge, y=0 is TOP, y=1 is BOTTOM.
-- Be VERY precise: place each joint exactly where it appears on the person's body in the image. The head should be at the top of the person's head, shoulders at the shoulder line, hips at the waist/hip crease, knees at the kneecap, ankles at the ankle bone, feet at the floor contact point.
-- Left/right is from the VIEWER's perspective (mirror): "left_shoulder" should be on the LEFT side of the image (the person's right shoulder).
-- For ideal_skeleton_joints: Show where each joint SHOULD be for perfect posture. Keep the same vertical positions (y) as the user but correct horizontal alignment — center the spine, level the shoulders, align knees over ankles.
-- Each joint score (0-100) = how close the user's position is to ideal for that specific joint. 90+ = excellent, 70-89 = minor deviation, below 70 = significant issue.
 
 Analyze carefully:
 - knee valgus (knees caving inward)

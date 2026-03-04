@@ -1,219 +1,337 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
 
-interface JointPosition {
+interface PostureDeviation {
   landmark: string;
-  x: number;
-  y: number;
-  score?: number;
+  direction: string;
+  offset_cm_approx: number;
 }
 
 interface PostureLandmarks {
-  skeleton_joints?: JointPosition[];
-  ideal_skeleton_joints?: JointPosition[];
-  side_view?: { user_deviations?: { landmark: string; direction: string; offset_cm_approx: number }[] };
-  front_view?: { user_deviations?: { landmark: string; direction: string; offset_cm_approx: number }[] };
+  side_view?: {
+    ideal_plumb_line?: string;
+    user_deviations?: PostureDeviation[];
+  };
+  front_view?: {
+    ideal_alignment?: string;
+    user_deviations?: PostureDeviation[];
+  };
 }
 
 interface Props {
   landmarks: PostureLandmarks;
   jointMeasurements: Record<string, any>;
-  snapshotUrl?: string | null;
 }
 
-// Single clean path through the body — one continuous line per side
-const SPINE_PATH = ["head", "neck", "spine_mid", "pelvis"];
-const LEFT_ARM = ["neck", "left_shoulder", "left_elbow", "left_wrist"];
-const RIGHT_ARM = ["neck", "right_shoulder", "right_elbow", "right_wrist"];
-const LEFT_LEG = ["pelvis", "left_hip", "left_knee", "left_ankle", "left_foot"];
-const RIGHT_LEG = ["pelvis", "right_hip", "right_knee", "right_ankle", "right_foot"];
-const SHOULDER_LINE = ["left_shoulder", "right_shoulder"];
-const HIP_LINE = ["left_hip", "right_hip"];
-
-const ALL_PATHS = [SPINE_PATH, LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, SHOULDER_LINE, HIP_LINE];
-
-const MAJOR_JOINTS = ["head", "left_shoulder", "right_shoulder", "pelvis", "left_knee", "right_knee", "left_ankle", "right_ankle"];
-
-const LABEL_MAP: Record<string, string> = {
-  head: "Head", neck: "Neck", left_shoulder: "L Shoulder", right_shoulder: "R Shoulder",
-  spine_mid: "Spine", pelvis: "Pelvis", left_hip: "L Hip", right_hip: "R Hip",
-  left_knee: "L Knee", right_knee: "R Knee", left_ankle: "L Ankle", right_ankle: "R Ankle",
-  left_elbow: "L Elbow", right_elbow: "R Elbow", left_wrist: "L Wrist", right_wrist: "R Wrist",
-  left_foot: "L Foot", right_foot: "R Foot",
+// Canonical side-view landmark Y positions (proportion of figure height)
+const SIDE_LANDMARKS: Record<string, { y: number; label: string }> = {
+  ear: { y: 0.08, label: "Ear" },
+  shoulder: { y: 0.22, label: "Shoulder" },
+  hip: { y: 0.48, label: "Hip" },
+  knee: { y: 0.72, label: "Knee" },
+  ankle: { y: 0.94, label: "Ankle" },
 };
 
-function buildJointMap(joints: JointPosition[]): Record<string, { x: number; y: number; score?: number }> {
-  const map: Record<string, { x: number; y: number; score?: number }> = {};
-  joints.forEach((j) => { map[j.landmark] = { x: j.x, y: j.y, score: j.score }; });
-  return map;
-}
+// Canonical front-view landmark positions
+const FRONT_LANDMARKS: Record<string, { x: number; y: number; label: string }> = {
+  left_shoulder: { x: 0.32, y: 0.22, label: "L Shoulder" },
+  right_shoulder: { x: 0.68, y: 0.22, label: "R Shoulder" },
+  left_hip: { x: 0.38, y: 0.48, label: "L Hip" },
+  right_hip: { x: 0.62, y: 0.48, label: "R Hip" },
+  left_knee: { x: 0.38, y: 0.72, label: "L Knee" },
+  right_knee: { x: 0.62, y: 0.72, label: "R Knee" },
+};
 
-function scoreColor(score: number): string {
-  if (score >= 80) return "rgb(74, 222, 128)";
-  if (score >= 60) return "rgb(250, 204, 21)";
-  return "rgb(248, 113, 113)";
-}
+const SCALE = 3; // pixels per cm offset
 
-function scoreTailwind(score: number): string {
-  if (score >= 80) return "text-emerald-400";
-  if (score >= 60) return "text-yellow-400";
-  return "text-red-400";
-}
+function SideViewDiagram({ deviations, jointMeasurements }: { deviations: PostureDeviation[]; jointMeasurements: Record<string, any> }) {
+  const w = 160;
+  const h = 280;
+  const idealX = w * 0.45;
+  const padTop = 16;
+  const figH = h - padTop * 2;
 
-function scoreBg(score: number): string {
-  if (score >= 80) return "bg-emerald-500/10";
-  if (score >= 60) return "bg-yellow-500/10";
-  return "bg-red-500/10";
-}
+  const devMap: Record<string, PostureDeviation> = {};
+  deviations.forEach((d) => { devMap[d.landmark] = d; });
 
-/** Build an SVG polyline points string from a path of landmark names */
-function buildPolylinePoints(path: string[], map: Record<string, { x: number; y: number }>): string | null {
-  const points: string[] = [];
-  for (const name of path) {
-    const p = map[name];
-    if (!p) return null; // skip if any joint missing
-    points.push(`${p.x},${p.y}`);
-  }
-  return points.length >= 2 ? points.join(" ") : null;
-}
+  const idealPoints = Object.entries(SIDE_LANDMARKS).map(([, v]) => ({
+    x: idealX,
+    y: padTop + v.y * figH,
+  }));
 
-export default function PostureAlignmentDiagram({ landmarks, jointMeasurements, snapshotUrl }: Props) {
-  const [showIdeal, setShowIdeal] = useState(true);
-  const [showUser, setShowUser] = useState(true);
-  const [showScores, setShowScores] = useState(true);
+  const userPoints = Object.entries(SIDE_LANDMARKS).map(([key, v]) => {
+    const dev = devMap[key];
+    let offsetX = 0;
+    if (dev) {
+      const px = dev.offset_cm_approx * SCALE;
+      if (dev.direction === "forward") offsetX = px;
+      else if (dev.direction === "backward") offsetX = -px;
+    }
+    return {
+      x: idealX + offsetX,
+      y: padTop + v.y * figH,
+      label: v.label,
+      hasDeviation: !!dev && dev.offset_cm_approx > 0,
+      dev,
+    };
+  });
 
-  const userJoints = landmarks?.skeleton_joints || [];
-  const idealJoints = landmarks?.ideal_skeleton_joints || [];
-
-  if (userJoints.length === 0 && !snapshotUrl) return null;
-
-  const userMap = buildJointMap(userJoints);
-  const idealMap = buildJointMap(idealJoints);
-
-  const scores = Object.entries(userMap)
-    .filter(([, v]) => v.score != null)
-    .map(([key, v]) => ({ key, score: v.score! }))
-    .sort((a, b) => a.score - b.score);
+  const idealPath = idealPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const userPath = userPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-xl overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between p-3 pb-0">
-        <h3 className="font-display font-semibold text-foreground text-sm">🧍 Postural Alignment</h3>
-      </div>
+    <div className="flex flex-col items-center">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 font-semibold">Side View</p>
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        {/* Grid lines */}
+        {[0.2, 0.4, 0.6, 0.8].map((f) => (
+          <line key={f} x1={0} y1={padTop + f * figH} x2={w} y2={padTop + f * figH} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.08} strokeDasharray="2 4" />
+        ))}
 
-      {/* Toggles */}
-      <div className="flex items-center gap-2 px-3 pt-2 pb-1">
-        <ToggleChip active={showUser} color="red" label="You" onClick={() => setShowUser(!showUser)} />
-        <ToggleChip active={showIdeal} color="emerald" label="Ideal" onClick={() => setShowIdeal(!showIdeal)} />
-        <ToggleChip active={showScores} color="primary" label="Scores" onClick={() => setShowScores(!showScores)} />
-      </div>
+        {/* Ideal line (green) */}
+        <motion.path
+          d={idealPath}
+          fill="none"
+          stroke="hsl(150, 60%, 45%)"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeDasharray="6 3"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8 }}
+        />
 
-      {/* Image + Overlay */}
-      <div className="relative mx-3 mb-1 mt-1 rounded-lg overflow-hidden">
-        {snapshotUrl ? (
-          <img src={snapshotUrl} alt="Assessment snapshot" className="w-full block rounded-lg" />
-        ) : (
-          <div className="w-full aspect-[3/4] bg-secondary/50 flex items-center justify-center rounded-lg">
-            <p className="text-xs text-muted-foreground">No snapshot available</p>
-          </div>
-        )}
+        {/* User line (red/primary) */}
+        <motion.path
+          d={userPath}
+          fill="none"
+          stroke="hsl(0, 72%, 55%)"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        />
 
-        {/* SVG skeleton overlay */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1 1" preserveAspectRatio="none" style={{ pointerEvents: "none" }}>
-          {/* Ideal skeleton — single green dashed polylines */}
-          {showIdeal && Object.keys(idealMap).length > 0 && (
-            <g opacity={0.55}>
-              {ALL_PATHS.map((path, i) => {
-                const pts = buildPolylinePoints(path, idealMap);
-                if (!pts) return null;
-                return (
-                  <polyline key={`ideal-${i}`} points={pts} fill="none"
-                    stroke="hsl(150,70%,50%)" strokeWidth={0.004} strokeDasharray="0.01 0.006"
-                    strokeLinecap="round" strokeLinejoin="round" />
-                );
-              })}
-              {Object.entries(idealMap).map(([k, p]) => (
-                <circle key={`id-${k}`} cx={p.x} cy={p.y} r={0.006} fill="hsl(150,70%,50%)" opacity={0.4} />
-              ))}
-            </g>
-          )}
+        {/* Ideal dots */}
+        {idealPoints.map((p, i) => (
+          <circle key={`ideal-${i}`} cx={p.x} cy={p.y} r={3} fill="hsl(150, 60%, 45%)" opacity={0.6} />
+        ))}
 
-          {/* User skeleton — single red solid polylines */}
-          {showUser && Object.keys(userMap).length > 0 && (
-            <g>
-              {ALL_PATHS.map((path, i) => {
-                const pts = buildPolylinePoints(path, userMap);
-                if (!pts) return null;
-                return (
-                  <motion.polyline key={`user-${i}`} points={pts} fill="none"
-                    stroke="hsl(0,80%,55%)" strokeWidth={0.005} strokeLinecap="round" strokeLinejoin="round"
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: i * 0.08 }} />
-                );
-              })}
-              {Object.entries(userMap).map(([k, p]) => {
-                const bad = p.score != null && p.score < 70;
-                return (
-                  <circle key={`ud-${k}`} cx={p.x} cy={p.y} r={bad ? 0.009 : 0.007}
-                    fill={bad ? "hsl(0,80%,55%)" : "hsl(45,90%,55%)"} stroke="rgba(0,0,0,0.5)" strokeWidth={0.002} />
-                );
-              })}
-            </g>
-          )}
-        </svg>
-
-        {/* Score badges */}
-        {showScores && showUser && (
-          <div className="absolute inset-0" style={{ pointerEvents: "none" }}>
-            {Object.entries(userMap).map(([key, pos]) => {
-              if (pos.score == null || !MAJOR_JOINTS.includes(key)) return null;
-              return (
-                <div key={`s-${key}`} className="absolute text-[9px] font-bold px-1 py-0.5 rounded"
-                  style={{
-                    left: `${pos.x * 100}%`, top: `${pos.y * 100}%`,
-                    transform: "translate(-50%, -150%)",
-                    backgroundColor: "rgba(0,0,0,0.75)", color: scoreColor(pos.score!),
-                    backdropFilter: "blur(4px)",
-                  }}>
-                  {pos.score}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Joint Scores Grid */}
-      {scores.length > 0 && (
-        <div className="px-3 pb-3 pt-2">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2">Joint Alignment Scores</p>
-          <div className="grid grid-cols-3 gap-1.5">
-            {scores.slice(0, 12).map(({ key, score }) => (
-              <div key={key} className={`${scoreBg(score)} rounded-md px-2 py-1.5 text-center`}>
-                <p className="text-[9px] text-muted-foreground truncate">{LABEL_MAP[key] || key}</p>
-                <p className={`text-xs font-bold ${scoreTailwind(score)}`}>{score}</p>
-              </div>
-            ))}
-          </div>
+        {/* User dots + labels */}
+        {userPoints.map((p, i) => (
+          <g key={`user-${i}`}>
+            <motion.circle
+              cx={p.x}
+              cy={p.y}
+              r={p.hasDeviation ? 5 : 3.5}
+              fill={p.hasDeviation ? "hsl(0, 72%, 55%)" : "hsl(150, 60%, 45%)"}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.5 + i * 0.1 }}
+            />
+            <text
+              x={p.x + (p.x > idealX ? 10 : -10)}
+              y={p.y + 3}
+              textAnchor={p.x > idealX ? "start" : "end"}
+              fill="hsl(var(--foreground))"
+              fontSize={8}
+              fontWeight={p.hasDeviation ? 700 : 400}
+              opacity={0.8}
+            >
+              {p.label}
+            </text>
+            {p.hasDeviation && p.dev && (
+              <text
+                x={p.x + (p.x > idealX ? 10 : -10)}
+                y={p.y + 13}
+                textAnchor={p.x > idealX ? "start" : "end"}
+                fill="hsl(0, 72%, 55%)"
+                fontSize={7}
+              >
+                {p.dev.direction} ~{p.dev.offset_cm_approx}cm
+              </text>
+            )}
+          </g>
+        ))}
+      </svg>
+      <div className="flex items-center gap-3 mt-2">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-0.5 bg-emerald-500 rounded" style={{ borderStyle: "dashed" }} />
+          <span className="text-[9px] text-muted-foreground">Ideal</span>
         </div>
-      )}
-    </motion.div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-0.5 bg-red-500 rounded" />
+          <span className="text-[9px] text-muted-foreground">You</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function ToggleChip({ active, color, label, onClick }: { active: boolean; color: string; label: string; onClick: () => void }) {
-  const activeClass = color === "red"
-    ? "bg-red-500/20 text-red-400 border border-red-500/30"
-    : color === "emerald"
-    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-    : "bg-primary/20 text-primary border border-primary/30";
-  const dotColor = color === "red" ? "bg-red-500" : color === "emerald" ? "bg-emerald-500" : "bg-primary";
+function FrontViewDiagram({ deviations }: { deviations: PostureDeviation[] }) {
+  const w = 160;
+  const h = 280;
+  const centerX = w / 2;
+  const padTop = 16;
+  const figH = h - padTop * 2;
+
+  const devMap: Record<string, PostureDeviation> = {};
+  deviations.forEach((d) => { devMap[d.landmark] = d; });
+
+  const landmarkOrder = ["left_shoulder", "right_shoulder", "left_hip", "right_hip", "left_knee", "right_knee"];
+
+  const idealBodyLines = [
+    // Shoulders
+    { from: FRONT_LANDMARKS.left_shoulder, to: FRONT_LANDMARKS.right_shoulder },
+    // Torso left
+    { from: FRONT_LANDMARKS.left_shoulder, to: FRONT_LANDMARKS.left_hip },
+    // Torso right
+    { from: FRONT_LANDMARKS.right_shoulder, to: FRONT_LANDMARKS.right_hip },
+    // Hips
+    { from: FRONT_LANDMARKS.left_hip, to: FRONT_LANDMARKS.right_hip },
+    // Left leg
+    { from: FRONT_LANDMARKS.left_hip, to: FRONT_LANDMARKS.left_knee },
+    // Right leg
+    { from: FRONT_LANDMARKS.right_hip, to: FRONT_LANDMARKS.right_knee },
+  ];
+
+  const getPos = (key: string, ideal: { x: number; y: number }) => {
+    const dev = devMap[key];
+    let offX = 0, offY = 0;
+    if (dev) {
+      const px = dev.offset_cm_approx * SCALE;
+      if (dev.direction === "inward") offX = key.startsWith("left") ? px : -px;
+      if (dev.direction === "outward") offX = key.startsWith("left") ? -px : px;
+      if (dev.direction === "higher") offY = -px;
+      if (dev.direction === "lower") offY = px;
+    }
+    return {
+      x: ideal.x * w + offX,
+      y: padTop + ideal.y * figH + offY,
+      hasDev: !!dev && dev.offset_cm_approx > 0,
+    };
+  };
 
   return (
-    <button onClick={onClick}
-      className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold transition-all ${active ? activeClass : "bg-secondary text-muted-foreground"}`}>
-      {color !== "primary" && <div className={`w-2 h-2 rounded-full ${dotColor}`} />}
-      {label}
-    </button>
+    <div className="flex flex-col items-center">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 font-semibold">Front View</p>
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+        {/* Center line */}
+        <line x1={centerX} y1={padTop} x2={centerX} y2={h - padTop} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.1} strokeDasharray="2 4" />
+
+        {/* Ideal body lines (green dashed) */}
+        {idealBodyLines.map((line, i) => (
+          <motion.line
+            key={`ideal-line-${i}`}
+            x1={line.from.x * w}
+            y1={padTop + line.from.y * figH}
+            x2={line.to.x * w}
+            y2={padTop + line.to.y * figH}
+            stroke="hsl(150, 60%, 45%)"
+            strokeWidth={1.5}
+            strokeDasharray="4 3"
+            strokeOpacity={0.5}
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.6 }}
+          />
+        ))}
+
+        {/* User body connections (red) */}
+        {[
+          ["left_shoulder", "right_shoulder"],
+          ["left_shoulder", "left_hip"],
+          ["right_shoulder", "right_hip"],
+          ["left_hip", "right_hip"],
+          ["left_hip", "left_knee"],
+          ["right_hip", "right_knee"],
+        ].map(([from, to], i) => {
+          const fromIdeal = FRONT_LANDMARKS[from];
+          const toIdeal = FRONT_LANDMARKS[to];
+          const fromPos = getPos(from, fromIdeal);
+          const toPos = getPos(to, toIdeal);
+          const hasDev = fromPos.hasDev || toPos.hasDev;
+          return (
+            <motion.line
+              key={`user-line-${i}`}
+              x1={fromPos.x}
+              y1={fromPos.y}
+              x2={toPos.x}
+              y2={toPos.y}
+              stroke={hasDev ? "hsl(0, 72%, 55%)" : "hsl(150, 60%, 45%)"}
+              strokeWidth={2}
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            />
+          );
+        })}
+
+        {/* User dots + labels */}
+        {landmarkOrder.map((key) => {
+          const ideal = FRONT_LANDMARKS[key];
+          const pos = getPos(key, ideal);
+          return (
+            <g key={key}>
+              <motion.circle
+                cx={pos.x}
+                cy={pos.y}
+                r={pos.hasDev ? 5 : 3.5}
+                fill={pos.hasDev ? "hsl(0, 72%, 55%)" : "hsl(150, 60%, 45%)"}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5 }}
+              />
+              <text
+                x={pos.x + (key.startsWith("left") ? -8 : 8)}
+                y={pos.y - 8}
+                textAnchor={key.startsWith("left") ? "end" : "start"}
+                fill="hsl(var(--foreground))"
+                fontSize={7}
+                opacity={0.7}
+              >
+                {FRONT_LANDMARKS[key].label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+      <div className="flex items-center gap-3 mt-2">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-0.5 bg-emerald-500 rounded" />
+          <span className="text-[9px] text-muted-foreground">Ideal</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-0.5 bg-red-500 rounded" />
+          <span className="text-[9px] text-muted-foreground">You</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PostureAlignmentDiagram({ landmarks, jointMeasurements }: Props) {
+  const sideDeviations = landmarks?.side_view?.user_deviations || [];
+  const frontDeviations = landmarks?.front_view?.user_deviations || [];
+
+  if (sideDeviations.length === 0 && frontDeviations.length === 0) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass rounded-xl p-4"
+    >
+      <h3 className="font-display font-semibold text-foreground text-sm mb-4 flex items-center gap-2">
+        🧍 Postural Alignment
+      </h3>
+      <div className="grid grid-cols-2 gap-2">
+        <SideViewDiagram deviations={sideDeviations} jointMeasurements={jointMeasurements} />
+        <FrontViewDiagram deviations={frontDeviations} />
+      </div>
+      <p className="text-[10px] text-muted-foreground mt-3 text-center">
+        Green dashed = ideal alignment · Red solid = your positioning
+      </p>
+    </motion.div>
   );
 }

@@ -151,8 +151,15 @@ ${findings_text || "No findings available."}
         )}
       </div>
 
-      {/* Postural Alignment Diagram (overlaid on snapshot) */}
-      <PostureAlignmentDiagram landmarks={postureLandmarks} jointMeasurements={joint_measurements} snapshotUrl={assessment.video_snapshot_url} />
+      {/* Snapshot */}
+      {assessment.video_snapshot_url && (
+        <div className="glass rounded-xl overflow-hidden">
+          <img src={assessment.video_snapshot_url} alt="Assessment snapshot" className="w-full aspect-video object-cover" />
+        </div>
+      )}
+
+      {/* Postural Alignment Diagram */}
+      <PostureAlignmentDiagram landmarks={postureLandmarks} jointMeasurements={joint_measurements} />
 
       {/* Area Scores */}
       <div className="glass rounded-xl p-4">

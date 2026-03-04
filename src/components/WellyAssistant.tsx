@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Send, Bookmark, Phone, CalendarPlus } from "lucide-react";
+import { Send, Bookmark, Phone, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import logoSubmark from "@/assets/logo-submark.png";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,27 +129,8 @@ export default function WellyAssistant() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [fabHidden, setFabHidden] = useState(false);
-  const [onboardingDone, setOnboardingDone] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [pendingAssessment, setPendingAssessment] = useState<any>(null);
-
-  // Hide until onboarding is complete
-  useEffect(() => {
-    if (!user) { setOnboardingDone(false); return; }
-    supabase.from("profiles").select("onboarding_completed").eq("user_id", user.id).single()
-      .then(({ data }) => setOnboardingDone(!!data?.onboarding_completed));
-  }, [user]);
-
-  // Listen for hide/show events from overlays (e.g. ScheduleBottomSheet)
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      setFabHidden(!!detail?.hidden);
-    };
-    window.addEventListener("welly-fab-visibility", handler);
-    return () => window.removeEventListener("welly-fab-visibility", handler);
-  }, []);
 
   // Listen for assessment completion events
   useEffect(() => {
@@ -532,18 +512,17 @@ Based on these results, what are my recommended next steps? What exercises and p
     </div>
   );
 
-  if (!onboardingDone) return null;
-
   return (
     <>
       {/* FAB */}
-      {!open && !fabHidden && onboardingDone && (
+      {!open && (
+
         <button
           onClick={() => {
             setOpen(true);
             if (!pendingAssessment) setNotificationCount(0);
           }}
-          className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all pl-2 pr-4 py-2.5 relative"
+          className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full gradient-primary text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl active:scale-95 transition-all pl-2 pr-4 py-2.5 relative"
           aria-label="Open Welly AI Assistant"
         >
           {/* Notification Badge */}

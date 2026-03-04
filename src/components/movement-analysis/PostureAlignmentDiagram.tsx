@@ -21,24 +21,22 @@ interface Props {
   snapshotUrl?: string | null;
 }
 
-// Skeleton connections for front-view stick figure
-const CONNECTIONS: [string, string][] = [
-  ["head", "neck"],
-  ["neck", "left_shoulder"], ["neck", "right_shoulder"],
-  ["left_shoulder", "left_elbow"], ["right_shoulder", "right_elbow"],
-  ["left_elbow", "left_wrist"], ["right_elbow", "right_wrist"],
-  ["neck", "spine_mid"], ["spine_mid", "pelvis"],
-  ["pelvis", "left_hip"], ["pelvis", "right_hip"],
-  ["left_hip", "left_knee"], ["right_hip", "right_knee"],
-  ["left_knee", "left_ankle"], ["right_knee", "right_ankle"],
-  ["left_ankle", "left_foot"], ["right_ankle", "right_foot"],
-];
+// Single clean path through the body — one continuous line per side
+const SPINE_PATH = ["head", "neck", "spine_mid", "pelvis"];
+const LEFT_ARM = ["neck", "left_shoulder", "left_elbow", "left_wrist"];
+const RIGHT_ARM = ["neck", "right_shoulder", "right_elbow", "right_wrist"];
+const LEFT_LEG = ["pelvis", "left_hip", "left_knee", "left_ankle", "left_foot"];
+const RIGHT_LEG = ["pelvis", "right_hip", "right_knee", "right_ankle", "right_foot"];
+const SHOULDER_LINE = ["left_shoulder", "right_shoulder"];
+const HIP_LINE = ["left_hip", "right_hip"];
 
-const MAJOR_JOINTS = ["head", "left_shoulder", "right_shoulder", "pelvis", "left_hip", "right_hip", "left_knee", "right_knee", "left_ankle", "right_ankle"];
+const ALL_PATHS = [SPINE_PATH, LEFT_ARM, RIGHT_ARM, LEFT_LEG, RIGHT_LEG, SHOULDER_LINE, HIP_LINE];
+
+const MAJOR_JOINTS = ["head", "left_shoulder", "right_shoulder", "pelvis", "left_knee", "right_knee", "left_ankle", "right_ankle"];
 
 const LABEL_MAP: Record<string, string> = {
   head: "Head", neck: "Neck", left_shoulder: "L Shoulder", right_shoulder: "R Shoulder",
-  spine_mid: "Mid Spine", pelvis: "Pelvis", left_hip: "L Hip", right_hip: "R Hip",
+  spine_mid: "Spine", pelvis: "Pelvis", left_hip: "L Hip", right_hip: "R Hip",
   left_knee: "L Knee", right_knee: "R Knee", left_ankle: "L Ankle", right_ankle: "R Ankle",
   left_elbow: "L Elbow", right_elbow: "R Elbow", left_wrist: "L Wrist", right_wrist: "R Wrist",
   left_foot: "L Foot", right_foot: "R Foot",
@@ -68,6 +66,17 @@ function scoreBg(score: number): string {
   return "bg-red-500/10";
 }
 
+/** Build an SVG polyline points string from a path of landmark names */
+function buildPolylinePoints(path: string[], map: Record<string, { x: number; y: number }>): string | null {
+  const points: string[] = [];
+  for (const name of path) {
+    const p = map[name];
+    if (!p) return null; // skip if any joint missing
+    points.push(`${p.x},${p.y}`);
+  }
+  return points.length >= 2 ? points.join(" ") : null;
+}
+
 export default function PostureAlignmentDiagram({ landmarks, jointMeasurements, snapshotUrl }: Props) {
   const [showIdeal, setShowIdeal] = useState(true);
   const [showUser, setShowUser] = useState(true);
@@ -81,7 +90,6 @@ export default function PostureAlignmentDiagram({ landmarks, jointMeasurements, 
   const userMap = buildJointMap(userJoints);
   const idealMap = buildJointMap(idealJoints);
 
-  // Collect scores for summary
   const scores = Object.entries(userMap)
     .filter(([, v]) => v.score != null)
     .map(([key, v]) => ({ key, score: v.score! }))
@@ -113,40 +121,41 @@ export default function PostureAlignmentDiagram({ landmarks, jointMeasurements, 
 
         {/* SVG skeleton overlay */}
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1 1" preserveAspectRatio="none" style={{ pointerEvents: "none" }}>
-          {/* Ideal skeleton (green dashed) */}
+          {/* Ideal skeleton — single green dashed polylines */}
           {showIdeal && Object.keys(idealMap).length > 0 && (
-            <g opacity={0.6}>
-              {CONNECTIONS.map(([a, b], i) => {
-                const from = idealMap[a], to = idealMap[b];
-                if (!from || !to) return null;
+            <g opacity={0.55}>
+              {ALL_PATHS.map((path, i) => {
+                const pts = buildPolylinePoints(path, idealMap);
+                if (!pts) return null;
                 return (
-                  <line key={`ig-${i}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-                    stroke="hsl(150,70%,50%)" strokeWidth={0.003} strokeDasharray="0.008 0.005" />
+                  <polyline key={`ideal-${i}`} points={pts} fill="none"
+                    stroke="hsl(150,70%,50%)" strokeWidth={0.004} strokeDasharray="0.01 0.006"
+                    strokeLinecap="round" strokeLinejoin="round" />
                 );
               })}
               {Object.entries(idealMap).map(([k, p]) => (
-                <circle key={`id-${k}`} cx={p.x} cy={p.y} r={0.005} fill="hsl(150,70%,50%)" opacity={0.5} />
+                <circle key={`id-${k}`} cx={p.x} cy={p.y} r={0.006} fill="hsl(150,70%,50%)" opacity={0.4} />
               ))}
             </g>
           )}
 
-          {/* User skeleton (red solid) */}
+          {/* User skeleton — single red solid polylines */}
           {showUser && Object.keys(userMap).length > 0 && (
             <g>
-              {CONNECTIONS.map(([a, b], i) => {
-                const from = userMap[a], to = userMap[b];
-                if (!from || !to) return null;
+              {ALL_PATHS.map((path, i) => {
+                const pts = buildPolylinePoints(path, userMap);
+                if (!pts) return null;
                 return (
-                  <motion.line key={`ul-${i}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-                    stroke="hsl(0,80%,55%)" strokeWidth={0.004} strokeLinecap="round"
-                    initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, delay: 0.2 }} />
+                  <motion.polyline key={`user-${i}`} points={pts} fill="none"
+                    stroke="hsl(0,80%,55%)" strokeWidth={0.005} strokeLinecap="round" strokeLinejoin="round"
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: i * 0.08 }} />
                 );
               })}
               {Object.entries(userMap).map(([k, p]) => {
                 const bad = p.score != null && p.score < 70;
                 return (
-                  <circle key={`ud-${k}`} cx={p.x} cy={p.y} r={bad ? 0.008 : 0.006}
-                    fill={bad ? "hsl(0,80%,55%)" : "hsl(45,90%,55%)"} stroke="rgba(0,0,0,0.4)" strokeWidth={0.002} />
+                  <circle key={`ud-${k}`} cx={p.x} cy={p.y} r={bad ? 0.009 : 0.007}
+                    fill={bad ? "hsl(0,80%,55%)" : "hsl(45,90%,55%)"} stroke="rgba(0,0,0,0.5)" strokeWidth={0.002} />
                 );
               })}
             </g>

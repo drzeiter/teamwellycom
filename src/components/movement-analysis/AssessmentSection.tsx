@@ -84,6 +84,9 @@ export default function AssessmentSection() {
       toast({ title: "Assessment Complete! ✅", description: `Your movement score: ${data.overall_score}/100` });
       setShowCamera(false);
       setViewingReport(saved);
+      // Signal Welly AI about new assessment
+      localStorage.setItem("welly-pending-assessment", JSON.stringify(saved));
+      window.dispatchEvent(new CustomEvent("welly-new-assessment"));
       await fetchAssessments();
     } catch (err: any) {
       console.error("Analysis error:", err);

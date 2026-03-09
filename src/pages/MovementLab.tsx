@@ -156,22 +156,32 @@ export default function MovementLab() {
   if (viewingReport) {
     const idx = assessments.findIndex(a => a.id === viewingReport.id);
     const previousScore = idx < assessments.length - 1 ? assessments[idx + 1]?.overall_score : null;
+    const handleBackFromReport = () => { setViewingReport(null); setReplayData(null); setCapturedFrames([]); };
     return (
-      <div className="min-h-screen bg-background p-4 pb-24 safe-top">
-        {/* Replay section */}
-        {replayData && replayData.frames.length > 0 && (
-          <div className="mb-5">
-            <h3 className="font-display font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-primary" /> Slow-Motion Replay
-            </h3>
-            <MovementReplay {...replayData} />
-          </div>
-        )}
-        <MovementReport
-          assessment={viewingReport}
-          onBack={() => { setViewingReport(null); setReplayData(null); setCapturedFrames([]); }}
-          previousScore={previousScore}
-        />
+      <div className="min-h-screen bg-background pb-24 safe-top">
+        {/* Sticky back header */}
+        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center gap-3">
+          <button onClick={handleBackFromReport} className="p-2 rounded-full bg-secondary active:scale-95 transition-transform">
+            <ArrowLeft className="w-4 h-4 text-foreground" />
+          </button>
+          <span className="font-display font-semibold text-foreground text-sm">Back to Movement Lab</span>
+        </div>
+        <div className="p-4">
+          {/* Replay section */}
+          {replayData && replayData.frames.length > 0 && (
+            <div className="mb-5">
+              <h3 className="font-display font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+                <Activity className="w-4 h-4 text-primary" /> Slow-Motion Replay
+              </h3>
+              <MovementReplay {...replayData} />
+            </div>
+          )}
+          <MovementReport
+            assessment={viewingReport}
+            onBack={handleBackFromReport}
+            previousScore={previousScore}
+          />
+        </div>
       </div>
     );
   }

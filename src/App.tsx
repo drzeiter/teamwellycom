@@ -109,6 +109,7 @@ const App = () => (
             <Route path="/program/:programId" element={<ProtectedRoute><ProgramOverview /></ProtectedRoute>} />
             <Route path="/player/:programId" element={<ProtectedRoute><ExercisePlayer /></ProtectedRoute>} />
             <Route path="/exercise/:exerciseId" element={<ProtectedRoute><ExerciseDetail /></ProtectedRoute>} />
+            <Route path="/movement-lab" element={<ProtectedRoute><MovementLab /></ProtectedRoute>} />
             <Route path="/admin/company" element={<AdminRoute allowedRoles={["hr_admin", "admin"]}><CompanyAdminDashboard /></AdminRoute>} />
             <Route path="/admin/super" element={<AdminRoute allowedRoles={["admin"]}><SuperAdminDashboard /></AdminRoute>} />
             <Route path="/invite/:token" element={<InviteAccept />} />

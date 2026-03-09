@@ -151,7 +151,7 @@ export default function AssessmentSection() {
         ].map((item) => (
           <motion.button
             key={item.type}
-            onClick={() => navigate("/movement-lab")}
+            onClick={() => navigate(`/movement-lab?type=${item.type}`)}
             whileTap={{ scale: 0.95 }}
             className="glass rounded-xl p-3 flex flex-col items-center gap-2 text-center"
           >

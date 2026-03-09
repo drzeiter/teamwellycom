@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Scan, Monitor, PersonStanding, ChevronRight, Clock, TrendingUp, Activity } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
@@ -49,8 +49,10 @@ const ANALYSIS_CONFIG: Record<AnalysisType, {
 export default function MovementLab() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [assessments, setAssessments] = useState<AssessmentData[]>([]);
+  const [searchParams] = useSearchParams();
+  const filterType = searchParams.get("type") as AnalysisType | null;
   const [loading, setLoading] = useState(true);
+  const [assessments, setAssessments] = useState<AssessmentData[]>([]);
   const [showCamera, setShowCamera] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<AnalysisType | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -182,17 +184,25 @@ export default function MovementLab() {
           <ArrowLeft className="w-4 h-4 text-foreground" />
         </button>
         <div>
-          <h1 className="font-display font-bold text-foreground text-lg">Movement Lab</h1>
-          <p className="text-xs text-muted-foreground">AI-powered movement & posture analysis</p>
+          <h1 className="font-display font-bold text-foreground text-lg">
+            {filterType ? ANALYSIS_CONFIG[filterType].title : "Movement Lab"}
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            {filterType ? ANALYSIS_CONFIG[filterType].subtitle : "AI-powered movement & posture analysis"}
+          </p>
         </div>
       </div>
 
       <div className="px-4 pb-24 space-y-5">
-        {/* Analysis Tools */}
+        {/* Analysis Tools - show only filtered type or all */}
         <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-3">Analysis Tools</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-3">
+            {filterType ? "Start Analysis" : "Analysis Tools"}
+          </p>
           <div className="space-y-3">
-            {(Object.entries(ANALYSIS_CONFIG) as [AnalysisType, typeof ANALYSIS_CONFIG[AnalysisType]][]).map(([type, config], i) => (
+            {(Object.entries(ANALYSIS_CONFIG) as [AnalysisType, typeof ANALYSIS_CONFIG[AnalysisType]][])
+              .filter(([type]) => !filterType || type === filterType)
+              .map(([type, config], i) => (
               <motion.button
                 key={type}
                 onClick={() => startAnalysis(type)}
@@ -217,16 +227,22 @@ export default function MovementLab() {
 
         {/* Assessment History */}
         <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-3">Assessment History</p>
-          {loading ? (
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-3">
+            {filterType ? `${ANALYSIS_CONFIG[filterType].title} History` : "Assessment History"}
+          </p>
+          {(() => {
+            const filtered = filterType
+              ? assessments.filter(a => a.assessment_type === filterType)
+              : assessments;
+            return loading ? (
             <div className="glass rounded-xl p-4 text-center">
               <p className="text-xs text-muted-foreground">Loading...</p>
             </div>
-          ) : assessments.length > 0 ? (
+          ) : filtered.length > 0 ? (
             <div className="space-y-2">
-              {assessments.map((a, i) => {
+              {filtered.map((a, i) => {
                 const typeConfig = ANALYSIS_CONFIG[a.assessment_type as AnalysisType];
-                const prevScore = i < assessments.length - 1 ? assessments[i + 1]?.overall_score : null;
+                const prevScore = i < filtered.length - 1 ? filtered[i + 1]?.overall_score : null;
                 const diff = prevScore != null ? a.overall_score - prevScore : null;
                 return (
                   <motion.button
@@ -269,7 +285,8 @@ export default function MovementLab() {
               <p className="text-sm text-foreground font-medium mb-1">No assessments yet</p>
               <p className="text-xs text-muted-foreground">Choose an analysis tool above to start</p>
             </div>
-          )}
+          );
+          })()}
         </div>
       </div>
 

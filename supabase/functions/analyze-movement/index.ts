@@ -6,357 +6,316 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ANALYSIS_PROMPTS: Record<string, string> = {
-  overhead_squat: `You are an expert movement analyst and physical therapist AI for the Team Welly wellness platform.
+const COMPENSATION_CHAIN_INSTRUCTIONS = `
+CRITICAL ANALYSIS PHILOSOPHY — Apply to ALL analyses:
 
-You will receive sequential frames from a user performing an Overhead Squat Assessment. Analyze the user's movement and posture by examining joint positions across frames.
+1. The body is an interconnected kinetic chain. One asymmetry creates upstream and downstream compensations.
+2. The eyes and head seek horizontal equilibrium. If one region shifts, others compensate to keep gaze level.
+3. A visible asymmetry in one region may originate from another region.
+4. Evaluate posture/movement in ALL THREE PLANES:
+   - Sagittal plane (flexion/extension, forward/backward)
+   - Frontal plane (left-right asymmetry, lateral shifts, shoulder/hip height differences)
+   - Transverse plane (rotations, asymmetrical arm swing, pelvic rotation)
+5. NEVER reduce findings to only "slouching" or "poor form." Always detect left-right imbalances, regional compensation, and domino-effect posture chains.
+6. If one side appears elevated/shifted, automatically evaluate the ENTIRE chain: head tilt, neck side-bend, trunk lean, rib cage shift, pelvic level, weight distribution.
+7. Use cautious clinical language: "likely," "may be contributing," "possible compensation," "suggests," "often associated with."
 
+REQUIRED OUTPUT SECTIONS (include ALL of these):
+
+"compensation_chain": "<1-3 paragraph explanation of how findings connect as a domino effect through the body>",
+
+"symptom_correlation": [
+  {"pattern": "<e.g. elevated shoulder + head tilt>", "likely_symptom_areas": ["<e.g. neck tension, shoulder tension>"], "explanation": "<brief reasoning>"}
+],
+
+"corrective_priorities": [
+  {"priority": 1, "focus": "<e.g. reduce dominant upper trap tone>", "rationale": "<why this is most important>"},
+  {"priority": 2, "focus": "<e.g. restore scapular stability>", "rationale": "<reasoning>"}
+],
+
+"plane_analysis": {
+  "sagittal": {"detected": <boolean>, "findings": ["<list of sagittal findings>"]},
+  "frontal": {"detected": <boolean>, "findings": ["<list of frontal plane asymmetry findings>"]},
+  "transverse": {"detected": <boolean>, "findings": ["<list of rotational findings>"]}
+},
+
+"body_map": {
+  "overloaded_tight": ["<body region names — e.g. left_upper_trap, right_ql, hip_flexors>"],
+  "underactive_weak": ["<body region names — e.g. deep_neck_flexors, left_glute_med, serratus_anterior>"],
+  "symptom_risk": ["<body region names — e.g. neck, right_low_back, left_knee>"]
+},
+
+"confidence_notes": ["<e.g. Possible left shoulder elevation — recommend side-view confirmation>"],
+
+"recommended_protocols": [
+  {"title": "<protocol name>", "purpose": "<why>", "duration_minutes": <number>, "exercises": ["<exercise names>"]}
+]
+`;
+
+const LANDMARK_FORMAT = `
 For EACH frame provided, estimate the 2D positions (as normalized 0-1 coordinates where 0,0 is top-left) of these landmarks:
 head, left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist, left_hip, right_hip, left_knee, right_knee, left_ankle, right_ankle, pelvis_center, spine_mid, spine_top
 
-Return ONLY valid JSON (no markdown, no code fences) with this exact structure:
+Return frame_landmarks as:
+"frame_landmarks": [
+  {
+    "frame_index": <number>,
+    "landmarks": { "<name>": {"x": <0-1>, "y": <0-1>} },
+    "joint_angles": { "<name>": <degrees> },
+    "alignment_status": { "<region>": "<green|yellow|red>" }
+  }
+],
+"deviation_events": [
+  {"frame_index": <number>, "label": "<descriptive label>", "severity": "<yellow|red>", "body_area": "<region>"}
+]
+`;
+
+const ANALYSIS_PROMPTS: Record<string, string> = {
+  overhead_squat: `You are an expert movement analyst, physical therapist, and biomechanics specialist AI for the Team Welly wellness platform.
+
+You will receive sequential frames from a user performing an Overhead Squat Assessment.
+
+${COMPENSATION_CHAIN_INSTRUCTIONS}
+
+SQUAT-SPECIFIC ANALYSIS:
+Interpret squat deviations as full-body movement strategies, NOT isolated joint faults.
+
+Detect and score:
+- Pelvic shift left or right, hip shift in descent/ascent
+- Knee valgus or varus (bilateral comparison)
+- Ankle pronation / foot collapse
+- Asymmetric weight shift, one-sided loading strategy
+- Trunk lean, torso rotation
+- Lumbar extension / butt wink, rib flare
+- Heel rise, depth asymmetry
+- Head position compensation
+- Asymmetrical hip drive from bottom
+
+SQUAT COMPENSATION-CHAIN REASONING:
+- If user shifts right: check if left leg is less stable, if right QL is overloaded, if left glute is underactive, if knee valgus is worse on one side
+- If knees collapse: evaluate glute med weakness, foot pronation, adductor dominance, ankle mobility restriction, trunk instability
+- If lumbar extension: evaluate poor core bracing, poor hip mobility, poor rib-pelvis stacking, anterior pelvic tilt
+- Determine whether the body is avoiding one hip, overloading one leg, rotating to avoid restriction, using lumbar extension instead of core control
+
+${LANDMARK_FORMAT}
+
+Also add these landmarks for squat: left_foot, right_foot
+
+Return ONLY valid JSON (no markdown, no code fences) with this structure:
 {
-  "overall_score": <number 0-100>,
-  "area_scores": {
-    "ankles": <number 0-100>,
-    "knees": <number 0-100>,
-    "hips": <number 0-100>,
-    "core": <number 0-100>,
-    "shoulders": <number 0-100>
-  },
-  "frame_landmarks": [
-    {
-      "frame_index": <number>,
-      "landmarks": {
-        "head": {"x": <0-1>, "y": <0-1>},
-        "left_shoulder": {"x": <0-1>, "y": <0-1>},
-        "right_shoulder": {"x": <0-1>, "y": <0-1>},
-        "left_elbow": {"x": <0-1>, "y": <0-1>},
-        "right_elbow": {"x": <0-1>, "y": <0-1>},
-        "left_wrist": {"x": <0-1>, "y": <0-1>},
-        "right_wrist": {"x": <0-1>, "y": <0-1>},
-        "left_hip": {"x": <0-1>, "y": <0-1>},
-        "right_hip": {"x": <0-1>, "y": <0-1>},
-        "left_knee": {"x": <0-1>, "y": <0-1>},
-        "right_knee": {"x": <0-1>, "y": <0-1>},
-        "left_ankle": {"x": <0-1>, "y": <0-1>},
-        "right_ankle": {"x": <0-1>, "y": <0-1>},
-        "pelvis_center": {"x": <0-1>, "y": <0-1>},
-        "spine_mid": {"x": <0-1>, "y": <0-1>},
-        "spine_top": {"x": <0-1>, "y": <0-1>}
-      },
-      "joint_angles": {
-        "left_knee_angle": <degrees>,
-        "right_knee_angle": <degrees>,
-        "left_hip_angle": <degrees>,
-        "right_hip_angle": <degrees>,
-        "torso_angle": <degrees from vertical>,
-        "left_shoulder_angle": <degrees>,
-        "right_shoulder_angle": <degrees>
-      },
-      "alignment_status": {
-        "pelvis": "<green|yellow|red>",
-        "knees": "<green|yellow|red>",
-        "spine": "<green|yellow|red>",
-        "shoulders": "<green|yellow|red>",
-        "ankles": "<green|yellow|red>"
-      }
-    }
-  ],
-  "deviation_events": [
-    {
-      "frame_index": <number>,
-      "label": "<e.g. Pelvic Shift Detected, Knee Valgus Detected, Lumbar Extension Detected>",
-      "severity": "<yellow|red>",
-      "body_area": "<pelvis|knees|spine|shoulders|ankles>"
-    }
-  ],
+  "overall_score": <0-100>,
+  "area_scores": {"ankles": <0-100>, "knees": <0-100>, "hips": <0-100>, "core": <0-100>, "shoulders": <0-100>},
+  "frame_landmarks": [...],
+  "deviation_events": [...],
   "joint_measurements": {
-    "knee_valgus_angle": <number in degrees>,
-    "hip_shift": "<left/right/neutral>",
-    "hip_shift_degrees": <number>,
-    "pelvic_tilt": "<anterior/posterior/neutral>",
-    "pelvic_tilt_degrees": <number>,
-    "torso_forward_lean": <number in degrees from vertical>,
-    "ankle_dorsiflexion_range": <number in degrees>,
-    "shoulder_flexion_range": <number in degrees>,
-    "squat_depth": "<full/parallel/quarter/minimal>",
-    "head_position": "<forward/neutral/extended>",
-    "head_forward_degrees": <number>,
-    "lumbar_curve": "<excessive/normal/flat>",
-    "thoracic_curve": "<excessive/normal/flat>",
-    "knee_over_toe": <boolean>,
-    "feet_turn_out": "<none/mild/excessive>",
-    "feet_turn_out_degrees": <number>,
-    "arm_fall_forward": <boolean>,
-    "weight_distribution": "<even/left-heavy/right-heavy/anterior/posterior>"
+    "knee_valgus_angle": <degrees>, "hip_shift": "<left/right/neutral>", "hip_shift_degrees": <number>,
+    "pelvic_tilt": "<anterior/posterior/neutral>", "pelvic_tilt_degrees": <number>,
+    "pelvic_obliquity": "<level/left_higher/right_higher>", "pelvic_obliquity_degrees": <number>,
+    "torso_forward_lean": <degrees>, "ankle_dorsiflexion_range": <degrees>,
+    "shoulder_flexion_range": <degrees>, "squat_depth": "<full/parallel/quarter/minimal>",
+    "head_position": "<forward/neutral/extended>", "head_forward_degrees": <number>,
+    "lumbar_curve": "<excessive/normal/flat>", "thoracic_curve": "<excessive/normal/flat>",
+    "knee_over_toe": <boolean>, "feet_turn_out": "<none/mild/excessive>", "feet_turn_out_degrees": <number>,
+    "arm_fall_forward": <boolean>, "weight_distribution": "<even/left-heavy/right-heavy/anterior/posterior>",
+    "lateral_trunk_lean": "<none/left/right>", "lateral_trunk_lean_degrees": <number>,
+    "asymmetric_hip_drive": <boolean>, "asymmetric_hip_drive_side": "<left/right/none>"
   },
   "posture_landmarks": {
-    "side_view": {
-      "ideal_plumb_line": "Ear -> Shoulder -> Hip -> Knee -> Ankle all vertically aligned",
-      "user_deviations": [
-        {"landmark": "<ear/shoulder/hip/knee/ankle>", "direction": "<forward/backward/left/right>", "offset_cm_approx": <number>}
-      ]
-    },
-    "front_view": {
-      "ideal_alignment": "Shoulders level, hips level, knees tracking over 2nd toe",
-      "user_deviations": [
-        {"landmark": "<left_shoulder/right_shoulder/left_hip/right_hip/left_knee/right_knee>", "direction": "<higher/lower/inward/outward>", "offset_cm_approx": <number>}
-      ]
-    }
+    "side_view": {"ideal_plumb_line": "...", "user_deviations": [{"landmark": "<name>", "direction": "<dir>", "offset_cm_approx": <n>}]},
+    "front_view": {"ideal_alignment": "...", "user_deviations": [{"landmark": "<name>", "direction": "<dir>", "offset_cm_approx": <n>}]}
   },
-  "risk_flags": [
-    {
-      "area": "<body area>",
-      "severity": "<red|yellow|green>",
-      "finding": "<brief description>"
-    }
-  ],
-  "muscle_imbalances": [
-    {
-      "finding": "<e.g. Excessive Forward Lean, Knee Valgus>",
-      "overactive_tight": ["<muscle names>"],
-      "underactive_weak": ["<muscle names>"],
-      "possible_injuries": ["<injury risks>"]
-    }
-  ],
+  "risk_flags": [{"area": "<body area>", "severity": "<red|yellow|green>", "finding": "<description>"}],
+  "muscle_imbalances": [{"finding": "<description>", "overactive_tight": ["<muscles>"], "underactive_weak": ["<muscles>"], "possible_injuries": ["<risks>"]}],
+  "compensation_chain": "<paragraph explanation>",
+  "symptom_correlation": [{"pattern": "<pattern>", "likely_symptom_areas": ["<areas>"], "explanation": "<reasoning>"}],
+  "corrective_priorities": [{"priority": <n>, "focus": "<focus>", "rationale": "<why>"}],
+  "plane_analysis": {"sagittal": {"detected": <bool>, "findings": [...]}, "frontal": {"detected": <bool>, "findings": [...]}, "transverse": {"detected": <bool>, "findings": [...]}},
+  "body_map": {"overloaded_tight": ["<regions>"], "underactive_weak": ["<regions>"], "symptom_risk": ["<regions>"]},
+  "confidence_notes": ["<notes>"],
+  "recommended_protocols": [{"title": "<name>", "purpose": "<why>", "duration_minutes": <n>, "exercises": ["<names>"]}],
   "findings_text": "<2-4 paragraph plain-language explanation>",
   "recommended_categories": ["<category_type values>"],
   "recommended_target_areas": ["<target_area values>"]
-}
+}`,
 
-Use NASM corrective exercise methodology. Analyze carefully: knee valgus, hip shift, pelvic tilt, forward lean, ankle dorsiflexion, shoulder flexion, squat depth, asymmetries.
-Be very precise with landmark positions - they will be used to render skeleton overlays on the video replay.`,
+  desk_posture: `You are an expert posture analyst, physical therapist, and biomechanics specialist AI for the Team Welly wellness platform.
 
-  desk_posture: `You are an expert posture analyst AI for the Team Welly wellness platform.
+You will receive frames from a user sitting at their desk. Analyze their seated posture as an interconnected compensation chain from head to pelvis.
 
-You will receive frames from a user sitting at their desk. Analyze their seated posture.
+${COMPENSATION_CHAIN_INSTRUCTIONS}
 
-For EACH frame provided, estimate the 2D positions (normalized 0-1, top-left origin) of these landmarks:
-head, left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist, left_hip, right_hip, left_knee, right_knee, pelvis_center, spine_mid, spine_top, chin, ear_left, ear_right
+DESK POSTURE-SPECIFIC ANALYSIS — FULL-BODY ASYMMETRY DETECTION:
+
+Head / Neck:
+- Forward head posture, head tilt left/right, head rotation left/right
+- Cervical side-bend compensation, chin translation
+- Asymmetrical ear height relative to shoulders
+
+Shoulders / Upper Quarter:
+- Shoulder height asymmetry (one elevated vs depressed)
+- Shoulder protraction asymmetry, clavicle angle asymmetry
+- Scapular elevation / downward rotation suspicion
+- Asymmetrical arm resting position
+
+Rib Cage / Thorax:
+- Trunk lean left/right, rib cage lateral shift
+- Thoracic side bend, thoracic rotation suspicion
+- Asymmetrical chest/torso alignment relative to pelvis
+
+Lumbar / Pelvis:
+- Pelvic tilt, pelvic obliquity (one hip higher)
+- Lateral pelvic shift, lumbar side bend
+- Lumbar extension/flexion bias
+- Asymmetrical weight distribution when seated
+
+CRITICAL FRONTAL-PLANE LOGIC:
+If left shoulder is visibly higher than right, DO NOT label only as "slouching."
+Instead generate:
+- "Left shoulder elevation detected"
+- Check for left upper trapezius / levator scapula overactivity
+- Check for contralateral trunk or pelvic compensation
+- Check for cervical side bend or rib cage shift
+- Evaluate head tilt direction, neck side-bend, trunk lean, rib cage shift, pelvic level
+- Determine whether gaze remains level through compensation
+
+COMPENSATION CHAIN EXAMPLES:
+- Left shoulder elevated → check left cervical shortening, right trunk lean, rib cage shift, pelvic obliquity, head tilt/rotation
+- Trunk shifts right + left shoulder elevated → identify as linked compensation, not separate findings
+- One hip higher + head level → infer compensatory spinal side-bending, flag low back compression
+
+Additional landmarks for desk posture: chin, ear_left, ear_right
+
+${LANDMARK_FORMAT}
 
 Return ONLY valid JSON (no markdown, no code fences) with this structure:
 {
-  "overall_score": <number 0-100>,
-  "area_scores": {
-    "head_neck": <number 0-100>,
-    "shoulders": <number 0-100>,
-    "thoracic": <number 0-100>,
-    "lumbar": <number 0-100>,
-    "pelvis": <number 0-100>
-  },
-  "frame_landmarks": [
-    {
-      "frame_index": <number>,
-      "landmarks": {
-        "head": {"x": <0-1>, "y": <0-1>},
-        "chin": {"x": <0-1>, "y": <0-1>},
-        "ear_left": {"x": <0-1>, "y": <0-1>},
-        "ear_right": {"x": <0-1>, "y": <0-1>},
-        "left_shoulder": {"x": <0-1>, "y": <0-1>},
-        "right_shoulder": {"x": <0-1>, "y": <0-1>},
-        "left_elbow": {"x": <0-1>, "y": <0-1>},
-        "right_elbow": {"x": <0-1>, "y": <0-1>},
-        "left_wrist": {"x": <0-1>, "y": <0-1>},
-        "right_wrist": {"x": <0-1>, "y": <0-1>},
-        "left_hip": {"x": <0-1>, "y": <0-1>},
-        "right_hip": {"x": <0-1>, "y": <0-1>},
-        "left_knee": {"x": <0-1>, "y": <0-1>},
-        "right_knee": {"x": <0-1>, "y": <0-1>},
-        "pelvis_center": {"x": <0-1>, "y": <0-1>},
-        "spine_mid": {"x": <0-1>, "y": <0-1>},
-        "spine_top": {"x": <0-1>, "y": <0-1>}
-      },
-      "joint_angles": {
-        "head_forward_angle": <degrees from vertical>,
-        "cervical_flexion": <degrees>,
-        "thoracic_flexion": <degrees>,
-        "shoulder_protraction": <degrees>,
-        "lumbar_flexion": <degrees>,
-        "pelvic_tilt_angle": <degrees>
-      },
-      "alignment_status": {
-        "head_neck": "<green|yellow|red>",
-        "shoulders": "<green|yellow|red>",
-        "thoracic": "<green|yellow|red>",
-        "lumbar": "<green|yellow|red>",
-        "pelvis": "<green|yellow|red>"
-      }
-    }
-  ],
-  "deviation_events": [
-    {
-      "frame_index": <number>,
-      "label": "<e.g. Forward Head Posture, Shoulder Rounding Detected, Excessive Thoracic Flexion>",
-      "severity": "<yellow|red>",
-      "body_area": "<head_neck|shoulders|thoracic|lumbar|pelvis>"
-    }
-  ],
+  "overall_score": <0-100>,
+  "area_scores": {"head_neck": <0-100>, "shoulders": <0-100>, "thoracic": <0-100>, "lumbar": <0-100>, "pelvis": <0-100>},
+  "frame_landmarks": [...],
+  "deviation_events": [...],
   "joint_measurements": {
-    "head_forward_angle": <degrees>,
-    "cervical_flexion": <degrees>,
+    "head_forward_angle": <degrees>, "cervical_flexion": <degrees>,
+    "head_tilt": "<neutral/left/right>", "head_tilt_degrees": <number>,
+    "head_rotation": "<neutral/left/right>", "head_rotation_degrees": <number>,
+    "cervical_side_bend": "<neutral/left/right>", "cervical_side_bend_degrees": <number>,
     "shoulder_protraction_degrees": <degrees>,
-    "shoulder_elevation": "<level/left_higher/right_higher>",
+    "shoulder_elevation": "<level/left_higher/right_higher>", "shoulder_elevation_degrees": <number>,
+    "clavicle_asymmetry": "<level/left_higher/right_higher>",
     "thoracic_kyphosis_angle": <degrees>,
+    "trunk_lean": "<neutral/left/right>", "trunk_lean_degrees": <number>,
+    "rib_cage_shift": "<neutral/left/right>",
+    "thoracic_rotation": "<neutral/left/right>",
     "lumbar_lordosis": "<excessive/normal/flat>",
-    "pelvic_tilt": "<anterior/posterior/neutral>",
-    "pelvic_tilt_degrees": <degrees>,
+    "lumbar_side_bend": "<neutral/left/right>",
+    "pelvic_tilt": "<anterior/posterior/neutral>", "pelvic_tilt_degrees": <degrees>,
+    "pelvic_obliquity": "<level/left_higher/right_higher>", "pelvic_obliquity_degrees": <number>,
+    "lateral_pelvic_shift": "<neutral/left/right>",
+    "weight_distribution": "<even/left-heavy/right-heavy>",
     "screen_distance_assessment": "<too_close/adequate/too_far>"
   },
   "posture_landmarks": {
-    "side_view": {
-      "ideal_plumb_line": "Ear -> Shoulder -> Hip aligned vertically when seated",
-      "user_deviations": [
-        {"landmark": "<ear/shoulder/hip>", "direction": "<forward/backward>", "offset_cm_approx": <number>}
-      ]
-    },
-    "front_view": {
-      "ideal_alignment": "Shoulders level, head centered",
-      "user_deviations": [
-        {"landmark": "<left_shoulder/right_shoulder/head>", "direction": "<higher/lower/tilted>", "offset_cm_approx": <number>}
-      ]
-    }
+    "side_view": {"ideal_plumb_line": "Ear -> Shoulder -> Hip aligned vertically when seated", "user_deviations": [{"landmark": "<name>", "direction": "<dir>", "offset_cm_approx": <n>}]},
+    "front_view": {"ideal_alignment": "Shoulders level, head centered, pelvis level", "user_deviations": [{"landmark": "<name>", "direction": "<dir>", "offset_cm_approx": <n>}]}
   },
-  "risk_flags": [
-    {"area": "<body area>", "severity": "<red|yellow|green>", "finding": "<brief description>"}
-  ],
-  "muscle_imbalances": [
-    {
-      "finding": "<e.g. Forward Head Posture, Rounded Shoulders>",
-      "overactive_tight": ["<muscle names>"],
-      "underactive_weak": ["<muscle names>"],
-      "possible_injuries": ["<injury risks>"]
-    }
-  ],
-  "corrective_suggestions": [
-    {"category": "exercise", "suggestion": "<e.g. Chin tuck exercises, 3x10 daily>"},
-    {"category": "mobility", "suggestion": "<e.g. Thoracic extension over foam roller, 2 min>"},
-    {"category": "activation", "suggestion": "<e.g. Scapular retraction holds, 3x15s>"},
-    {"category": "ergonomic", "suggestion": "<e.g. Monitor at eye level, arm rests at elbow height>"}
-  ],
+  "risk_flags": [{"area": "<body area>", "severity": "<red|yellow|green>", "finding": "<description>"}],
+  "muscle_imbalances": [{"finding": "<description>", "overactive_tight": ["<muscles>"], "underactive_weak": ["<muscles>"], "possible_injuries": ["<risks>"]}],
+  "compensation_chain": "<1-3 paragraph explanation of the domino effect>",
+  "symptom_correlation": [{"pattern": "<pattern>", "likely_symptom_areas": ["<areas>"], "explanation": "<reasoning>"}],
+  "corrective_priorities": [{"priority": <n>, "focus": "<focus>", "rationale": "<why>"}],
+  "plane_analysis": {"sagittal": {"detected": <bool>, "findings": [...]}, "frontal": {"detected": <bool>, "findings": [...]}, "transverse": {"detected": <bool>, "findings": [...]}},
+  "body_map": {"overloaded_tight": ["<regions>"], "underactive_weak": ["<regions>"], "symptom_risk": ["<regions>"]},
+  "confidence_notes": ["<notes>"],
+  "corrective_suggestions": [{"category": "<exercise|mobility|activation|ergonomic>", "suggestion": "<specific recommendation>"}],
   "posture_metrics": {
-    "head_forward_angle": {"value": <number>, "unit": "degrees", "normal_range": "0-5°", "status": "<green|yellow|red>"},
-    "shoulder_position": {"value": "<protracted/neutral/retracted>", "protraction_degrees": <number>, "status": "<green|yellow|red>"},
-    "thoracic_curve": {"value": <number>, "unit": "degrees", "normal_range": "20-45°", "status": "<green|yellow|red>"},
-    "pelvic_tilt": {"value": "<anterior/neutral/posterior>", "degrees": <number>, "status": "<green|yellow|red>"}
+    "head_forward_angle": {"value": <n>, "unit": "degrees", "normal_range": "0-5°", "status": "<green|yellow|red>"},
+    "shoulder_position": {"value": "<protracted/neutral/retracted>", "protraction_degrees": <n>, "status": "<green|yellow|red>"},
+    "shoulder_symmetry": {"value": "<level/left_higher/right_higher>", "difference_degrees": <n>, "status": "<green|yellow|red>"},
+    "thoracic_curve": {"value": <n>, "unit": "degrees", "normal_range": "20-45°", "status": "<green|yellow|red>"},
+    "trunk_alignment": {"value": "<centered/left_lean/right_lean>", "lean_degrees": <n>, "status": "<green|yellow|red>"},
+    "pelvic_tilt": {"value": "<anterior/neutral/posterior>", "degrees": <n>, "status": "<green|yellow|red>"},
+    "pelvic_symmetry": {"value": "<level/left_higher/right_higher>", "difference_degrees": <n>, "status": "<green|yellow|red>"}
   },
-  "findings_text": "<2-3 paragraph plain-language explanation of desk posture findings>",
+  "recommended_protocols": [{"title": "<name>", "purpose": "<why>", "duration_minutes": <n>, "exercises": ["<names>"]}],
+  "findings_text": "<2-4 paragraph plain-language explanation including compensation chain reasoning>",
   "recommended_categories": ["desk_reset", "quick_reset"],
   "recommended_target_areas": ["<target areas>"]
-}
+}`,
 
-Focus on: head forward posture, cervical flexion, shoulder rounding/protraction, thoracic kyphosis, lumbar support, pelvic tilt. Provide practical desk setup and corrective exercise suggestions.`,
+  running_form: `You are an expert running biomechanics analyst, physical therapist, and gait specialist AI for the Team Welly wellness platform.
 
-  running_form: `You are an expert running biomechanics analyst AI for the Team Welly wellness platform.
+You will receive frames from a user running (treadmill or outdoor). Analyze their running form as a repeating compensation pattern across the full kinetic chain.
 
-You will receive frames from a user running (treadmill or outdoor). Analyze their running form.
+${COMPENSATION_CHAIN_INSTRUCTIONS}
 
-For EACH frame provided, estimate the 2D positions (normalized 0-1, top-left origin) of these landmarks:
-head, left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist, left_hip, right_hip, left_knee, right_knee, left_ankle, right_ankle, left_foot, right_foot, pelvis_center, spine_mid, spine_top
+RUNNING-SPECIFIC ANALYSIS:
+Running is a series of single-leg landings and propulsion phases. For each side evaluate:
+- Loading acceptance, pelvic control, trunk control, push-off quality
+- Symmetry of arm-leg coordination
+- Whether one side collapses more, stays on ground longer, or produces less force
+
+Detect and score:
+- Cadence, stride symmetry, stance time asymmetry
+- Vertical oscillation, hip drop, contralateral pelvic drop
+- Trunk lean, arm swing asymmetry, cross-body arm swing
+- Head position, overstride suspicion
+- Foot strike pattern, knee drive symmetry, push-off symmetry
+- Pelvic rotation asymmetry, ankle stiffness / pronation suspicion
+- One-sided impact loading tendency
+
+RUNNING COMPENSATION-CHAIN REASONING:
+- If left hip drop during right stance → check right glute med, trunk compensation, arm swing asymmetry, head level through compensation
+- If low cadence + overstride → evaluate increased braking forces at knees, hips, low back, shins
+- If one arm swings differently → check trunk rotation asymmetry, pelvic rotation
+- If one side pushes off less → infer weakness/protective unloading through calf, glute, hamstring, foot
+
+Additional landmarks for running: left_foot, right_foot
+
+${LANDMARK_FORMAT}
+
+Also include for each frame: "gait_phase": "<stance_left|stance_right|flight|toe_off_left|toe_off_right|heel_strike_left|heel_strike_right>"
 
 Return ONLY valid JSON (no markdown, no code fences) with this structure:
 {
-  "overall_score": <number 0-100>,
-  "area_scores": {
-    "foot_strike": <number 0-100>,
-    "knee_mechanics": <number 0-100>,
-    "hip_stability": <number 0-100>,
-    "trunk_control": <number 0-100>,
-    "arm_mechanics": <number 0-100>,
-    "symmetry": <number 0-100>
-  },
-  "frame_landmarks": [
-    {
-      "frame_index": <number>,
-      "landmarks": {
-        "head": {"x": <0-1>, "y": <0-1>},
-        "left_shoulder": {"x": <0-1>, "y": <0-1>},
-        "right_shoulder": {"x": <0-1>, "y": <0-1>},
-        "left_elbow": {"x": <0-1>, "y": <0-1>},
-        "right_elbow": {"x": <0-1>, "y": <0-1>},
-        "left_wrist": {"x": <0-1>, "y": <0-1>},
-        "right_wrist": {"x": <0-1>, "y": <0-1>},
-        "left_hip": {"x": <0-1>, "y": <0-1>},
-        "right_hip": {"x": <0-1>, "y": <0-1>},
-        "left_knee": {"x": <0-1>, "y": <0-1>},
-        "right_knee": {"x": <0-1>, "y": <0-1>},
-        "left_ankle": {"x": <0-1>, "y": <0-1>},
-        "right_ankle": {"x": <0-1>, "y": <0-1>},
-        "left_foot": {"x": <0-1>, "y": <0-1>},
-        "right_foot": {"x": <0-1>, "y": <0-1>},
-        "pelvis_center": {"x": <0-1>, "y": <0-1>},
-        "spine_mid": {"x": <0-1>, "y": <0-1>},
-        "spine_top": {"x": <0-1>, "y": <0-1>}
-      },
-      "joint_angles": {
-        "left_knee_angle": <degrees>,
-        "right_knee_angle": <degrees>,
-        "left_hip_angle": <degrees>,
-        "right_hip_angle": <degrees>,
-        "trunk_lean": <degrees from vertical>,
-        "left_arm_swing": <degrees>,
-        "right_arm_swing": <degrees>
-      },
-      "alignment_status": {
-        "foot_strike": "<green|yellow|red>",
-        "knees": "<green|yellow|red>",
-        "hips": "<green|yellow|red>",
-        "trunk": "<green|yellow|red>",
-        "arms": "<green|yellow|red>"
-      },
-      "gait_phase": "<stance_left|stance_right|flight|toe_off_left|toe_off_right|heel_strike_left|heel_strike_right>"
-    }
-  ],
-  "deviation_events": [
-    {
-      "frame_index": <number>,
-      "label": "<e.g. Hip Drop Detected, Overstriding, Cross-Body Arm Swing>",
-      "severity": "<yellow|red>",
-      "body_area": "<foot|knees|hips|trunk|arms>"
-    }
-  ],
+  "overall_score": <0-100>,
+  "area_scores": {"foot_strike": <0-100>, "knee_mechanics": <0-100>, "hip_stability": <0-100>, "trunk_control": <0-100>, "arm_mechanics": <0-100>, "symmetry": <0-100>},
+  "frame_landmarks": [...],
+  "deviation_events": [...],
   "running_metrics": {
-    "stride_symmetry_percent": <number 0-100>,
-    "estimated_cadence": "<steps per minute estimate>",
-    "hip_drop_degrees": {"left": <number>, "right": <number>},
+    "stride_symmetry_percent": <0-100>, "estimated_cadence": "<spm>",
+    "hip_drop_degrees": {"left": <n>, "right": <n>},
     "foot_strike_type": "<heel/midfoot/forefoot>",
     "vertical_oscillation": "<low/moderate/excessive>",
-    "arm_swing_symmetry_percent": <number 0-100>,
-    "trunk_forward_lean": <degrees>,
-    "knee_drive": "<adequate/insufficient>",
-    "overstriding": <boolean>
+    "arm_swing_symmetry_percent": <0-100>,
+    "trunk_forward_lean": <degrees>, "knee_drive": "<adequate/insufficient>",
+    "overstriding": <boolean>,
+    "stance_time_asymmetry": "<even/left_longer/right_longer>",
+    "push_off_symmetry": "<even/left_weaker/right_weaker>",
+    "pelvic_rotation_asymmetry": "<even/left_greater/right_greater>"
   },
   "joint_measurements": {
-    "initial_contact_knee_angle": <degrees>,
-    "peak_knee_flexion_stance": <degrees>,
-    "hip_extension_at_toe_off": <degrees>,
-    "trunk_lean": <degrees>,
-    "arm_swing_range": <degrees>,
-    "contralateral_hip_drop": <degrees>
+    "initial_contact_knee_angle": <degrees>, "peak_knee_flexion_stance": <degrees>,
+    "hip_extension_at_toe_off": <degrees>, "trunk_lean": <degrees>,
+    "arm_swing_range": <degrees>, "contralateral_hip_drop": <degrees>,
+    "lateral_trunk_lean": "<none/left/right>", "lateral_trunk_lean_degrees": <number>
   },
-  "risk_flags": [
-    {"area": "<body area>", "severity": "<red|yellow|green>", "finding": "<brief description>"}
-  ],
-  "muscle_imbalances": [
-    {
-      "finding": "<e.g. Hip Drop, Overstriding, Cross-Body Arm Swing>",
-      "overactive_tight": ["<muscle names>"],
-      "underactive_weak": ["<muscle names>"],
-      "possible_injuries": ["<injury risks>"]
-    }
-  ],
-  "corrective_suggestions": [
-    {"category": "cadence", "suggestion": "<e.g. Increase cadence to 170-180 spm>"},
-    {"category": "strength", "suggestion": "<e.g. Single-leg glute bridges for hip stability>"},
-    {"category": "mobility", "suggestion": "<e.g. Hip flexor stretching post-run>"},
-    {"category": "form", "suggestion": "<e.g. Focus on landing under center of mass>"}
-  ],
-  "findings_text": "<2-3 paragraph plain-language explanation of running form findings>",
+  "posture_landmarks": {
+    "side_view": {"ideal_plumb_line": "...", "user_deviations": [{"landmark": "<name>", "direction": "<dir>", "offset_cm_approx": <n>}]},
+    "front_view": {"ideal_alignment": "...", "user_deviations": [{"landmark": "<name>", "direction": "<dir>", "offset_cm_approx": <n>}]}
+  },
+  "risk_flags": [{"area": "<body area>", "severity": "<red|yellow|green>", "finding": "<description>"}],
+  "muscle_imbalances": [{"finding": "<description>", "overactive_tight": ["<muscles>"], "underactive_weak": ["<muscles>"], "possible_injuries": ["<risks>"]}],
+  "compensation_chain": "<1-3 paragraph explanation>",
+  "symptom_correlation": [{"pattern": "<pattern>", "likely_symptom_areas": ["<areas>"], "explanation": "<reasoning>"}],
+  "corrective_priorities": [{"priority": <n>, "focus": "<focus>", "rationale": "<why>"}],
+  "plane_analysis": {"sagittal": {"detected": <bool>, "findings": [...]}, "frontal": {"detected": <bool>, "findings": [...]}, "transverse": {"detected": <bool>, "findings": [...]}},
+  "body_map": {"overloaded_tight": ["<regions>"], "underactive_weak": ["<regions>"], "symptom_risk": ["<regions>"]},
+  "confidence_notes": ["<notes>"],
+  "corrective_suggestions": [{"category": "<cadence|strength|mobility|form>", "suggestion": "<recommendation>"}],
+  "recommended_protocols": [{"title": "<name>", "purpose": "<why>", "duration_minutes": <n>, "exercises": ["<names>"]}],
+  "findings_text": "<2-4 paragraph plain-language explanation including compensation chain reasoning>",
   "recommended_categories": ["performance_program", "quick_reset"],
   "recommended_target_areas": ["<target areas>"]
-}
-
-Focus on: stride symmetry, hip drop (Trendelenburg), cadence, foot strike pattern, arm swing, vertical oscillation, trunk control, overstriding. Use running biomechanics principles.`,
+}`,
 };
 
 serve(async (req) => {
@@ -373,12 +332,11 @@ serve(async (req) => {
 
     const systemPrompt = ANALYSIS_PROMPTS[analysis_type] || ANALYSIS_PROMPTS.overhead_squat;
 
-    // Take up to 8 evenly-spaced frames for analysis (more for better overlay tracking)
     const maxFrames = analysis_type === "running_form" ? 10 : 8;
     const step = Math.max(1, Math.floor(frames.length / maxFrames));
     const selectedFrames = frames.filter((_: string, i: number) => i % step === 0).slice(0, maxFrames);
 
-    const imageContent = selectedFrames.map((frame: string, idx: number) => ({
+    const imageContent = selectedFrames.map((frame: string) => ({
       type: "image_url" as const,
       image_url: { url: frame.startsWith("data:") ? frame : `data:image/jpeg;base64,${frame}` },
     }));
@@ -402,7 +360,7 @@ serve(async (req) => {
           {
             role: "user",
             content: [
-              { type: "text", text: `Analyze these ${selectedFrames.length} sequential frames from a ${analysisLabels[analysis_type] || "movement assessment"}. The frames are in chronological order. For the frame_landmarks array, provide landmark data for each frame (frame_index 0 through ${selectedFrames.length - 1}).` },
+              { type: "text", text: `Analyze these ${selectedFrames.length} sequential frames from a ${analysisLabels[analysis_type] || "movement assessment"}. The frames are in chronological order. For the frame_landmarks array, provide landmark data for each frame (frame_index 0 through ${selectedFrames.length - 1}). IMPORTANT: Analyze the FULL body as an interconnected chain. Detect left-right asymmetries, compensation patterns, and domino effects. Do NOT reduce findings to simple labels like "slouching" — provide detailed compensation-chain reasoning.` },
               ...imageContent,
             ],
           },
@@ -413,14 +371,12 @@ serve(async (req) => {
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const errText = await response.text();
@@ -450,15 +406,9 @@ serve(async (req) => {
       };
     }
 
-    // Ensure frame_landmarks is always an array
-    if (!Array.isArray(analysisData.frame_landmarks)) {
-      analysisData.frame_landmarks = [];
-    }
-    if (!Array.isArray(analysisData.deviation_events)) {
-      analysisData.deviation_events = [];
-    }
+    if (!Array.isArray(analysisData.frame_landmarks)) analysisData.frame_landmarks = [];
+    if (!Array.isArray(analysisData.deviation_events)) analysisData.deviation_events = [];
 
-    // Include total frames info for replay
     analysisData.total_captured_frames = frames.length;
     analysisData.analyzed_frame_count = selectedFrames.length;
     analysisData.analysis_type = analysis_type;

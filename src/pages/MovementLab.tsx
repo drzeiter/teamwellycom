@@ -49,8 +49,9 @@ const ANALYSIS_CONFIG: Record<AnalysisType, {
 export default function MovementLab() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const filterType = searchParams.get("type") as AnalysisType | null;
   const [assessments, setAssessments] = useState<AssessmentData[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showCamera, setShowCamera] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<AnalysisType | null>(null);
   const [analyzing, setAnalyzing] = useState(false);

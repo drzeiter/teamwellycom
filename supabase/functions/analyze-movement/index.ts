@@ -54,7 +54,17 @@ REQUIRED OUTPUT SECTIONS (include ALL of these):
 
 const LANDMARK_FORMAT = `
 For EACH frame provided, estimate the 2D positions (as normalized 0-1 coordinates where 0,0 is top-left) of these landmarks:
-head, left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist, left_hip, right_hip, left_knee, right_knee, left_ankle, right_ankle, pelvis_center, spine_mid, spine_top
+head, nose_tip, left_ear, right_ear, left_eye, right_eye, left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist, left_hip, right_hip, left_knee, right_knee, left_ankle, right_ankle, pelvis_center, spine_mid, spine_top, sternum_estimate
+
+CRITICAL LANDMARK ACCURACY RULES:
+- "head" should be at the TOP of the cranium, not the face center.
+- "nose_tip" should be at the visible tip of the nose.
+- "left_ear" and "right_ear" should be placed at the TRAGUS (ear canal opening), not the top of the ear or the earlobe. On a front-facing view, ears appear at the sides of the head near the jawline.
+- "left_eye" and "right_eye" should be at the CENTER of each eye (pupil area).
+- "left_shoulder" and "right_shoulder" MUST be placed at the ACROMION / AC JOINT — the bony point at the very top-outer edge of the shoulder. NOT the deltoid bulk, NOT the neck-shoulder junction. This is the lateral-most point of the shoulder girdle.
+- "sternum_estimate" should be at the sternal notch (top of the breastbone, between the clavicles).
+- "pelvis_center" should be estimated at the midpoint between the two ASIS points (front of hip bones).
+- For FRONT-FACING / WEBCAM images: remember the image is MIRRORED. The user's anatomical LEFT appears on the RIGHT side of the image. Apply mirror correction internally before labeling.
 
 Return frame_landmarks as:
 "frame_landmarks": [

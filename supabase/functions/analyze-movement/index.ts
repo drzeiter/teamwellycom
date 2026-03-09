@@ -18,7 +18,7 @@ CRITICAL ANALYSIS PHILOSOPHY — Apply to ALL analyses:
    - Transverse plane (rotations, asymmetrical arm swing, pelvic rotation)
 5. NEVER reduce findings to only "slouching" or "poor form." Always detect left-right imbalances, regional compensation, and domino-effect posture chains.
 6. If one side appears elevated/shifted, automatically evaluate the ENTIRE chain: head tilt, neck side-bend, trunk lean, rib cage shift, pelvic level, weight distribution.
-7. Use cautious clinical language: "likely," "may be contributing," "possible compensation," "suggests," "often associated with."
+7. Use cautious language: "likely," "may be contributing," "possible," "suggests," "often associated with."
 
 REQUIRED OUTPUT SECTIONS (include ALL of these):
 
@@ -138,119 +138,190 @@ Return ONLY valid JSON (no markdown, no code fences) with this structure:
   "recommended_target_areas": ["<target_area values>"]
 }`,
 
-  desk_posture: `You are an expert posture analyst, physical therapist, and biomechanics specialist AI for the Team Welly wellness platform.
+  desk_posture: `You are an expert posture analyst and movement coach for the Team Welly wellness platform.
 
-You will receive frames from a user sitting at their desk. Analyze their seated posture as an interconnected compensation chain from head to pelvis.
+You will receive frames from a user sitting at their desk. Analyze their seated posture.
 
 ${COMPENSATION_CHAIN_INSTRUCTIONS}
 
-CRITICAL — ANTI-NEUTRAL-BIAS RULES (YOU MUST FOLLOW THESE):
+=== CAMERA MIRROR CORRECTION (CRITICAL) ===
 
-1. NEVER default to "neutral" unless you have mathematically confirmed alignment within thresholds below.
-2. You MUST estimate actual angles/degrees for every measurement. DO NOT skip angle estimation.
-3. "Neutral" is ONLY valid when ALL of these are true:
-   - head_tilt < 2°
-   - shoulder_height_difference < 2°
-   - trunk_lean < 2°
-   - pelvic_tilt < 2°
-   - clavicle_angle < 2°
-4. If ANY measurement is 2° or greater, you MUST report it as a deviation — NOT neutral.
-5. If the visual skeleton shows ANY visible asymmetry, you MUST flag it even at moderate confidence.
-6. NEVER use phrases like "remarkably well-aligned" or "perfect alignment" unless ALL angles are confirmed < 2°.
+Front-facing webcams produce MIRRORED images. The user's anatomical LEFT appears on the RIGHT side of the screen, and vice versa.
 
-REFERENCE AXIS ESTABLISHMENT:
-- Vertical axis: line connecting nose → sternum → navel/pelvis_center
-- Horizontal axis: perpendicular to vertical, aligned with camera frame
-- All tilt/lean measurements must be computed relative to these axes
-- Do NOT use face landmarks alone as the posture reference
+YOU MUST:
+1. Detect that the image is likely mirrored (front-facing webcam).
+2. Internally remap all landmarks so that "left" and "right" refer to the USER'S actual anatomical left and right — NOT screen left/right.
+3. ALL findings, labels, body_map regions, and recommendations MUST use the user's actual sides.
+4. Include "camera_mirrored": true in your output if you detect a mirrored view.
+5. Include "mirror_note": "Analysis corrected to your actual right/left sides" in confidence_notes.
 
-HEAD TILT DETECTION (MANDATORY):
-- Compare left_ear height vs right_ear height
-- Compute: head_tilt_angle = atan((left_ear_y - right_ear_y) / distance_between_ears)
-- Thresholds:
-  * 0-2° → neutral (ONLY if confirmed)
-  * 3-5° → mild tilt
-  * 6-10° → moderate tilt
-  * >10° → significant tilt
-- If ear heights differ by more than 2°, you MUST NOT report "neutral"
-- Cross-verify using: ear landmarks + eye landmarks + nose vertical alignment
-- If ANY two landmarks confirm tilt, result CANNOT be labeled neutral
+=== LANDMARK DETECTION & CONFIDENCE ===
 
-SHOULDER HEIGHT DETECTION (MANDATORY):
-- Compare left_shoulder landmark height vs right_shoulder landmark height
-- Compute shoulder_angle from horizontal
-- If difference > 2°: report "Shoulder asymmetry detected" with angle
-- Never report "level shoulders" unless difference < 2°
-- If asymmetry detected, also report likely associated structures: upper trapezius, levator scapulae, cervical stabilizers
+Required landmarks to detect and use:
+- nose_tip, left_eye, right_eye, left_ear, right_ear
+- chin (jaw midpoint)
+- left_shoulder, right_shoulder
+- sternum_estimate (upper chest center)
+- rib_cage_center_estimate
+- pelvis_center_estimate
+- left_hip, right_hip (if visible)
 
-CLAVICLE LINE ANALYSIS:
-- Draw horizontal line across both clavicle/shoulder landmarks
-- Calculate deviation angle from horizontal
-- If tilted > 2°: report "Shoulder girdle asymmetry"
+For EACH major region, assign a confidence level: "high", "moderate", or "low":
+"landmark_confidence": {
+  "head_face": "<high|moderate|low>",
+  "shoulders": "<high|moderate|low>",
+  "trunk_sternum": "<high|moderate|low>",
+  "pelvis_hips": "<high|moderate|low>"
+}
 
-TRUNK ALIGNMENT (MANDATORY):
-- Calculate trunk lean using line from sternum/spine_top → pelvis_center
-- Compare to vertical axis
-- If deviation > 2°: report trunk lean with direction and degrees
+RULES:
+- Head tilt MUST be cross-checked using ear height difference, eye line angle, AND nose-to-sternum vertical alignment. At least 2 must agree.
+- Shoulder symmetry must use true left/right shoulder points, NOT averaged torso corners.
+- If a landmark is hidden or low confidence, say so and reduce confidence — do NOT invent certainty.
+- Do NOT generate specific muscle claims for regions with "low" landmark confidence.
 
-AREA SCORING MUST REFLECT DEVIATION:
-- 0-2° deviation → score 85-100
-- 3-5° deviation → score 70-84
-- 6-10° deviation → score 50-69
-- >10° deviation → score < 50
-- Do NOT give high scores when visible tilt/asymmetry exists
+=== ANGLE MEASUREMENT (MANDATORY) ===
 
-DEBUG METRICS (MANDATORY — include in joint_measurements):
-You MUST include these calculated values so the system can verify detection:
-- "head_tilt_measured_angle": <actual computed degrees>
-- "shoulder_height_measured_angle": <actual computed degrees>
-- "trunk_lean_measured_angle": <actual computed degrees>
-- "clavicle_measured_angle": <actual computed degrees>
-- "pelvic_measured_angle": <actual computed degrees>
+Compute actual angles:
+- head_tilt_angle = atan((left_ear_y - right_ear_y) / ear_distance) — corrected for mirror
+- shoulder_angle = atan((left_shoulder_y - right_shoulder_y) / shoulder_distance)
+- clavicle_angle = same as shoulder line angle from horizontal
+- trunk_lean_angle = deviation of sternum→pelvis_center line from vertical
+- pelvic_angle = atan((left_hip_y - right_hip_y) / hip_distance) — only if hips visible
 
-DESK POSTURE-SPECIFIC ANALYSIS — FULL-BODY ASYMMETRY DETECTION:
+Thresholds:
+- 0-2° → neutral (ONLY if confirmed across multiple landmarks)
+- 3-5° → mild
+- 6-10° → moderate
+- >10° → significant
 
-Head / Neck:
-- Forward head posture, head tilt left/right, head rotation left/right
-- Cervical side-bend compensation, chin translation
-- Asymmetrical ear height relative to shoulders
+CRITICAL ANTI-NEUTRAL RULES:
+1. NEVER default to "neutral" unless ALL angles are confirmed < 2°.
+2. If ANY measurement >= 2°, report it as a deviation.
+3. If visual landmarks show ANY visible asymmetry, flag it even at moderate confidence.
+4. NEVER say "remarkably well-aligned" or "perfect alignment" unless ALL angles < 2°.
 
-Shoulders / Upper Quarter:
-- Shoulder height asymmetry (one elevated vs depressed)
-- Shoulder protraction asymmetry, clavicle angle asymmetry
-- Scapular elevation / downward rotation suspicion
-- Asymmetrical arm resting position
+=== TWO-LAYER EVIDENCE MODEL (CRITICAL) ===
 
-Rib Cage / Thorax:
-- Trunk lean left/right, rib cage lateral shift
-- Thoracic side bend, thoracic rotation suspicion
-- Asymmetrical chest/torso alignment relative to pelvis
+You MUST separate findings into two layers:
 
-Lumbar / Pelvis:
-- Pelvic tilt, pelvic obliquity (one hip higher)
-- Lateral pelvic shift, lumbar side bend
-- Lumbar extension/flexion bias
-- Asymmetrical weight distribution when seated
+LAYER 1 — "observed_findings": Direct observations from visible landmarks ONLY.
+These are things you can SEE: head tilt, shoulder height difference, forward head, trunk lean, rib cage shift.
 
-CRITICAL FRONTAL-PLANE LOGIC:
-If left shoulder is visibly higher than right, DO NOT label only as "slouching."
-Instead generate:
-- "Left shoulder elevation detected"
-- Check for left upper trapezius / levator scapula overactivity
-- Check for contralateral trunk or pelvic compensation
-- Check for cervical side bend or rib cage shift
-- Evaluate head tilt direction, neck side-bend, trunk lean, rib cage shift, pelvic level
-- Determine whether gaze remains level through compensation
+LAYER 2 — "possible_contributing_factors": Inferred biomechanical drivers.
+These are things you SUSPECT based on known compensation patterns: muscle overactivity, pelvic contributors, spinal compensation.
 
-COMPENSATION CHAIN EXAMPLES:
-- Left shoulder elevated → check left cervical shortening, right trunk lean, rib cage shift, pelvic obliquity, head tilt/rotation
-- Trunk shifts right + left shoulder elevated → identify as linked compensation, not separate findings
-- One hip higher + head level → infer compensatory spinal side-bending, flag low back compression
+RULES:
+- observed_findings must ONLY contain things directly visible in the camera view.
+- possible_contributing_factors uses cautious language: "may," "possible," "can sometimes relate to."
+- If the pelvis/hips are NOT clearly visible, do NOT state "your pelvis is tilted" — instead say "a subtle pelvic imbalance could contribute to this pattern, but cannot be confirmed from this view."
+- For muscles: only name specific muscles if landmark confidence is high AND the pattern clearly supports it. Otherwise use broader descriptions like "muscles on one side of the neck and shoulder may be working harder."
 
-FINDINGS TEXT RULES:
-- Replace vague language like "The user presents with remarkably well-aligned posture" with evidence-based statements
-- Example: "The analysis suggests a mild left head tilt of approximately 5°. The shoulders appear slightly asymmetric with the left shoulder elevated relative to the right. This may indicate uneven muscular engagement in the cervical and shoulder stabilizers."
-- Always state measured angles and directions
+=== PLAIN-LANGUAGE OUTPUT (MANDATORY) ===
+
+The findings_text and all user-facing labels MUST use simple, non-clinical language.
+
+Replace clinical terms with plain labels:
+- "pelvic obliquity" → "one hip may be sitting slightly higher"
+- "cervical side bend" → "head leaning to one side"
+- "clavicle asymmetry" → "shoulder line appears uneven"
+- "rib cage shift" → "upper body shifted slightly to one side"
+- "trunk lean" → "torso leaning to one side"
+- "lumbar side bend" → "low back leaning slightly"
+- "anterior pelvic tilt" → "pelvis tilting forward"
+- "thoracic kyphosis" → "upper back rounding"
+- "forward head posture" → "head sitting forward of shoulders"
+- "shoulder protraction" → "shoulders rounding forward"
+
+The findings_text MUST follow this exact structure:
+
+Paragraph 1 — "What we can clearly see": Only directly observed findings with approximate angles. Example: "Your head appears to lean slightly to the right (approximately 5°), and your right shoulder sits a bit higher than your left."
+
+Paragraph 2 — "What this pattern may mean": Interpretation in plain language. Example: "This can happen when muscles on one side of the neck and shoulder work harder to hold you upright. The body often compensates in multiple regions to keep your eyes level."
+
+Paragraph 3 — "Possible deeper contributors": Cautious inference. Example: "Sometimes this pattern is also related to uneven support lower down, such as a mild difference in hip level or seated weight shift. A standing or squat screen would help confirm this."
+
+Paragraph 4 — "What to focus on first": Actionable priorities. Example: "Start by releasing tension in the elevated shoulder side, then work on improving support through the opposite neck, shoulder, and core stabilizers."
+
+=== AREA SCORING ===
+Scores MUST reflect measured deviation:
+- 0-2° → 85-100
+- 3-5° → 70-84
+- 6-10° → 50-69
+- >10° → <50
+
+=== BODY MAP RULES (STRICT) ===
+
+Only include body_map regions when:
+1. There is a visible posture pattern supporting it
+2. The compensation chain logically supports it
+3. Side orientation (mirror-corrected) is confirmed
+4. Landmark confidence for that region is at least "moderate"
+
+Limit to the most relevant 2-4 regions per category. Do NOT clutter with many speculative regions.
+
+If confidence is moderate, prefix with "possible_" in the region name or add a note.
+
+=== JOINT MEASUREMENT LABELS ===
+
+In joint_measurements, include BOTH technical keys AND user-friendly display values:
+
+"joint_measurements": {
+  "head_tilt": "<neutral/left/right>",
+  "head_tilt_degrees": <number>,
+  "head_tilt_measured_angle": <actual computed degrees>,
+  "head_tilt_display": "<e.g. Head leaning slightly right (~5°)>",
+  "shoulder_elevation": "<level/left_higher/right_higher>",
+  "shoulder_elevation_degrees": <number>,
+  "shoulder_height_measured_angle": <actual computed degrees>,
+  "shoulder_elevation_display": "<e.g. Right shoulder slightly higher>",
+  "trunk_lean": "<neutral/left/right>",
+  "trunk_lean_degrees": <number>,
+  "trunk_lean_measured_angle": <actual computed degrees>,
+  "trunk_lean_display": "<e.g. Torso centered — no major lean>",
+  "clavicle_asymmetry": "<level/left_higher/right_higher>",
+  "clavicle_measured_angle": <actual computed degrees>,
+  "clavicle_display": "<e.g. Shoulder line appears slightly uneven>",
+  "pelvic_obliquity": "<level/left_higher/right_higher>",
+  "pelvic_obliquity_degrees": <number>,
+  "pelvic_measured_angle": <actual computed degrees>,
+  "pelvic_display": "<e.g. One hip may sit slightly higher — limited view>",
+  "head_forward_angle": <degrees>,
+  "cervical_flexion": <degrees>,
+  "head_rotation": "<neutral/left/right>",
+  "head_rotation_degrees": <number>,
+  "cervical_side_bend": "<neutral/left/right>",
+  "cervical_side_bend_degrees": <number>,
+  "shoulder_protraction_degrees": <degrees>,
+  "thoracic_kyphosis_angle": <degrees>,
+  "rib_cage_shift": "<neutral/left/right>",
+  "thoracic_rotation": "<neutral/left/right>",
+  "lumbar_lordosis": "<excessive/normal/flat>",
+  "lumbar_side_bend": "<neutral/left/right>",
+  "lateral_pelvic_shift": "<neutral/left/right>",
+  "weight_distribution": "<even/left-heavy/right-heavy>",
+  "screen_distance_assessment": "<too_close/adequate/too_far>"
+}
+
+=== OBSERVED VS INFERRED SECTIONS ===
+
+Include these two new top-level fields:
+
+"observed_findings": [
+  {"finding": "<plain-language observed finding>", "confidence": "<high|moderate>", "angle_degrees": <number or null>, "technical_term": "<optional clinical term>"}
+],
+"possible_contributing_factors": [
+  {"factor": "<plain-language possible driver>", "confidence": "<moderate|low>", "reasoning": "<brief explanation>", "confirmable_with": "<e.g. standing screen, squat screen>"}
+]
+
+=== OVERCONFIDENCE PREVENTION ===
+
+For muscle_imbalances:
+- Only list specific muscle names if landmark confidence is HIGH and the pattern clearly supports it.
+- Otherwise use broader descriptions: "muscles on the elevated shoulder side" instead of "right levator scapulae, right scalenes."
+- Include a "confidence" field: "high", "moderate", or "low" for each imbalance entry.
+
+"muscle_imbalances": [{"finding": "<description>", "overactive_tight": ["<muscles or broad descriptions>"], "underactive_weak": ["<muscles or broad descriptions>"], "possible_injuries": ["<risks>"], "confidence": "<high|moderate|low>"}],
 
 Additional landmarks for desk posture: chin, ear_left, ear_right
 
@@ -267,46 +338,26 @@ For each frame, also include alignment_reference_lines:
 Return ONLY valid JSON (no markdown, no code fences) with this structure:
 {
   "overall_score": <0-100>,
+  "camera_mirrored": <boolean>,
+  "landmark_confidence": {"head_face": "<high|moderate|low>", "shoulders": "<high|moderate|low>", "trunk_sternum": "<high|moderate|low>", "pelvis_hips": "<high|moderate|low>"},
   "area_scores": {"head_neck": <0-100>, "shoulders": <0-100>, "thoracic": <0-100>, "lumbar": <0-100>, "pelvis": <0-100>},
   "frame_landmarks": [...],
   "deviation_events": [...],
-  "joint_measurements": {
-    "head_forward_angle": <degrees>, "cervical_flexion": <degrees>,
-    "head_tilt": "<neutral/left/right>", "head_tilt_degrees": <number>,
-    "head_tilt_measured_angle": <actual computed degrees>,
-    "head_rotation": "<neutral/left/right>", "head_rotation_degrees": <number>,
-    "cervical_side_bend": "<neutral/left/right>", "cervical_side_bend_degrees": <number>,
-    "shoulder_protraction_degrees": <degrees>,
-    "shoulder_elevation": "<level/left_higher/right_higher>", "shoulder_elevation_degrees": <number>,
-    "shoulder_height_measured_angle": <actual computed degrees>,
-    "clavicle_asymmetry": "<level/left_higher/right_higher>",
-    "clavicle_measured_angle": <actual computed degrees>,
-    "thoracic_kyphosis_angle": <degrees>,
-    "trunk_lean": "<neutral/left/right>", "trunk_lean_degrees": <number>,
-    "trunk_lean_measured_angle": <actual computed degrees>,
-    "rib_cage_shift": "<neutral/left/right>",
-    "thoracic_rotation": "<neutral/left/right>",
-    "lumbar_lordosis": "<excessive/normal/flat>",
-    "lumbar_side_bend": "<neutral/left/right>",
-    "pelvic_tilt": "<anterior/posterior/neutral>", "pelvic_tilt_degrees": <degrees>,
-    "pelvic_obliquity": "<level/left_higher/right_higher>", "pelvic_obliquity_degrees": <number>,
-    "pelvic_measured_angle": <actual computed degrees>,
-    "lateral_pelvic_shift": "<neutral/left/right>",
-    "weight_distribution": "<even/left-heavy/right-heavy>",
-    "screen_distance_assessment": "<too_close/adequate/too_far>"
-  },
+  "observed_findings": [{"finding": "<plain text>", "confidence": "<high|moderate>", "angle_degrees": <number or null>, "technical_term": "<optional>"}],
+  "possible_contributing_factors": [{"factor": "<plain text>", "confidence": "<moderate|low>", "reasoning": "<brief>", "confirmable_with": "<e.g. standing screen>"}],
+  "joint_measurements": { ... as defined above ... },
   "posture_landmarks": {
     "side_view": {"ideal_plumb_line": "Ear -> Shoulder -> Hip aligned vertically when seated", "user_deviations": [{"landmark": "<name>", "direction": "<dir>", "offset_cm_approx": <n>}]},
     "front_view": {"ideal_alignment": "Shoulders level, head centered, pelvis level", "user_deviations": [{"landmark": "<name>", "direction": "<dir>", "offset_cm_approx": <n>}]}
   },
-  "risk_flags": [{"area": "<body area>", "severity": "<red|yellow|green>", "finding": "<description>"}],
-  "muscle_imbalances": [{"finding": "<description>", "overactive_tight": ["<muscles>"], "underactive_weak": ["<muscles>"], "possible_injuries": ["<risks>"]}],
-  "compensation_chain": "<1-3 paragraph explanation of the domino effect — MUST reference specific measured angles>",
+  "risk_flags": [{"area": "<body area>", "severity": "<red|yellow|green>", "finding": "<description in plain language>"}],
+  "muscle_imbalances": [{"finding": "<description>", "overactive_tight": ["<broad or specific>"], "underactive_weak": ["<broad or specific>"], "possible_injuries": ["<risks>"], "confidence": "<high|moderate|low>"}],
+  "compensation_chain": "<1-3 paragraph plain-language explanation of the domino effect>",
   "symptom_correlation": [{"pattern": "<pattern>", "likely_symptom_areas": ["<areas>"], "explanation": "<reasoning>"}],
-  "corrective_priorities": [{"priority": <n>, "focus": "<focus>", "rationale": "<why>"}],
+  "corrective_priorities": [{"priority": <n>, "focus": "<plain language>", "rationale": "<why>"}],
   "plane_analysis": {"sagittal": {"detected": <bool>, "findings": [...]}, "frontal": {"detected": <bool>, "findings": [...]}, "transverse": {"detected": <bool>, "findings": [...]}},
-  "body_map": {"overloaded_tight": ["<regions>"], "underactive_weak": ["<regions>"], "symptom_risk": ["<regions>"]},
-  "confidence_notes": ["<notes>"],
+  "body_map": {"overloaded_tight": ["<2-4 high-confidence regions only>"], "underactive_weak": ["<2-4 high-confidence regions only>"], "symptom_risk": ["<2-3 regions only>"]},
+  "confidence_notes": ["<notes including mirror_note>"],
   "corrective_suggestions": [{"category": "<exercise|mobility|activation|ergonomic>", "suggestion": "<specific recommendation>"}],
   "posture_metrics": {
     "head_forward_angle": {"value": <n>, "unit": "degrees", "normal_range": "0-5°", "status": "<green|yellow|red>"},
@@ -318,7 +369,7 @@ Return ONLY valid JSON (no markdown, no code fences) with this structure:
     "pelvic_symmetry": {"value": "<level/left_higher/right_higher>", "difference_degrees": <n>, "status": "<green|yellow|red>"}
   },
   "recommended_protocols": [{"title": "<name>", "purpose": "<why>", "duration_minutes": <n>, "exercises": ["<names>"]}],
-  "findings_text": "<2-4 paragraph plain-language explanation — MUST include specific measured angles and directions. NEVER say 'well-aligned' unless all angles < 2°>",
+  "findings_text": "<4 paragraph plain-language summary following the exact structure: What we see / What it may mean / Possible deeper contributors / What to focus on first>",
   "recommended_categories": ["desk_reset", "quick_reset"],
   "recommended_target_areas": ["<target areas>"]
 }`,
@@ -429,6 +480,10 @@ serve(async (req) => {
       running_form: "Running Form Assessment",
     };
 
+    const deskPostureExtra = analysis_type === "desk_posture"
+      ? ` CRITICAL FOR DESK POSTURE: 1) The webcam image is MIRRORED — the user's LEFT appears on screen-RIGHT. Correct all left/right references to the user's actual anatomy. 2) Compute actual angle measurements for head tilt (from ear heights), shoulder height (from shoulder landmarks), trunk lean (sternum-to-pelvis vs vertical), and clavicle line. 3) If ANY angle >= 2°, do NOT report neutral. 4) Separate findings into observed_findings (what you can see) and possible_contributing_factors (what you infer). 5) Use plain language — no clinical jargon in the main report. 6) Only include body_map regions with high confidence (2-4 per category max). 7) Do NOT over-specify muscles unless confidence is high — prefer broader descriptions.`
+      : "";
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -442,7 +497,7 @@ serve(async (req) => {
           {
             role: "user",
             content: [
-              { type: "text", text: `Analyze these ${selectedFrames.length} sequential frames from a ${analysisLabels[analysis_type] || "movement assessment"}. The frames are in chronological order. For the frame_landmarks array, provide landmark data for each frame (frame_index 0 through ${selectedFrames.length - 1}). IMPORTANT: Analyze the FULL body as an interconnected chain. Detect left-right asymmetries, compensation patterns, and domino effects. Do NOT reduce findings to simple labels like "slouching" — provide detailed compensation-chain reasoning.${analysis_type === "desk_posture" ? " CRITICAL FOR DESK POSTURE: You MUST compute actual angle measurements for head tilt, shoulder height, trunk lean, clavicle line, and pelvic level. If ANY angle is >= 2 degrees, do NOT report neutral. Compare ear heights, shoulder heights, and trunk alignment against vertical and horizontal reference axes. Include measured angles in joint_measurements (head_tilt_measured_angle, shoulder_height_measured_angle, trunk_lean_measured_angle, clavicle_measured_angle, pelvic_measured_angle). Do NOT over-smooth or average out visible asymmetry. If visual landmarks show one side higher or shifted, report the asymmetry with the estimated angle." : ""}` },
+              { type: "text", text: `Analyze these ${selectedFrames.length} sequential frames from a ${analysisLabels[analysis_type] || "movement assessment"}. The frames are in chronological order. For the frame_landmarks array, provide landmark data for each frame (frame_index 0 through ${selectedFrames.length - 1}). IMPORTANT: Analyze the FULL body as an interconnected chain. Detect left-right asymmetries, compensation patterns, and domino effects. Do NOT reduce findings to simple labels like "slouching" — provide detailed compensation-chain reasoning.${deskPostureExtra}` },
               ...imageContent,
             ],
           },

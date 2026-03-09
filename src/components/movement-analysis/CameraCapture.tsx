@@ -6,11 +6,21 @@ interface CameraCaptureProps {
   open: boolean;
   onClose: () => void;
   onCaptureComplete: (frames: string[], snapshot: string) => void;
+  analysisType?: string;
+  recordDuration?: number;
+  instructions?: string;
+  title?: string;
 }
 
-const RECORD_DURATION = 12; // seconds
-
-export default function CameraCapture({ open, onClose, onCaptureComplete }: CameraCaptureProps) {
+export default function CameraCapture({
+  open,
+  onClose,
+  onCaptureComplete,
+  analysisType = "overhead_squat",
+  recordDuration = 12,
+  instructions = "Stand 6–8 feet from the camera. Arms overhead, feet shoulder-width apart. Perform a full squat when recording starts.",
+  title = "Overhead Squat Assessment",
+}: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -101,22 +111,21 @@ export default function CameraCapture({ open, onClose, onCaptureComplete }: Came
       if (frame) framesRef.current.push(frame);
     }, 500);
 
-    // Stop after RECORD_DURATION seconds
+    // Stop after recordDuration seconds
     setTimeout(() => {
       if (intervalRef.current) clearInterval(intervalRef.current);
       setPhase("processing");
 
-      // Get snapshot (middle frame)
       const snapshot = framesRef.current[Math.floor(framesRef.current.length / 2)] || framesRef.current[0] || "";
       onCaptureComplete(framesRef.current, snapshot);
-    }, RECORD_DURATION * 1000);
+    }, recordDuration * 1000);
 
     // Update elapsed timer
     const elapsed_timer = setInterval(() => {
       setElapsed(prev => {
-        if (prev >= RECORD_DURATION) {
+        if (prev >= recordDuration) {
           clearInterval(elapsed_timer);
-          return RECORD_DURATION;
+          return recordDuration;
         }
         return prev + 1;
       });
@@ -132,7 +141,6 @@ export default function CameraCapture({ open, onClose, onCaptureComplete }: Came
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[60] bg-background flex flex-col"
     >
-      {/* Hidden canvas for frame capture */}
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Header */}
@@ -140,7 +148,7 @@ export default function CameraCapture({ open, onClose, onCaptureComplete }: Came
         <button onClick={onClose} className="p-2 rounded-full bg-secondary">
           <X className="w-5 h-5 text-foreground" />
         </button>
-        <h2 className="font-display font-bold text-foreground text-sm">Overhead Squat Assessment</h2>
+        <h2 className="font-display font-bold text-foreground text-sm">{title}</h2>
         <button onClick={flipCamera} className="p-2 rounded-full bg-secondary">
           <RotateCcw className="w-5 h-5 text-foreground" />
         </button>
@@ -162,7 +170,7 @@ export default function CameraCapture({ open, onClose, onCaptureComplete }: Came
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="border-2 border-primary/40 rounded-2xl w-[70%] h-[85%] flex items-end justify-center pb-6">
               <p className="text-primary/70 text-xs font-medium bg-background/60 px-3 py-1 rounded-full">
-                Position your full body in frame
+                Position yourself in frame
               </p>
             </div>
           </div>
@@ -201,11 +209,11 @@ export default function CameraCapture({ open, onClose, onCaptureComplete }: Came
               <motion.div
                 className="h-full bg-primary rounded-full"
                 initial={{ width: "0%" }}
-                animate={{ width: `${(elapsed / RECORD_DURATION) * 100}%` }}
+                animate={{ width: `${(elapsed / recordDuration) * 100}%` }}
                 transition={{ duration: 1, ease: "linear" }}
               />
             </div>
-            <span className="text-white text-xs font-mono">{elapsed}s/{RECORD_DURATION}s</span>
+            <span className="text-white text-xs font-mono">{elapsed}s/{recordDuration}s</span>
           </div>
         )}
 
@@ -236,9 +244,7 @@ export default function CameraCapture({ open, onClose, onCaptureComplete }: Came
       {phase === "setup" && !cameraError && (
         <div className="px-6 py-5 bg-card/80 backdrop-blur-sm safe-bottom">
           <div className="text-center mb-4">
-            <p className="text-muted-foreground text-xs">
-              Stand 6–8 feet from the camera. Arms overhead, feet shoulder-width apart. Perform a full squat when recording starts.
-            </p>
+            <p className="text-muted-foreground text-xs">{instructions}</p>
           </div>
           <button
             onClick={startCountdown}

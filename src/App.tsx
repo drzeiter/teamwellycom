@@ -19,6 +19,7 @@ import AccessDenied from "./pages/AccessDenied";
 import InviteAccept from "./pages/InviteAccept";
 import NotFound from "./pages/NotFound";
 import WellyAssistant from "./components/WellyAssistant";
+import MovementLab from "./pages/MovementLab";
 import logoSubmark from "@/assets/logo-submark.png";
 
 const queryClient = new QueryClient();

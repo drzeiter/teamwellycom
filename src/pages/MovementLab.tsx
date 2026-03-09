@@ -285,7 +285,8 @@ export default function MovementLab() {
               <p className="text-sm text-foreground font-medium mb-1">No assessments yet</p>
               <p className="text-xs text-muted-foreground">Choose an analysis tool above to start</p>
             </div>
-          )}
+          );
+          })()}
         </div>
       </div>
 

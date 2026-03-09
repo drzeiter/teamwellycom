@@ -227,16 +227,22 @@ export default function MovementLab() {
 
         {/* Assessment History */}
         <div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-3">Assessment History</p>
-          {loading ? (
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-3">
+            {filterType ? `${ANALYSIS_CONFIG[filterType].title} History` : "Assessment History"}
+          </p>
+          {(() => {
+            const filtered = filterType
+              ? assessments.filter(a => a.assessment_type === filterType)
+              : assessments;
+            return loading ? (
             <div className="glass rounded-xl p-4 text-center">
               <p className="text-xs text-muted-foreground">Loading...</p>
             </div>
-          ) : assessments.length > 0 ? (
+          ) : filtered.length > 0 ? (
             <div className="space-y-2">
-              {assessments.map((a, i) => {
+              {filtered.map((a, i) => {
                 const typeConfig = ANALYSIS_CONFIG[a.assessment_type as AnalysisType];
-                const prevScore = i < assessments.length - 1 ? assessments[i + 1]?.overall_score : null;
+                const prevScore = i < filtered.length - 1 ? filtered[i + 1]?.overall_score : null;
                 const diff = prevScore != null ? a.overall_score - prevScore : null;
                 return (
                   <motion.button

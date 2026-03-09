@@ -48,6 +48,12 @@ const MEASUREMENT_CONFIG: Record<string, { label: string; unit?: string; desc?: 
   overstriding: { label: "Overstriding" },
   contralateral_hip_drop: { label: "Hip Drop", unit: "°" },
   asymmetric_hip_drive: { label: "Asymmetric Hip Drive" },
+  // Debug / measured angle fields
+  head_tilt_measured_angle: { label: "Head Tilt (measured)", unit: "°", desc: "Computed from ear heights" },
+  shoulder_height_measured_angle: { label: "Shoulder Diff (measured)", unit: "°", desc: "Computed from shoulder heights" },
+  trunk_lean_measured_angle: { label: "Trunk Lean (measured)", unit: "°", desc: "Computed from spine vertical" },
+  clavicle_measured_angle: { label: "Clavicle Angle (measured)", unit: "°", desc: "Computed from clavicle line" },
+  pelvic_measured_angle: { label: "Pelvic Angle (measured)", unit: "°", desc: "Computed from hip heights" },
 };
 
 // Keys to skip (sub-values already shown by parent)

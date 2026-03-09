@@ -274,6 +274,70 @@ ${findings_text || "No findings available."}
         symptomRisk={bodyMap.symptom_risk || []}
       />
 
+      {/* === SECTION 6b: Muscle Imbalances (Standard View) === */}
+      {muscleImbalances.length > 0 && (
+        <div className="glass rounded-xl p-4">
+          <h3 className="font-display font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-primary" /> Muscle Balance
+          </h3>
+          <div className="space-y-3">
+            {muscleImbalances.map((imb, i) => (
+              <div key={i} className="bg-secondary/50 rounded-lg p-3 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-yellow-400" />
+                  <p className="text-xs font-bold text-foreground flex-1">{imb.finding}</p>
+                  {imb.confidence && (
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${imb.confidence === "high" ? "bg-emerald-500/15 text-emerald-400" : imb.confidence === "moderate" ? "bg-yellow-400/15 text-yellow-400" : "bg-muted text-muted-foreground"}`}>
+                      {imb.confidence}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-md p-2.5">
+                    <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider mb-1">Likely Overworked / Tight</p>
+                    <p className="text-xs text-foreground">{imb.overactive_tight.join(", ")}</p>
+                  </div>
+                  <div className="bg-primary/10 border border-primary/20 rounded-md p-2.5">
+                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">Likely Weak / Under-Supporting</p>
+                    <p className="text-xs text-foreground">{imb.underactive_weak.join(", ")}</p>
+                  </div>
+                  {imb.possible_injuries.length > 0 && (
+                    <div className="bg-yellow-400/10 border border-yellow-400/20 rounded-md p-2.5">
+                      <p className="text-[10px] font-semibold text-yellow-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                        <ShieldAlert className="w-3 h-3" /> Risk Areas / Potential Injuries
+                      </p>
+                      <p className="text-xs text-foreground">{imb.possible_injuries.join(", ")}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* === SECTION 6c: Symptom Correlation (Standard View) === */}
+      {symptomCorrelation.length > 0 && (
+        <div className="glass rounded-xl p-4">
+          <h3 className="font-display font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-yellow-400" /> Potential Risk & Symptom Areas
+          </h3>
+          <div className="space-y-3">
+            {symptomCorrelation.map((s, i) => (
+              <div key={i} className="bg-yellow-400/5 border border-yellow-400/15 rounded-lg p-3">
+                <p className="text-xs font-semibold text-foreground mb-1">{s.pattern}</p>
+                <div className="flex flex-wrap gap-1.5 mb-1.5">
+                  {s.likely_symptom_areas.map((area, j) => (
+                    <span key={j} className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-400/15 text-yellow-400 font-medium">{area}</span>
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground">{s.explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* === SECTION 7: Corrective Priorities === */}
       {correctivePriorities.length > 0 && (
         <div className="glass rounded-xl p-4">

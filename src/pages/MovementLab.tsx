@@ -51,6 +51,7 @@ export default function MovementLab() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const filterType = searchParams.get("type") as AnalysisType | null;
+  const [loading, setLoading] = useState(true);
   const [assessments, setAssessments] = useState<AssessmentData[]>([]);
   const [showCamera, setShowCamera] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<AnalysisType | null>(null);

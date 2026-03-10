@@ -286,7 +286,7 @@ const ExercisePlayer = () => {
   const isLowTime = timeLeft <= 5 && timeLeft > 0;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col safe-top">
       {/* XP Popup */}
       <AnimatePresence>
         {exerciseXP > 0 && (

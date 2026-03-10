@@ -55,7 +55,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden safe-top">
       {/* Gradient background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/5" />

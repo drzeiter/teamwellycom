@@ -101,7 +101,7 @@ const ExerciseDetail = () => {
   const tags = exercise.tags || [];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background safe-top">
       {/* Header */}
       <div className="sticky top-0 z-30 glass-strong">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">

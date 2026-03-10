@@ -250,7 +250,7 @@ export default function MyPlan() {
         onClick={handleOpenMovementPicker}
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="fixed bottom-20 left-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full gradient-primary text-primary-foreground font-semibold text-sm shadow-lg active:scale-95 transition-transform"
+        className="fixed bottom-[5.5rem] left-4 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full gradient-primary text-primary-foreground font-semibold text-sm shadow-lg active:scale-95 transition-transform"
       >
         <Plus className="w-4 h-4" />
         Schedule a Movement

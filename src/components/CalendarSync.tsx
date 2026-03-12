@@ -74,7 +74,7 @@ const CalendarSync = () => {
       });
     }
 
-    // Add to calendar
+    // Add to calendar (native on mobile, web fallback otherwise)
     const provider = selectedProvider || "apple";
     const data: CalendarEventData = {
       title: activeRoutine.name,
@@ -83,7 +83,12 @@ const CalendarSync = () => {
       startDate: scheduledAt,
       url: "https://teamwelly.com",
     };
-    addToCalendar(provider, data);
+    const success = await addToCalendar(provider, data);
+    if (!success) {
+      toast({ title: "Calendar permission denied", description: "Please allow calendar access in your device settings.", variant: "destructive" });
+      setSaving(false);
+      return;
+    }
 
     toast({
       title: "Added to calendar! ✅",

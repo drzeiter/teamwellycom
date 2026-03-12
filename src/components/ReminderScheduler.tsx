@@ -61,7 +61,12 @@ export default function ReminderScheduler() {
       startDate: scheduledAt,
       url: "https://teamwelly.com",
     };
-    addToCalendar(provider, eventData);
+    const success = await addToCalendar(provider, eventData);
+    if (!success) {
+      toast({ title: "Calendar permission denied", description: "Please allow calendar access in your device settings.", variant: "destructive" });
+      setSaving(false);
+      return;
+    }
 
     toast({
       title: "Reminder scheduled! ✅",

@@ -111,7 +111,28 @@ export function openOutlookCalendar(data: CalendarEventData) {
 
 export type CalendarProvider = "google" | "apple" | "outlook";
 
-export function addToCalendar(provider: CalendarProvider, data: CalendarEventData) {
+export async function addToCalendar(provider: CalendarProvider, data: CalendarEventData): Promise<boolean> {
+  // On native Capacitor platforms, use the native calendar API (EventKit / CalendarProvider)
+  const { isNativePlatform, addEventToNativeCalendar } = await import("@/utils/nativeCalendar");
+
+  if (isNativePlatform()) {
+    const { start, end } = getStartEnd(data);
+    let notes = data.description || "Time for your wellness routine!";
+    if (data.url) {
+      notes += `\n\n🔗 Open your program: ${data.url}`;
+    }
+    const result = await addEventToNativeCalendar({
+      title: `${data.title} - TeamWelly`,
+      location: "Team Welly",
+      notes,
+      startDate: start,
+      endDate: end,
+      url: data.url,
+    });
+    return result.success;
+  }
+
+  // Web fallback
   switch (provider) {
     case "google":
       openGoogleCalendar(data);
@@ -124,4 +145,5 @@ export function addToCalendar(provider: CalendarProvider, data: CalendarEventDat
       downloadICS(data);
       break;
   }
+  return true;
 }

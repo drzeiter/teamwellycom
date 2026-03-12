@@ -1,6 +1,9 @@
 /**
  * Native calendar integration via Capacitor Calendar plugin.
  * Uses @ebarooni/capacitor-calendar for EventKit (iOS) and CalendarProvider (Android).
+ *
+ * iOS 17+ flow: request write-only access first (NSCalendarsWriteOnlyAccessUsageDescription).
+ * Fallback to full access if write-only is unavailable.
  */
 
 import { Capacitor } from "@capacitor/core";
@@ -25,15 +28,33 @@ export function isNativePlatform(): boolean {
 
 /**
  * Request calendar permission.
- * Tries requestFullCalendarAccess() first; falls back to requestWriteOnlyCalendarAccess() on iOS.
+ * iOS 17+: tries requestWriteOnlyCalendarAccess() first (requires NSCalendarsWriteOnlyAccessUsageDescription).
+ * Falls back to requestFullCalendarAccess() if write-only is not available.
  * Returns true if permission was granted.
  */
 export async function requestCalendarPermission(): Promise<boolean> {
   try {
     const Calendar = await getCalendarPlugin();
 
-    console.log("[NativeCalendar] Requesting full calendar access…");
+    console.log("[NativeCalendar] starting calendar permission");
+
+    // iOS 17+: write-only access first
     try {
+      console.log("[NativeCalendar] Requesting write-only calendar access (iOS 17+ preferred)…");
+      const writeResult = await Calendar.requestWriteOnlyCalendarAccess();
+      console.log("[NativeCalendar] Write-only access result:", JSON.stringify(writeResult));
+      const writeStatus = writeResult?.result ?? writeResult?.writeCalendar ?? writeResult;
+      if (writeStatus === "granted" || writeStatus === true) {
+        console.log("[NativeCalendar] Write-only access GRANTED");
+        return true;
+      }
+    } catch (writeErr) {
+      console.warn("[NativeCalendar] requestWriteOnlyCalendarAccess not available, trying full access:", writeErr);
+    }
+
+    // Fallback: full access (pre-iOS 17 or Android)
+    try {
+      console.log("[NativeCalendar] Requesting full calendar access (fallback)…");
       const fullResult = await Calendar.requestFullCalendarAccess();
       console.log("[NativeCalendar] Full access result:", JSON.stringify(fullResult));
       const fullStatus = fullResult?.result ?? fullResult?.display ?? fullResult;
@@ -42,17 +63,7 @@ export async function requestCalendarPermission(): Promise<boolean> {
         return true;
       }
     } catch (fullErr) {
-      console.warn("[NativeCalendar] requestFullCalendarAccess failed, trying write-only:", fullErr);
-    }
-
-    // Fallback: write-only (sufficient for creating events on iOS)
-    console.log("[NativeCalendar] Requesting write-only calendar access…");
-    const writeResult = await Calendar.requestWriteOnlyCalendarAccess();
-    console.log("[NativeCalendar] Write-only access result:", JSON.stringify(writeResult));
-    const writeStatus = writeResult?.result ?? writeResult?.writeCalendar ?? writeResult;
-    if (writeStatus === "granted" || writeStatus === true) {
-      console.log("[NativeCalendar] Write-only access GRANTED");
-      return true;
+      console.error("[NativeCalendar] requestFullCalendarAccess also failed:", fullErr);
     }
 
     console.warn("[NativeCalendar] Calendar permission DENIED");
@@ -81,7 +92,7 @@ export async function createNativeCalendarEvent(event: NativeCalendarEvent): Pro
   try {
     const Calendar = await getCalendarPlugin();
 
-    console.log("[NativeCalendar] Creating event with prompt…", {
+    console.log("[NativeCalendar] creating event", {
       title: event.title,
       location: event.location,
       startDate: event.startDate.toISOString(),
@@ -102,7 +113,7 @@ export async function createNativeCalendarEvent(event: NativeCalendarEvent): Pro
     console.log("[NativeCalendar] Event created successfully, id:", eventId);
     return eventId;
   } catch (err) {
-    console.error("[NativeCalendar] Failed to create event:", err);
+    console.error("[NativeCalendar] Failed to create event — exact error:", err);
     return null;
   }
 }

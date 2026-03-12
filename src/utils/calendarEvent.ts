@@ -113,26 +113,38 @@ export type CalendarProvider = "google" | "apple" | "outlook";
 
 export async function addToCalendar(provider: CalendarProvider, data: CalendarEventData): Promise<boolean> {
   // On native Capacitor platforms, use the native calendar API (EventKit / CalendarProvider)
-  const { isNativePlatform, addEventToNativeCalendar } = await import("@/utils/nativeCalendar");
+  const { isNativePlatform, requestCalendarPermission, createNativeCalendarEvent } = await import("@/utils/nativeCalendar");
 
   if (isNativePlatform()) {
-    const { start, end } = getStartEnd(data);
-    let notes = data.description || "Time for your wellness routine!";
-    if (data.url) {
-      notes += `\n\n🔗 Open your program: ${data.url}`;
+    console.log("[CalendarEvent] Native platform detected — using Capacitor calendar plugin");
+
+    // Use provided dates or default test event (5 min from now, 1 hour duration)
+    const start = data.startDate ?? new Date(Date.now() + 5 * 60 * 1000);
+    const end = new Date(start.getTime() + (data.durationMinutes || 60) * 60 * 1000);
+
+    console.log("[CalendarEvent] Requesting calendar permission…");
+    const granted = await requestCalendarPermission();
+    console.log("[CalendarEvent] Permission granted:", granted);
+
+    if (!granted) {
+      return false;
     }
-    const result = await addEventToNativeCalendar({
-      title: `${data.title} - TeamWelly`,
+
+    const eventId = await createNativeCalendarEvent({
+      title: data.title || "Team Welly Recovery Session",
       location: "Team Welly",
-      notes,
+      notes: data.description || "Mobility and recovery session",
       startDate: start,
       endDate: end,
       url: data.url,
     });
-    return result.success;
+
+    console.log("[CalendarEvent] Native event result:", eventId);
+    return eventId !== null;
   }
 
-  // Web fallback
+  // Web fallback — only used on non-native platforms
+  console.log("[CalendarEvent] Web platform — using browser fallback");
   switch (provider) {
     case "google":
       openGoogleCalendar(data);

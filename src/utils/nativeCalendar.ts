@@ -24,17 +24,39 @@ export function isNativePlatform(): boolean {
 }
 
 /**
- * Request write-only calendar permission (triggers the native iOS/Android popup).
+ * Request calendar permission.
+ * Tries requestFullCalendarAccess() first; falls back to requestWriteOnlyCalendarAccess() on iOS.
  * Returns true if permission was granted.
  */
 export async function requestCalendarPermission(): Promise<boolean> {
   try {
     const Calendar = await getCalendarPlugin();
-    // requestWriteOnlyCalendarAccess is sufficient for creating events
-    const result = await Calendar.requestWriteOnlyCalendarAccess();
-    // The result contains the permission status
-    const status = result?.result ?? result?.writeCalendar ?? result;
-    return status === "granted" || status === true;
+
+    console.log("[NativeCalendar] Requesting full calendar access…");
+    try {
+      const fullResult = await Calendar.requestFullCalendarAccess();
+      console.log("[NativeCalendar] Full access result:", JSON.stringify(fullResult));
+      const fullStatus = fullResult?.result ?? fullResult?.display ?? fullResult;
+      if (fullStatus === "granted" || fullStatus === true) {
+        console.log("[NativeCalendar] Full access GRANTED");
+        return true;
+      }
+    } catch (fullErr) {
+      console.warn("[NativeCalendar] requestFullCalendarAccess failed, trying write-only:", fullErr);
+    }
+
+    // Fallback: write-only (sufficient for creating events on iOS)
+    console.log("[NativeCalendar] Requesting write-only calendar access…");
+    const writeResult = await Calendar.requestWriteOnlyCalendarAccess();
+    console.log("[NativeCalendar] Write-only access result:", JSON.stringify(writeResult));
+    const writeStatus = writeResult?.result ?? writeResult?.writeCalendar ?? writeResult;
+    if (writeStatus === "granted" || writeStatus === true) {
+      console.log("[NativeCalendar] Write-only access GRANTED");
+      return true;
+    }
+
+    console.warn("[NativeCalendar] Calendar permission DENIED");
+    return false;
   } catch (err) {
     console.error("[NativeCalendar] Permission request failed:", err);
     return false;
@@ -51,29 +73,34 @@ export interface NativeCalendarEvent {
 }
 
 /**
- * Create an event in the device's native calendar using EventKit (iOS) / CalendarProvider (Android).
- * Returns the event ID on success, or null on failure.
+ * Create an event using the native calendar prompt UI (createEventWithPrompt).
+ * This shows the native iOS/Android event-creation dialog so the user can confirm.
+ * Returns the event identifiers on success, or null on failure.
  */
 export async function createNativeCalendarEvent(event: NativeCalendarEvent): Promise<string | null> {
   try {
     const Calendar = await getCalendarPlugin();
 
-    // Build description with deep-link URL if provided
-    let description = event.notes || "";
-    if (event.url) {
-      description += `\n\n🔗 Open your program: ${event.url}`;
-    }
-
-    const result = await Calendar.createEvent({
+    console.log("[NativeCalendar] Creating event with prompt…", {
       title: event.title,
       location: event.location,
+      startDate: event.startDate.toISOString(),
+      endDate: event.endDate.toISOString(),
+    });
+
+    const result = await Calendar.createEventWithPrompt({
+      title: event.title,
+      location: event.location,
+      notes: event.notes || "",
       startDate: event.startDate.getTime(),
       endDate: event.endDate.getTime(),
       isAllDay: false,
     });
 
-    console.log("[NativeCalendar] Event created:", result);
-    return result?.id ?? result?.result ?? null;
+    console.log("[NativeCalendar] createEventWithPrompt result:", JSON.stringify(result));
+    const eventId = result?.result?.[0] ?? result?.id ?? null;
+    console.log("[NativeCalendar] Event created successfully, id:", eventId);
+    return eventId;
   } catch (err) {
     console.error("[NativeCalendar] Failed to create event:", err);
     return null;

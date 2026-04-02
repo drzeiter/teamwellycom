@@ -346,11 +346,13 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
             <h3 className="font-display text-sm font-bold text-foreground">Upcoming</h3>
           </div>
           <div className="space-y-2">
-            {groupedTasks.map(task => (
+            {groupedTasks.map(({ task, count }) => (
               <div key={task.id} className="glass rounded-xl p-3.5 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg gradient-primary flex items-center justify-center text-sm shrink-0">📅</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {count > 1 ? `${count} Movements Scheduled` : task.title}
+                  </p>
                   <p className="text-xs text-muted-foreground">{format(new Date(task.scheduled_at), "MMM d, h:mm a")} · {task.duration_minutes}m</p>
                 </div>
                 {task.program_id && (

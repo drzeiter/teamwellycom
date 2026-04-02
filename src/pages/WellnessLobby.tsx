@@ -69,7 +69,7 @@ const WellnessLobby = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "today":
-        return <TodayTab firstName={firstName} points={points} programs={quickContent} navigate={navigate} progressHistory={progressHistory} setActiveTab={setActiveTab} />;
+        return <TodayTab firstName={firstName} points={points} programs={quickContent} navigate={navigate} progressHistory={progressHistory} setActiveTab={setActiveTab} scanCount={scanCount} />;
       case "programs":
         return <ProgramsTab programs={twelveWeekPrograms} navigate={navigate} />;
       case "resets":

@@ -21,7 +21,7 @@ const AnimatedCounter = ({ target }: { target: number }) => {
   return <>{display}</>;
 };
 
-const WellyScoreRing = ({ score, message }: WellyScoreRingProps) => {
+const WellyScoreRing = ({ score, message, onInfoTap }: WellyScoreRingProps) => {
   const size = 180;
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;

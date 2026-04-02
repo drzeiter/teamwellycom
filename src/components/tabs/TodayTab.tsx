@@ -212,10 +212,10 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
           <h1 className="font-display text-2xl font-bold text-foreground">Hey, {firstName} 👋</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{dailyMessage}</p>
         </div>
-        <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary">
+        <button onClick={() => setActiveTab("profile")} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary active:scale-95 transition-transform">
           <Zap className="w-3.5 h-3.5 text-primary" />
           <span className="text-xs font-bold text-foreground">{points.total_points}</span>
-        </div>
+        </button>
       </motion.div>
 
       {/* ─── Section 2: Welly Score Ring ─── */}

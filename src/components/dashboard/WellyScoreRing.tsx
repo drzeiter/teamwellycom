@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 interface WellyScoreRingProps {
   score: number;
   message: string;
+  onInfoTap?: () => void;
 }
 
 const AnimatedCounter = ({ target }: { target: number }) => {

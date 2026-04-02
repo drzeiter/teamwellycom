@@ -66,15 +66,12 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     return DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
   }, []);
 
-  // Welly Score calculation
+  // Welly Score = today's completion percentage (0–100)
   const wellyScore = useMemo(() => {
+    const totalPlan = TODAY_PLAN.length; // 3 daily items
     const todayCompleted = progressHistory.filter(p => isToday(new Date(p.completed_at))).length;
-    const movementScore = Math.min(todayCompleted * 15, 40); // 40% weight
-    const streakScore = Math.min(points.current_streak * 5, 30); // 30% weight
-    const programScore = Math.min(progressHistory.length * 2, 20); // 20% weight
-    const scanScore = 10; // 10% base (placeholder)
-    return Math.min(movementScore + streakScore + programScore + scanScore, 100);
-  }, [progressHistory, points.current_streak]);
+    return Math.min(Math.round((todayCompleted / totalPlan) * 100), 100);
+  }, [progressHistory]);
 
   const scoreMessage = useMemo(() => {
     if (wellyScore >= 80) return "You're staying consistent this week. Keep it up! 🎉";

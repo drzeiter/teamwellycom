@@ -210,9 +210,9 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
                     status === "completed"
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      ? "bg-wellness-green/20 text-wellness-green border border-wellness-green/30"
                       : status === "partial"
-                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                      ? "bg-wellness-gold/20 text-wellness-gold border border-wellness-gold/30"
                       : "bg-secondary text-muted-foreground border border-border/50"
                   } ${isCurrentDay ? "ring-2 ring-primary/40" : ""}`}
                 >

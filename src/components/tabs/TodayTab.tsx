@@ -404,6 +404,34 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
         )}
       </AnimatePresence>
 
+      {/* ─── Score Info Modal ─── */}
+      <AnimatePresence>
+        {showScoreInfo && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setShowScoreInfo(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={e => e.stopPropagation()} className="w-full max-w-sm glass-strong rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-lg font-bold text-foreground">Understanding Your Stats</h3>
+                <button onClick={() => setShowScoreInfo(false)} className="p-1 rounded-full bg-secondary"><X className="w-4 h-4 text-muted-foreground" /></button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-semibold text-primary mb-1">🎯 Welly Score</p>
+                  <p className="text-xs text-muted-foreground">Measures your daily movement consistency. Complete sessions, maintain streaks, follow programs, and do scans to improve it.</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-primary mb-1">⚡ Lifetime Points</p>
+                  <p className="text-xs text-muted-foreground">Tracks all completed sessions and activities over time. Points accumulate and never reset.</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-primary mb-1">🔥 Streak</p>
+                  <p className="text-xs text-muted-foreground">Tracks consecutive days of movement. Keep moving daily to grow your streak!</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ─── Schedule Bottom Sheet ─── */}
       <ScheduleBottomSheet
         open={showScheduler}

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { LogOut, Zap, Flame, ExternalLink, Calendar, Bell } from "lucide-react";
+import { LogOut, Zap, Flame, ExternalLink, Calendar, Bell, TrendingUp, Target, Scan, CalendarCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import CalendarSync from "@/components/CalendarSync";
 import logoWhite from "@/assets/logo-white.png";
@@ -20,15 +20,18 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
     { label: "Evening Wind Down", time: "6:00 PM", emoji: "🌙" },
   ];
 
+  const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+  const fadeUp = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } };
+
   return (
-    <div className="pt-6 px-5 space-y-6">
-      <div className="flex items-center gap-3">
+    <motion.div className="pt-6 px-5 space-y-6 pb-4" variants={stagger} initial="hidden" animate="show">
+      <motion.div variants={fadeUp} className="flex items-center gap-3">
         <img src={logoWhite} alt="" className="h-7 w-auto" />
         <h1 className="font-display text-xl font-bold text-foreground">Profile</h1>
-      </div>
+      </motion.div>
 
       {/* User Card */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-5">
+      <motion.div variants={fadeUp} className="glass rounded-2xl p-5">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-14 h-14 rounded-full gradient-primary flex items-center justify-center text-2xl font-bold text-primary-foreground">
             {displayName ? displayName[0].toUpperCase() : "W"}
@@ -38,8 +41,6 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
             <p className="text-xs text-muted-foreground">{user?.email}</p>
           </div>
         </div>
-
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-secondary/50 rounded-xl p-3 text-center">
             <Zap className="w-4 h-4 text-primary mx-auto mb-1" />
@@ -59,8 +60,26 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
         </div>
       </motion.div>
 
+      {/* How Your Welly Score Works */}
+      <motion.div variants={fadeUp}>
+        <h3 className="font-display text-sm font-bold text-foreground mb-3">How Your Welly Score Works</h3>
+        <div className="glass rounded-xl p-4 space-y-3">
+          {[
+            { icon: <TrendingUp className="w-4 h-4 text-primary" />, text: "Complete sessions → improves score" },
+            { icon: <Flame className="w-4 h-4 text-orange-400" />, text: "Maintain your streak → improves score" },
+            { icon: <Target className="w-4 h-4 text-wellness-purple" />, text: "Follow programs → improves score" },
+            { icon: <Scan className="w-4 h-4 text-wellness-gold" />, text: "Perform scans → improves score" },
+          ].map(item => (
+            <div key={item.text} className="flex items-center gap-3">
+              {item.icon}
+              <span className="text-sm text-foreground">{item.text}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Calendar Integration */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <motion.div variants={fadeUp}>
         <div className="flex items-center gap-2 mb-3">
           <Calendar className="w-4 h-4 text-primary" />
           <h3 className="font-display text-sm font-bold text-foreground">Calendar Integration</h3>
@@ -69,7 +88,7 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
       </motion.div>
 
       {/* Daily Reminders */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+      <motion.div variants={fadeUp}>
         <div className="flex items-center gap-2 mb-3">
           <Bell className="w-4 h-4 text-primary" />
           <h3 className="font-display text-sm font-bold text-foreground">Daily Reminders</h3>
@@ -91,7 +110,7 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
       </motion.div>
 
       {/* Book Coaching Call */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+      <motion.div variants={fadeUp}>
         <a
           href="https://calendly.com/drchriszeiter/30min"
           target="_blank"
@@ -108,7 +127,7 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
       </motion.div>
 
       {/* Points System */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+      <motion.div variants={fadeUp}>
         <h3 className="font-display text-sm font-bold text-foreground mb-3">How Points Work</h3>
         <div className="glass rounded-xl p-4 space-y-2">
           {[
@@ -127,12 +146,12 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
       </motion.div>
 
       {/* Sign Out */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+      <motion.div variants={fadeUp}>
         <button onClick={signOut} className="w-full glass rounded-xl p-4 flex items-center gap-3 text-destructive active:scale-[0.98] transition-transform">
           <LogOut className="w-5 h-5" />
           <span className="font-medium text-sm">Sign Out</span>
         </button>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

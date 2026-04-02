@@ -1,19 +1,42 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Plus, Flame, Zap, ChevronRight, Calendar } from "lucide-react";
+import { Play, Plus, Flame, Zap, ChevronRight, Calendar, CheckCircle2, Circle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format, isToday, subDays, startOfDay } from "date-fns";
+import { format, isToday, subDays } from "date-fns";
 import ScheduleBottomSheet from "@/components/ScheduleBottomSheet";
 import { addToCalendar, type CalendarProvider, type CalendarEventData } from "@/utils/calendarEvent";
 import { toast } from "@/hooks/use-toast";
 import type { Tab } from "@/pages/WellnessLobby";
+import WellyScoreRing from "@/components/dashboard/WellyScoreRing";
 import logoWhite from "@/assets/logo-white.png";
 
-const RESET_SUGGESTIONS = [
-  { name: "5-Min Desk Reset", icon: "🖥️" },
-  { name: "5-Min Hip Stretch", icon: "🦴" },
-  { name: "5-Min Breathing", icon: "🫁" },
+/* ─── Daily motivational messages ─── */
+const DAILY_MESSAGES = [
+  "Consistency builds strength.",
+  "Small movement beats no movement.",
+  "Show up for yourself today.",
+  "Progress happens one rep at a time.",
+  "Your body will thank you later.",
+  "Move a little, feel a lot better.",
+  "Every stretch counts.",
+];
+
+/* ─── Today's recommended sessions ─── */
+const TODAY_PLAN = [
+  { key: "desk", name: "5-Min Desk Reset", icon: "🖥️" },
+  { key: "hip", name: "5-Min Hip Stretch", icon: "🦴" },
+  { key: "breathing", name: "5-Min Breathing", icon: "🫁" },
+];
+
+/* ─── Movement scheduler options ─── */
+const MOVEMENT_OPTIONS = [
+  { label: "Desk Reset", area: "Desk" },
+  { label: "Low Back Reset", area: "Low Back" },
+  { label: "Hip Stretch", area: "Hips" },
+  { label: "Shoulder Reset", area: "Shoulders" },
+  { label: "Neck Reset", area: "Neck" },
+  { label: "Breathing Reset", area: "Relax" },
 ];
 
 interface TodayTabProps {
@@ -33,14 +56,38 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
   const [showMovementPicker, setShowMovementPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [weeklyData, setWeeklyData] = useState<Record<string, "completed" | "partial" | "missed">>({});
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
-  // Hide Welly FAB when overlays open
+  // Daily motivational message (rotates by day)
+  const dailyMessage = useMemo(() => {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+    return DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
+  }, []);
+
+  // Welly Score calculation
+  const wellyScore = useMemo(() => {
+    const todayCompleted = progressHistory.filter(p => isToday(new Date(p.completed_at))).length;
+    const movementScore = Math.min(todayCompleted * 15, 40); // 40% weight
+    const streakScore = Math.min(points.current_streak * 5, 30); // 30% weight
+    const programScore = Math.min(progressHistory.length * 2, 20); // 20% weight
+    const scanScore = 10; // 10% base (placeholder)
+    return Math.min(movementScore + streakScore + programScore + scanScore, 100);
+  }, [progressHistory, points.current_streak]);
+
+  const scoreMessage = useMemo(() => {
+    if (wellyScore >= 80) return "You're staying consistent this week. Keep it up! 🎉";
+    if (wellyScore >= 50) return "Good progress — keep moving to boost your score.";
+    return "Start a quick reset to get your score climbing.";
+  }, [wellyScore]);
+
+  // Hide FAB when overlays open
   const anyOverlay = showMovementPicker || showScheduler;
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("welly-fab-visibility", { detail: { hidden: anyOverlay } }));
     return () => { window.dispatchEvent(new CustomEvent("welly-fab-visibility", { detail: { hidden: false } })); };
   }, [anyOverlay]);
 
+  // Fetch scheduled tasks
   useEffect(() => {
     if (!user) return;
     const fetchTasks = async () => {
@@ -56,7 +103,7 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     fetchTasks();
   }, [user]);
 
-  // Build weekly heatmap from progress history
+  // Build weekly heatmap
   useEffect(() => {
     const map: Record<string, "completed" | "partial" | "missed"> = {};
     for (let i = 6; i >= 0; i--) {
@@ -69,31 +116,26 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     setWeeklyData(map);
   }, [progressHistory]);
 
+  // Seed checklist from today's progress
+  useEffect(() => {
+    const todayEntries = progressHistory.filter(p => isToday(new Date(p.completed_at)));
+    const checked: Record<string, boolean> = {};
+    TODAY_PLAN.forEach(item => {
+      checked[item.key] = todayEntries.some(e => e.program_id && item.name.toLowerCase().includes("desk")); // simple heuristic
+    });
+    setCheckedItems(checked);
+  }, [progressHistory]);
+
   const handleStartNow = () => {
-    // Find next scheduled task or default to first quick reset
     const nextTask = scheduledTasks.find(t => t.program_id);
     if (nextTask?.program_id) {
       navigate(`/player/${nextTask.program_id}`);
     } else {
-      // Find a desk reset program
       const deskReset = programs.find(p => p.target_area === "Desk" || p.name.toLowerCase().includes("desk"));
       if (deskReset) navigate(`/player/${deskReset.id}`);
       else if (programs.length > 0) navigate(`/player/${programs[0].id}`);
     }
   };
-
-  const handleOpenScheduler = () => {
-    setShowMovementPicker(true);
-  };
-
-  const MOVEMENT_OPTIONS = [
-    { label: "Desk Reset", area: "Desk" },
-    { label: "Low Back Reset", area: "Low Back" },
-    { label: "Hip Stretch", area: "Hips" },
-    { label: "Shoulder Reset", area: "Shoulders" },
-    { label: "Neck Reset", area: "Neck" },
-    { label: "Breathing Reset", area: "Relax" },
-  ];
 
   const handleSelectMovement = (option: typeof MOVEMENT_OPTIONS[0]) => {
     const matchedProgram = programs.find(p => p.target_area === option.area) || { id: null, name: option.label, duration_minutes: 5 };
@@ -129,42 +171,62 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     setShowScheduler(false);
     setSaving(false);
 
-    // Refresh tasks
     const { data } = await (supabase as any).from("scheduled_tasks").select("*").eq("user_id", user!.id).eq("is_completed", false).order("scheduled_at", { ascending: true }).limit(5);
     setScheduledTasks(data || []);
   };
 
-  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const toggleChecklist = (key: string) => {
+    setCheckedItems(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      if (!prev[key]) {
+        toast({ title: "Nice work! 🎉", description: "+5 Welly Points earned" });
+      }
+      return next;
+    });
+  };
+
+  // Deduplicate scheduled tasks by title
+  const groupedTasks = useMemo(() => {
+    const seen = new Map<string, any>();
+    (scheduledTasks || []).forEach(t => {
+      if (!seen.has(t.title)) seen.set(t.title, t);
+    });
+    return Array.from(seen.values()).slice(0, 3);
+  }, [scheduledTasks]);
+
+  const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+  const fadeUp = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
   return (
-    <div className="px-5 pt-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src={logoWhite} alt="Welly" className="h-7 w-auto" />
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary">
-            <Zap className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-bold text-foreground">{points.total_points}</span>
-          </div>
-        </div>
-      </div>
+    <motion.div className="px-5 pt-6 pb-4 space-y-7" variants={stagger} initial="hidden" animate="show">
 
-      {/* Hero Card */}
+      {/* ─── Section 1: Greeting ─── */}
+      <motion.div variants={fadeUp} className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-foreground">Hey, {firstName} 👋</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{dailyMessage}</p>
+        </div>
+        <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary">
+          <Zap className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-bold text-foreground">{points.total_points}</span>
+        </div>
+      </motion.div>
+
+      {/* ─── Section 2: Welly Score Ring ─── */}
+      <motion.div variants={fadeUp} className="flex justify-center py-2">
+        <WellyScoreRing score={wellyScore} message={scoreMessage} />
+      </motion.div>
+
+      {/* ─── Section 3: Today's Movement Plan ─── */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl p-6 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, hsl(174 72% 40% / 0.15), hsl(222 40% 12%))" }}
+        variants={fadeUp}
+        className="rounded-2xl p-5 relative overflow-hidden"
+        style={{ background: "linear-gradient(145deg, hsl(222 40% 12%), hsl(222 40% 8%))" }}
       >
-        <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-primary/5 -translate-y-8 translate-x-8" />
-        <h2 className="font-display text-xl font-bold text-foreground mb-1">Today's Movement Plan</h2>
-        <p className="text-sm text-muted-foreground mb-4">Hey {firstName}, here's what's lined up 👋</p>
-
-        <div className="space-y-2 mb-5">
-          {RESET_SUGGESTIONS.map((s, i) => (
-            <div key={i} className="flex items-center gap-3 py-1.5">
+        <h2 className="font-display text-base font-bold text-foreground mb-3">Today's Movement Plan</h2>
+        <div className="space-y-2 mb-4">
+          {TODAY_PLAN.map(s => (
+            <div key={s.key} className="flex items-center gap-3 py-1">
               <span className="text-lg">{s.icon}</span>
               <span className="text-sm text-foreground font-medium">{s.name}</span>
             </div>
@@ -173,48 +235,77 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
 
         <button
           onClick={handleStartNow}
-          className="w-full py-3.5 rounded-xl gradient-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 active:scale-[0.97] transition-transform mb-3"
+          className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform mb-2.5"
         >
-          <Play className="w-5 h-5" fill="currentColor" /> Start Now
+          <Play className="w-4 h-4" fill="currentColor" /> Start Now
         </button>
-
         <button
-          onClick={handleOpenScheduler}
-          className="w-full py-3 rounded-xl border border-border bg-secondary/50 text-foreground font-medium text-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
+          onClick={() => setShowMovementPicker(true)}
+          className="w-full py-2.5 rounded-xl border border-border bg-secondary/50 text-foreground font-medium text-sm flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
         >
           <Plus className="w-4 h-4" /> Schedule Movement
         </button>
       </motion.div>
 
-      {/* Streak */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass rounded-2xl p-5">
+      {/* ─── Section 4: Daily Progress Checklist ─── */}
+      <motion.div variants={fadeUp}>
+        <h3 className="font-display text-sm font-bold text-foreground mb-3">Today's Progress</h3>
+        <div className="space-y-2">
+          {TODAY_PLAN.map(item => {
+            const done = checkedItems[item.key];
+            return (
+              <button
+                key={item.key}
+                onClick={() => toggleChecklist(item.key)}
+                className={`w-full glass rounded-xl p-3.5 flex items-center gap-3 transition-all active:scale-[0.98] ${done ? "border-primary/30" : ""}`}
+              >
+                <motion.div
+                  initial={false}
+                  animate={done ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {done ? (
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </motion.div>
+                <span className={`text-sm font-medium flex-1 text-left ${done ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                  {item.name}
+                </span>
+                {done && <span className="text-xs text-primary font-semibold">+5</span>}
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* ─── Section 5: Streak + Heatmap ─── */}
+      <motion.div variants={fadeUp} className="glass rounded-2xl p-5">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
-            <Flame className="w-6 h-6 text-orange-400" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center">
+            <Flame className="w-5 h-5 text-orange-400" />
           </div>
           <div>
-            <p className="font-display text-2xl font-bold text-foreground">{points.current_streak}-Day Streak</p>
-            <p className="text-xs text-muted-foreground">Best: {points.longest_streak} days</p>
+            <p className="font-display text-xl font-bold text-foreground">{points.current_streak}-Day Streak</p>
+            <p className="text-[11px] text-muted-foreground">Best: {points.longest_streak} days</p>
           </div>
         </div>
-
-        {/* Weekly Heatmap */}
         <div className="grid grid-cols-7 gap-2">
-          {Object.entries(weeklyData).map(([date, status], i) => {
-            const dayOfWeek = new Date(date).getDay();
-            const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dayOfWeek];
-            const isCurrentDay = isToday(new Date(date));
+          {Object.entries(weeklyData).map(([date, status]) => {
+            const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(date).getDay()];
+            const isCurrent = isToday(new Date(date));
             return (
               <div key={date} className="flex flex-col items-center gap-1.5">
                 <span className="text-[10px] text-muted-foreground">{dayName}</span>
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
                     status === "completed"
-                      ? "bg-wellness-green/20 text-wellness-green border border-wellness-green/30"
+                      ? "bg-primary/15 text-primary border border-primary/25"
                       : status === "partial"
-                      ? "bg-wellness-gold/20 text-wellness-gold border border-wellness-gold/30"
-                      : "bg-secondary text-muted-foreground border border-border/50"
-                  } ${isCurrentDay ? "ring-2 ring-primary/40" : ""}`}
+                      ? "bg-wellness-gold/15 text-wellness-gold border border-wellness-gold/25"
+                      : "bg-secondary text-muted-foreground border border-border/40"
+                  } ${isCurrent ? "ring-2 ring-primary/30" : ""}`}
                 >
                   {status === "completed" ? "✓" : status === "partial" ? "·" : ""}
                 </div>
@@ -224,24 +315,24 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
         </div>
       </motion.div>
 
-      {/* Scheduled Tasks */}
-      {scheduledTasks.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+      {/* ─── Section 6: Upcoming Schedule ─── */}
+      {groupedTasks.length > 0 && (
+        <motion.div variants={fadeUp}>
           <div className="flex items-center gap-2 mb-3">
             <Calendar className="w-4 h-4 text-primary" />
             <h3 className="font-display text-sm font-bold text-foreground">Upcoming</h3>
           </div>
           <div className="space-y-2">
-            {scheduledTasks.slice(0, 3).map((task, i) => (
-              <div key={task.id} className="glass rounded-xl p-3 flex items-center gap-3">
+            {groupedTasks.map(task => (
+              <div key={task.id} className="glass rounded-xl p-3.5 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg gradient-primary flex items-center justify-center text-sm shrink-0">📅</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
                   <p className="text-xs text-muted-foreground">{format(new Date(task.scheduled_at), "MMM d, h:mm a")} · {task.duration_minutes}m</p>
                 </div>
                 {task.program_id && (
-                  <button onClick={() => navigate(`/player/${task.program_id}`)} className="text-xs font-medium px-3 py-1.5 rounded-lg gradient-primary text-primary-foreground active:scale-95 transition-transform">
-                    <Play className="w-3 h-3" />
+                  <button onClick={() => navigate(`/player/${task.program_id}`)} className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center active:scale-95 transition-transform">
+                    <Play className="w-3.5 h-3.5 text-primary-foreground" fill="currentColor" />
                   </button>
                 )}
               </div>
@@ -250,22 +341,22 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
         </motion.div>
       )}
 
-      {/* Quick Access */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+      {/* ─── Section 7: Quick Reset Access ─── */}
+      <motion.div variants={fadeUp}>
         <button
           onClick={() => setActiveTab("resets")}
           className="w-full glass rounded-2xl p-5 flex items-center gap-4 active:scale-[0.98] transition-transform text-left"
         >
-          <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-xl">⚡</div>
+          <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center text-xl">⚡</div>
           <div className="flex-1">
-            <h3 className="font-display font-bold text-foreground text-base">Quick Reset</h3>
-            <p className="text-xs text-muted-foreground">5-minute guided sessions</p>
+            <h3 className="font-display font-bold text-foreground text-sm">Quick Reset</h3>
+            <p className="text-xs text-muted-foreground">Need relief now? Start a 5-min session.</p>
           </div>
           <ChevronRight className="w-5 h-5 text-muted-foreground" />
         </button>
       </motion.div>
 
-      {/* Movement Picker Modal */}
+      {/* ─── Movement Picker Modal ─── */}
       <AnimatePresence>
         {showMovementPicker && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setShowMovementPicker(false)}>
@@ -288,7 +379,7 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
         )}
       </AnimatePresence>
 
-      {/* Schedule Bottom Sheet */}
+      {/* ─── Schedule Bottom Sheet ─── */}
       <ScheduleBottomSheet
         open={showScheduler}
         onClose={() => { setShowScheduler(false); setSelectedMovement(null); }}
@@ -300,6 +391,6 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
         onConfirm={handleScheduleConfirm}
         saving={saving}
       />
-    </div>
+    </motion.div>
   );
 }

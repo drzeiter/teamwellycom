@@ -82,7 +82,7 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
   }, [wellyScore]);
 
   // Hide FAB when overlays open
-  const anyOverlay = showMovementPicker || showScheduler;
+  const anyOverlay = showMovementPicker || showScheduler || showScoreInfo;
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("welly-fab-visibility", { detail: { hidden: anyOverlay } }));
     return () => { window.dispatchEvent(new CustomEvent("welly-fab-visibility", { detail: { hidden: false } })); };

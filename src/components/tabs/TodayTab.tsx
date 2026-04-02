@@ -49,7 +49,7 @@ interface TodayTabProps {
   scanCount?: number;
 }
 
-export default function TodayTab({ firstName, points, programs, navigate, progressHistory, setActiveTab }: TodayTabProps) {
+export default function TodayTab({ firstName, points, programs, navigate, progressHistory, setActiveTab, scanCount = 0 }: TodayTabProps) {
   const { user } = useAuth();
   const [scheduledTasks, setScheduledTasks] = useState<any[]>([]);
   const [showScheduler, setShowScheduler] = useState(false);

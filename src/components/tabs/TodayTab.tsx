@@ -46,6 +46,7 @@ interface TodayTabProps {
   navigate: any;
   progressHistory: any[];
   setActiveTab: (tab: Tab) => void;
+  scanCount?: number;
 }
 
 export default function TodayTab({ firstName, points, programs, navigate, progressHistory, setActiveTab }: TodayTabProps) {

@@ -223,23 +223,6 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
         <WellyScoreRing score={wellyScore} message={scoreMessage} onInfoTap={() => setShowScoreInfo(true)} />
       </motion.div>
 
-      {/* ─── Section 2b: Book Coaching Call ─── */}
-      <motion.div variants={fadeUp}>
-        <a
-          href="https://calendly.com/drchriszeiter/30min"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full glass rounded-2xl p-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98] block"
-        >
-          <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center text-lg shrink-0">📞</div>
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground">Need personalized help improving your movement?</p>
-            <h4 className="font-display font-bold text-foreground text-sm">Book a Coaching Call</h4>
-          </div>
-          <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
-        </a>
-      </motion.div>
-
       {/* ─── Section 3: Today's Movement Plan ─── */}
       <motion.div
         variants={fadeUp}

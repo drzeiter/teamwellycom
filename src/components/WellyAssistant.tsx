@@ -490,6 +490,20 @@ export default function WellyAssistant() {
 
   return (
     <>
+      {/* Floating Coaching Button (secondary) */}
+      {!open && !fabHidden && onboardingDone && (
+        <a
+          href="https://calendly.com/drchriszeiter/30min"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-[10.5rem] right-4 z-50 flex items-center gap-1.5 rounded-full bg-secondary border border-border text-foreground shadow-md hover:shadow-lg hover:scale-105 transition-all pl-2.5 pr-3.5 py-1.5"
+          aria-label="Book a coaching call"
+        >
+          <span className="text-sm">📞</span>
+          <span className="text-[11px] font-medium whitespace-nowrap">Book Coaching</span>
+        </a>
+      )}
+
       {/* FAB */}
       {!open && !fabHidden && onboardingDone && (
         <button

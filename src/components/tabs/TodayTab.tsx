@@ -186,13 +186,18 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     });
   };
 
-  // Deduplicate scheduled tasks by title
+  // Deduplicate and group scheduled tasks by title + time
   const groupedTasks = useMemo(() => {
-    const seen = new Map<string, any>();
+    const groups = new Map<string, { task: any; count: number }>();
     (scheduledTasks || []).forEach(t => {
-      if (!seen.has(t.title)) seen.set(t.title, t);
+      const key = `${t.title}-${format(new Date(t.scheduled_at), "yyyy-MM-dd HH:mm")}`;
+      if (groups.has(key)) {
+        groups.get(key)!.count++;
+      } else {
+        groups.set(key, { task: t, count: 1 });
+      }
     });
-    return Array.from(seen.values()).slice(0, 3);
+    return Array.from(groups.values()).slice(0, 3);
   }, [scheduledTasks]);
 
   const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };

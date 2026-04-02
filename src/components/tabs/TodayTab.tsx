@@ -57,6 +57,7 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
   const [saving, setSaving] = useState(false);
   const [weeklyData, setWeeklyData] = useState<Record<string, "completed" | "partial" | "missed">>({});
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [showScoreInfo, setShowScoreInfo] = useState(false);
 
   // Daily motivational message (rotates by day)
   const dailyMessage = useMemo(() => {

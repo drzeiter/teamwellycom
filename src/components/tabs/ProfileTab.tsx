@@ -45,7 +45,7 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
           <div className="bg-secondary/50 rounded-xl p-3 text-center">
             <Zap className="w-4 h-4 text-primary mx-auto mb-1" />
             <p className="font-display text-lg font-bold text-foreground">{points.total_points}</p>
-            <p className="text-[10px] text-muted-foreground">Total Points</p>
+            <p className="text-[10px] text-muted-foreground">Lifetime Points</p>
           </div>
           <div className="bg-secondary/50 rounded-xl p-3 text-center">
             <Flame className="w-4 h-4 text-orange-400 mx-auto mb-1" />

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Plus, Flame, Zap, ChevronRight, Calendar, CheckCircle2, Circle } from "lucide-react";
+import { Play, Plus, Flame, Zap, ChevronRight, Calendar, CheckCircle2, Circle, ExternalLink, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, isToday, subDays } from "date-fns";
@@ -57,6 +57,7 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
   const [saving, setSaving] = useState(false);
   const [weeklyData, setWeeklyData] = useState<Record<string, "completed" | "partial" | "missed">>({});
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [showScoreInfo, setShowScoreInfo] = useState(false);
 
   // Daily motivational message (rotates by day)
   const dailyMessage = useMemo(() => {
@@ -81,7 +82,7 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
   }, [wellyScore]);
 
   // Hide FAB when overlays open
-  const anyOverlay = showMovementPicker || showScheduler;
+  const anyOverlay = showMovementPicker || showScheduler || showScoreInfo;
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("welly-fab-visibility", { detail: { hidden: anyOverlay } }));
     return () => { window.dispatchEvent(new CustomEvent("welly-fab-visibility", { detail: { hidden: false } })); };
@@ -185,13 +186,18 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     });
   };
 
-  // Deduplicate scheduled tasks by title
+  // Deduplicate and group scheduled tasks by title + time
   const groupedTasks = useMemo(() => {
-    const seen = new Map<string, any>();
+    const groups = new Map<string, { task: any; count: number }>();
     (scheduledTasks || []).forEach(t => {
-      if (!seen.has(t.title)) seen.set(t.title, t);
+      const key = `${t.title}-${format(new Date(t.scheduled_at), "yyyy-MM-dd HH:mm")}`;
+      if (groups.has(key)) {
+        groups.get(key)!.count++;
+      } else {
+        groups.set(key, { task: t, count: 1 });
+      }
     });
-    return Array.from(seen.values()).slice(0, 3);
+    return Array.from(groups.values()).slice(0, 3);
   }, [scheduledTasks]);
 
   const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
@@ -206,15 +212,32 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
           <h1 className="font-display text-2xl font-bold text-foreground">Hey, {firstName} 👋</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{dailyMessage}</p>
         </div>
-        <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary">
+        <button onClick={() => setActiveTab("profile")} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary active:scale-95 transition-transform">
           <Zap className="w-3.5 h-3.5 text-primary" />
           <span className="text-xs font-bold text-foreground">{points.total_points}</span>
-        </div>
+        </button>
       </motion.div>
 
       {/* ─── Section 2: Welly Score Ring ─── */}
       <motion.div variants={fadeUp} className="flex justify-center py-2">
-        <WellyScoreRing score={wellyScore} message={scoreMessage} />
+        <WellyScoreRing score={wellyScore} message={scoreMessage} onInfoTap={() => setShowScoreInfo(true)} />
+      </motion.div>
+
+      {/* ─── Section 2b: Book Coaching Call ─── */}
+      <motion.div variants={fadeUp}>
+        <a
+          href="https://calendly.com/drchriszeiter/30min"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full glass rounded-2xl p-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98] block"
+        >
+          <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center text-lg shrink-0">📞</div>
+          <div className="flex-1">
+            <p className="text-xs text-muted-foreground">Need personalized help improving your movement?</p>
+            <h4 className="font-display font-bold text-foreground text-sm">Book a Coaching Call</h4>
+          </div>
+          <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
+        </a>
       </motion.div>
 
       {/* ─── Section 3: Today's Movement Plan ─── */}
@@ -323,11 +346,13 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
             <h3 className="font-display text-sm font-bold text-foreground">Upcoming</h3>
           </div>
           <div className="space-y-2">
-            {groupedTasks.map(task => (
+            {groupedTasks.map(({ task, count }) => (
               <div key={task.id} className="glass rounded-xl p-3.5 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg gradient-primary flex items-center justify-center text-sm shrink-0">📅</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {count > 1 ? `${count} Movements Scheduled` : task.title}
+                  </p>
                   <p className="text-xs text-muted-foreground">{format(new Date(task.scheduled_at), "MMM d, h:mm a")} · {task.duration_minutes}m</p>
                 </div>
                 {task.program_id && (
@@ -374,6 +399,34 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
                 ))}
               </div>
               <button onClick={() => setShowMovementPicker(false)} className="w-full mt-4 py-3 rounded-xl bg-secondary text-muted-foreground text-sm font-medium">Cancel</button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Score Info Modal ─── */}
+      <AnimatePresence>
+        {showScoreInfo && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setShowScoreInfo(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={e => e.stopPropagation()} className="w-full max-w-sm glass-strong rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-display text-lg font-bold text-foreground">Understanding Your Stats</h3>
+                <button onClick={() => setShowScoreInfo(false)} className="p-1 rounded-full bg-secondary"><X className="w-4 h-4 text-muted-foreground" /></button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-semibold text-primary mb-1">🎯 Welly Score</p>
+                  <p className="text-xs text-muted-foreground">Measures your daily movement consistency. Complete sessions, maintain streaks, follow programs, and do scans to improve it.</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-primary mb-1">⚡ Lifetime Points</p>
+                  <p className="text-xs text-muted-foreground">Tracks all completed sessions and activities over time. Points accumulate and never reset.</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-primary mb-1">🔥 Streak</p>
+                  <p className="text-xs text-muted-foreground">Tracks consecutive days of movement. Keep moving daily to grow your streak!</p>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}

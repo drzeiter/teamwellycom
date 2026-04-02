@@ -167,17 +167,28 @@ export default function MovementScanTab() {
           )}
           <MovementReport assessment={viewingReport} onBack={handleBack} previousScore={previousScore} />
 
-          {/* Book Coaching Call */}
+          {/* Book Coaching Call — always shown, emphasized when score < 85 */}
           <a
             href="https://calendly.com/drchriszeiter/30min"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 w-full glass rounded-xl p-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98] block"
+            className={`mt-6 w-full glass rounded-xl p-4 flex items-center gap-3 text-left transition-all active:scale-[0.98] block ${
+              viewingReport.overall_score < 85 ? "border border-primary/40 bg-primary/5" : "hover:border-primary/30"
+            }`}
           >
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-lg shrink-0">📞</div>
             <div className="flex-1">
-              <h4 className="font-display font-semibold text-foreground text-sm">Book a Coaching Call</h4>
-              <p className="text-xs text-muted-foreground">Get 1-on-1 guidance on your results</p>
+              {viewingReport.overall_score < 85 ? (
+                <>
+                  <p className="text-xs text-primary/80 font-medium mb-0.5">Want expert guidance based on your scan?</p>
+                  <h4 className="font-display font-bold text-foreground text-sm">Book a Coaching Call</h4>
+                </>
+              ) : (
+                <>
+                  <h4 className="font-display font-semibold text-foreground text-sm">Book a Coaching Call</h4>
+                  <p className="text-xs text-muted-foreground">Get 1-on-1 guidance on your results</p>
+                </>
+              )}
             </div>
             <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
           </a>

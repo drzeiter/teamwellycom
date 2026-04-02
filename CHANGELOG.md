@@ -5,6 +5,21 @@ All notable changes to the TeamWelly wellness platform are documented here.
 
 ---
 
+## [v1.0.0] — April 2026 · V1 Product Rebuild
+
+### 🔄 Major Product Pivot — Individual User Focus
+- **Stripped all corporate/enterprise features**: Removed HR dashboards, company admin, wearable integrations, biometric tracking, complex analytics
+- **New 5-tab navigation**: Today → Programs → Quick Resets → Movement Scan → Profile
+- **Today screen**: Hero card with daily movement plan, Start Now button, movement scheduler, streak tracker, weekly heatmap
+- **Quick Resets tab**: Large tap-friendly cards for 5-minute guided sessions (desk, hip, back, shoulder, neck, breathing)
+- **Movement Scan tab**: Renamed from Movement Lab; 3 large scan cards with coaching call CTA after results
+- **Profile tab**: Simplified profile with points, streak, calendar integration, daily reminders, coaching CTA
+- **Programs tab**: Clean 12-week program cards with descriptions and progress
+- **Simplified points system**: +5 session, +10 daily plan, +3 scan, +2 schedule
+- **Removed**: Admin routes, access-denied page, invite system, wearable modal, HRV/biometric dashboards, step rewards, Welly Score ring, insights feed, metrics strip, floating particles
+
+---
+
 ## [Unreleased] — Phase 1 PWA MVP
 
 ### 🏗️ Platform & Infrastructure

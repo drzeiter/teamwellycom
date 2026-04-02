@@ -115,12 +115,13 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     setWeeklyData(map);
   }, [progressHistory]);
 
-  // Seed checklist from today's progress
+  // Seed checklist from today's actual completions
   useEffect(() => {
     const todayEntries = progressHistory.filter(p => isToday(new Date(p.completed_at)));
     const checked: Record<string, boolean> = {};
-    TODAY_PLAN.forEach(item => {
-      checked[item.key] = todayEntries.some(e => e.program_id && item.name.toLowerCase().includes("desk")); // simple heuristic
+    // Mark items checked based on number of today's completions (in order)
+    TODAY_PLAN.forEach((item, i) => {
+      checked[item.key] = i < todayEntries.length;
     });
     setCheckedItems(checked);
   }, [progressHistory]);

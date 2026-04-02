@@ -41,20 +41,23 @@ const WellnessLobby = () => {
   const [displayName, setDisplayName] = useState("");
   const [activeTab, setActiveTab] = useState<Tab>("today");
   const [progressHistory, setProgressHistory] = useState<any[]>([]);
+  const [scanCount, setScanCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const [pointsRes, programsRes, profileRes, progressRes] = await Promise.all([
+      const [pointsRes, programsRes, profileRes, progressRes, scanRes] = await Promise.all([
         supabase.from("welly_points").select("*").eq("user_id", user.id).single(),
         supabase.from("programs").select("*").order("sort_order"),
         supabase.from("profiles").select("display_name").eq("user_id", user.id).single(),
         supabase.from("user_progress").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }).limit(30),
+        supabase.from("movement_assessments").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       ]);
       if (pointsRes.data) setPoints(pointsRes.data);
       if (programsRes.data) setPrograms(programsRes.data as Program[]);
       if (profileRes.data) setDisplayName(profileRes.data.display_name || "");
       if (progressRes.data) setProgressHistory(progressRes.data);
+      setScanCount(scanRes.count || 0);
     };
     fetchData();
   }, [user]);
@@ -66,7 +69,7 @@ const WellnessLobby = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "today":
-        return <TodayTab firstName={firstName} points={points} programs={quickContent} navigate={navigate} progressHistory={progressHistory} setActiveTab={setActiveTab} />;
+        return <TodayTab firstName={firstName} points={points} programs={quickContent} navigate={navigate} progressHistory={progressHistory} setActiveTab={setActiveTab} scanCount={scanCount} />;
       case "programs":
         return <ProgramsTab programs={twelveWeekPrograms} navigate={navigate} />;
       case "resets":

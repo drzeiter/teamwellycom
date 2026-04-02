@@ -46,9 +46,10 @@ interface TodayTabProps {
   navigate: any;
   progressHistory: any[];
   setActiveTab: (tab: Tab) => void;
+  scanCount?: number;
 }
 
-export default function TodayTab({ firstName, points, programs, navigate, progressHistory, setActiveTab }: TodayTabProps) {
+export default function TodayTab({ firstName, points, programs, navigate, progressHistory, setActiveTab, scanCount = 0 }: TodayTabProps) {
   const { user } = useAuth();
   const [scheduledTasks, setScheduledTasks] = useState<any[]>([]);
   const [showScheduler, setShowScheduler] = useState(false);
@@ -65,15 +66,12 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     return DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
   }, []);
 
-  // Welly Score calculation
+  // Welly Score = today's completion percentage (0–100)
   const wellyScore = useMemo(() => {
+    const totalPlan = TODAY_PLAN.length; // 3 daily items
     const todayCompleted = progressHistory.filter(p => isToday(new Date(p.completed_at))).length;
-    const movementScore = Math.min(todayCompleted * 15, 40); // 40% weight
-    const streakScore = Math.min(points.current_streak * 5, 30); // 30% weight
-    const programScore = Math.min(progressHistory.length * 2, 20); // 20% weight
-    const scanScore = 10; // 10% base (placeholder)
-    return Math.min(movementScore + streakScore + programScore + scanScore, 100);
-  }, [progressHistory, points.current_streak]);
+    return Math.min(Math.round((todayCompleted / totalPlan) * 100), 100);
+  }, [progressHistory]);
 
   const scoreMessage = useMemo(() => {
     if (wellyScore >= 80) return "You're staying consistent this week. Keep it up! 🎉";
@@ -117,12 +115,13 @@ export default function TodayTab({ firstName, points, programs, navigate, progre
     setWeeklyData(map);
   }, [progressHistory]);
 
-  // Seed checklist from today's progress
+  // Seed checklist from today's actual completions
   useEffect(() => {
     const todayEntries = progressHistory.filter(p => isToday(new Date(p.completed_at)));
     const checked: Record<string, boolean> = {};
-    TODAY_PLAN.forEach(item => {
-      checked[item.key] = todayEntries.some(e => e.program_id && item.name.toLowerCase().includes("desk")); // simple heuristic
+    // Mark items checked based on number of today's completions (in order)
+    TODAY_PLAN.forEach((item, i) => {
+      checked[item.key] = i < todayEntries.length;
     });
     setCheckedItems(checked);
   }, [progressHistory]);

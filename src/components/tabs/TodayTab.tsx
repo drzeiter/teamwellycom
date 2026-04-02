@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Plus, Flame, Zap, ChevronRight, Calendar, CheckCircle2, Circle } from "lucide-react";
+import { Play, Plus, Flame, Zap, ChevronRight, Calendar, CheckCircle2, Circle, ExternalLink, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, isToday, subDays } from "date-fns";

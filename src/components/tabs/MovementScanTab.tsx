@@ -169,7 +169,7 @@ export default function MovementScanTab() {
 
           {/* Book Coaching Call — always shown, emphasized when score < 85 */}
           <a
-            href="https://calendly.com/drchriszeiter/30min"
+            href="https://calendly.com/drchriszeiter/60min"
             target="_blank"
             rel="noopener noreferrer"
             className={`mt-6 w-full glass rounded-xl p-4 flex items-center gap-3 text-left transition-all active:scale-[0.98] block ${

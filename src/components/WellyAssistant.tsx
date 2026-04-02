@@ -296,7 +296,7 @@ export default function WellyAssistant() {
   };
 
   const handleBookCall = () => {
-    window.open("https://calendly.com/drchriszeiter/30min", "_blank");
+    window.open("https://calendly.com/drchriszeiter/60min", "_blank");
   };
 
   const handleAddToCalendar = async (assistantMessage: string) => {
@@ -493,7 +493,7 @@ export default function WellyAssistant() {
       {/* Floating Coaching Button (secondary) */}
       {!open && !fabHidden && onboardingDone && (
         <a
-          href="https://calendly.com/drchriszeiter/30min"
+          href="https://calendly.com/drchriszeiter/60min"
           target="_blank"
           rel="noopener noreferrer"
           className="fixed bottom-[10.5rem] right-4 z-50 flex items-center gap-1.5 rounded-full bg-secondary border border-border text-foreground shadow-md hover:shadow-lg hover:scale-105 transition-all pl-2.5 pr-3.5 py-1.5"

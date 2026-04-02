@@ -112,7 +112,7 @@ export default function ProfileTab({ displayName, points }: ProfileTabProps) {
       {/* Book Coaching Call */}
       <motion.div variants={fadeUp}>
         <a
-          href="https://calendly.com/drchriszeiter/30min"
+          href="https://calendly.com/drchriszeiter/60min"
           target="_blank"
           rel="noopener noreferrer"
           className="w-full glass rounded-xl p-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all active:scale-[0.98] block"

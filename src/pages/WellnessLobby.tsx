@@ -41,6 +41,7 @@ const WellnessLobby = () => {
   const [displayName, setDisplayName] = useState("");
   const [activeTab, setActiveTab] = useState<Tab>("today");
   const [progressHistory, setProgressHistory] = useState<any[]>([]);
+  const [scanCount, setScanCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
